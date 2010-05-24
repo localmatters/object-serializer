@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<serializations>
+    <complex id="listingConfig" name="listing" bean="results" property="listings[0]">
+	    <attribute name="name" property="businessName" display-empty="false"/>
+	    <ref target="addressConfig" name="listingAddress"/>
+    </complex>
+
+    <complex id="addressConfig" name="address" property="address"/>
+    
+
+</serializations>

@@ -5,7 +5,7 @@
         <version>14</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.localmatters.serializer</groupId>
+    <groupId>com.localmatters</groupId>
     <artifactId>lm-object-serializer</artifactId>
     <name>Local Matters Object Serializer</name>
     <version>1.0.1-SNAPSHOT</version>

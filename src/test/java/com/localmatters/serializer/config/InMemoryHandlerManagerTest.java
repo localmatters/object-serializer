@@ -1,19 +1,19 @@
-package com.localmatters.serializer.serialization;
+package com.localmatters.serializer.config;
 
 import junit.framework.TestCase;
 
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 
+import com.localmatters.serializer.config.ConfigurationException;
+import com.localmatters.serializer.config.InMemorySerializationManager;
+import com.localmatters.serializer.config.SerializationElementHandler;
 import com.localmatters.serializer.serialization.AttributeSerialization;
 import com.localmatters.serializer.serialization.BeanSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
-import com.localmatters.serializer.serialization.ConfigurationException;
-import com.localmatters.serializer.serialization.InMemorySerializationManager;
 import com.localmatters.serializer.serialization.PropertySerialization;
 import com.localmatters.serializer.serialization.ReferenceSerialization;
 import com.localmatters.serializer.serialization.Serialization;
-import com.localmatters.serializer.serialization.SerializationElementHandler;
 import com.localmatters.serializer.test.TestObjectFactory;
 import com.localmatters.util.CollectionUtils;
 import com.localmatters.util.refreshable.InitialRefreshFailedException;

@@ -1,4 +1,6 @@
-package com.localmatters.serializer.serialization;
+package com.localmatters.serializer.config;
+
+import com.localmatters.serializer.serialization.Serialization;
 
 
 

@@ -1,4 +1,4 @@
-package com.localmatters.serializer.serialization;
+package com.localmatters.serializer.config;
 
 /**
  * Describes an exception that is due to an error in the configuration

@@ -1,4 +1,4 @@
-package com.localmatters.serializer.serialization;
+package com.localmatters.serializer.config;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -10,6 +10,7 @@ import org.dom4j.io.SAXReader;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.core.io.Resource;
 
+import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.util.objectfactory.LMObjectFactory;
 import com.localmatters.util.refreshable.AbstractRefreshableContent;
 
@@ -44,7 +45,7 @@ public class InMemorySerializationManager extends AbstractRefreshableContent imp
 	}
 
 	/**
-	 * @see com.localmatters.serializer.serialization.SerializationManager#getSerialization(java.lang.String)
+	 * @see com.localmatters.serializer.config.SerializationManager#getSerialization(java.lang.String)
 	 */
 	public Serialization getSerialization(String id) {
 		return serializations.get(id);

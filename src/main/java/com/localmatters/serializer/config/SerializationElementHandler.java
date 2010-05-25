@@ -1,4 +1,4 @@
-package com.localmatters.serializer.serialization;
+package com.localmatters.serializer.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +12,16 @@ import org.dom4j.Element;
 import org.dom4j.ElementHandler;
 import org.dom4j.ElementPath;
 
+import com.localmatters.serializer.serialization.AbstractSerialization;
+import com.localmatters.serializer.serialization.AttributeSerialization;
+import com.localmatters.serializer.serialization.BeanSerialization;
+import com.localmatters.serializer.serialization.ComplexSerialization;
+import com.localmatters.serializer.serialization.IteratorSerialization;
+import com.localmatters.serializer.serialization.MapSerialization;
+import com.localmatters.serializer.serialization.PropertySerialization;
+import com.localmatters.serializer.serialization.ReferenceSerialization;
+import com.localmatters.serializer.serialization.Serialization;
+import com.localmatters.serializer.serialization.ValueSerialization;
 import com.localmatters.util.CollectionUtils;
 import com.localmatters.util.StringUtils;
 import com.localmatters.util.objectfactory.LMObjectFactory;

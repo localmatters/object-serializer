@@ -10,7 +10,9 @@ import static org.easymock.EasyMock.verify;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.resolver.PropertyResolver;
+import com.localmatters.serializer.writer.Writer;
 
 import junit.framework.TestCase;
 
@@ -19,7 +21,7 @@ import junit.framework.TestCase;
  */
 public class SerializationContextTest extends TestCase {
 	private SerializationContext context;
-	private Serializer serializer;
+	private Writer serializer;
 	private PropertyResolver propertyResolver;
 	private Map<String, Object> beans;
 	
@@ -28,7 +30,7 @@ public class SerializationContextTest extends TestCase {
 	 */
 	@Override
 	protected void setUp() throws Exception {
-		serializer = createMock(Serializer.class);
+		serializer = createMock(Writer.class);
 		propertyResolver = createMock(PropertyResolver.class);
 		beans = new HashMap<String, Object>();
 		context = new SerializationContext(serializer, beans, propertyResolver);
@@ -95,7 +97,7 @@ public class SerializationContextTest extends TestCase {
 	 * Tests the equals when has different serializer
 	 */
 	public void testEqualsWhenDifferentSerializer() {
-		Serializer serializer2 = createMock(Serializer.class);
+		Writer serializer2 = createMock(Writer.class);
 		SerializationContext context2 = new SerializationContext(serializer2, beans, propertyResolver);
 		replay(serializer, serializer2, propertyResolver);
 		assertFalse(context.equals(context2));

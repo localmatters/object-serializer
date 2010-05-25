@@ -5,9 +5,13 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 
 import com.localmatters.serializer.resolver.PropertyResolver;
+import com.localmatters.serializer.writer.Writer;
 
 /**
- * Provides the context for the serialization of a node 
+ * Provides the current context for the serialization. While serializing, each
+ * level in the serialization will get its own context. However, the only 
+ * difference between all the context of a given serialization should be the 
+ * path as the other elements should be the same (instance equality).
  */
 public class SerializationContext {
 	private static final String SEPARATOR = ".";
@@ -15,7 +19,7 @@ public class SerializationContext {
 	private static final String INDEX_FORMAT = "[%d]";
 	private static final String MAP_FORMAT = "{%s}";
 	private String path;
-	private Serializer serializer;
+	private Writer serializer;
 	private PropertyResolver propertyResolver;
 	private Map<String, Object> beans;
 
@@ -26,7 +30,7 @@ public class SerializationContext {
 	 * @param propertyResolver The resolver to resolve the property of an object
 	 * @param path The path to this level
 	 */
-	public SerializationContext(Serializer serializer, Map<String, Object> beans, PropertyResolver propertyResolver) {
+	public SerializationContext(Writer serializer, Map<String, Object> beans, PropertyResolver propertyResolver) {
 		this(serializer, beans, propertyResolver, StringUtils.EMPTY);
 	}
 
@@ -38,7 +42,7 @@ public class SerializationContext {
 	 * @param propertyResolver The resolver to resolve the property of an object
 	 * @param path The path to this level
 	 */
-	protected SerializationContext(Serializer serializer, Map<String, Object> beans, PropertyResolver propertyResolver, String path) {
+	protected SerializationContext(Writer serializer, Map<String, Object> beans, PropertyResolver propertyResolver, String path) {
 		setSerializer(serializer);
 		setBeans(beans);
 		setPropertyResolver(propertyResolver);
@@ -163,14 +167,14 @@ public class SerializationContext {
 	/**
 	 * @return The serializer
 	 */
-	public Serializer getSerializer() {
+	public Writer getSerializer() {
 		return serializer;
 	}
 	
 	/**
 	 * @param serializer The serializer
 	 */
-	private void setSerializer(Serializer serializer) {
+	private void setSerializer(Writer serializer) {
 		this.serializer = serializer;
 	}
 	

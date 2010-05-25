@@ -1,7 +1,7 @@
 package com.localmatters.serializer;
 
 /**
- * Describes an exception that is due to an error during the serialization
+ * Describes an exception that is raised during the serialization
  */
 public abstract class SerializationException extends Exception {
 	private static final long serialVersionUID = 1L;

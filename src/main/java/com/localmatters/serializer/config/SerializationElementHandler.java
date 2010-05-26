@@ -16,6 +16,7 @@ import com.localmatters.serializer.serialization.AbstractSerialization;
 import com.localmatters.serializer.serialization.AttributeSerialization;
 import com.localmatters.serializer.serialization.BeanSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
+import com.localmatters.serializer.serialization.ConstantSerialization;
 import com.localmatters.serializer.serialization.IteratorSerialization;
 import com.localmatters.serializer.serialization.MapSerialization;
 import com.localmatters.serializer.serialization.PropertySerialization;
@@ -34,6 +35,7 @@ public class SerializationElementHandler implements ElementHandler {
 	protected static final String ATTRIBUTE_NAME = "name";
 	protected static final String ATTRIBUTE_PROPERTY = "property";
 	protected static final String ATTRIBUTE_BEAN = "bean";
+	protected static final String ATTRIBUTE_CONSTANT = "constant";
 	protected static final String ATTRIBUTE_KEY = "key";
 	protected static final String ATTRIBUTE_ID = "id";
 	protected static final String ATTRIBUTE_TARGET = "target";
@@ -170,14 +172,14 @@ public class SerializationElementHandler implements ElementHandler {
 				throw new ConfigurationException(DUPLICATE_ID_FORMAT, id);
 			}
 			attributes.put(ATTRIBUTE_ID, id);
-			Serialization serialization = handleBean(element, attributes);
+			Serialization serialization = handleConstant(element, attributes);
 			serializations.put(id, serialization);
 			return serialization;
 		} 
 		if (required) {
 			throw new ConfigurationException(MISSING_ID);
 		}
-		return handleBean(element, attributes);
+		return handleConstant(element, attributes);
 	}
 
 	/**
@@ -187,6 +189,25 @@ public class SerializationElementHandler implements ElementHandler {
 	 */
 	protected Serialization handleId(Element element) {
 		return handleId(element, new HashMap<String, String>(), false);
+	}
+
+	/**
+	 * Handles the optional constant attribute
+	 * @param element The element
+	 * @param attributes The map of attributes consumed for this element
+	 * @return The configuration for this element
+	 */
+	protected Serialization handleConstant(Element element, Map<String, String> attributes) {
+		String constant = element.attributeValue(ATTRIBUTE_CONSTANT);
+		if (StringUtils.isNotBlank(constant)) {
+			attributes.put(ATTRIBUTE_CONSTANT, constant);
+			Serialization delegate = handleBean(element, attributes);
+			ConstantSerialization serialization = getObjectFactory().create(ConstantSerialization.class);
+			serialization.setConstant(constant);
+			serialization.setDelegate(delegate);
+			return serialization;
+		} 
+		return handleBean(element, attributes);
 	}
 
 	/**

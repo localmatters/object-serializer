@@ -13,13 +13,15 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.localmatters.util.ArrayUtils;
 
 /**
  * Class offering utils methods to reflect upon objects and classes
  */
 public abstract class ReflectionUtils {
-	private static Pattern GETTER_PATTERN = Pattern.compile("^(?:get|is|has)((?:[A-Z]|\\d)\\w+)$");
+	private static Pattern GETTER_PATTERN = Pattern.compile("^(?:get|is|has)([A-Z]|\\d)(\\w*)?$");
 	private static Set<String> GETTERS_TO_EXCLUDE;
 	private static Map<Class<?>, Class<?>> WRAPPER_2_PRIMITIVE_MAP;
 	private static final Set<Class<?>> NUMBERS;
@@ -162,5 +164,25 @@ public abstract class ReflectionUtils {
 			}
 		}
 		return getters.values();
+	}
+	
+	/**
+	 * Returns the field name (starting by a lower case and without the get, is
+	 * or has prefix) for the given getter method
+	 * @param method The method to get the clean name of
+	 * @return The clean name for this method or null if the method is not a 
+	 * getter method
+	 */
+	public static String getGetterFieldName(Method method) {
+		Matcher matcher = GETTER_PATTERN.matcher(method.getName());
+		if (matcher.find() && !GETTERS_TO_EXCLUDE.contains(method.getName())) {
+			String first = matcher.group(1).toLowerCase();
+			String rest = matcher.group(2);
+			if (StringUtils.isNotBlank(rest)) {
+				return first + rest;
+			}
+			return first;
+		}
+		return null;
 	}
 }

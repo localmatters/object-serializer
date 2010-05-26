@@ -31,7 +31,7 @@ public class AttributeSerializationTest extends TestCase {
 		serialization.setName("name");
 		serializer = createMock(Writer.class);
 		attribute = new Object();
-		ctx = new SerializationContext(serializer, new HashMap<String, Object>(), null);
+		ctx = new SerializationContext(serializer, new HashMap<String, Object>(), null, false);
 	}
 	
 	/**

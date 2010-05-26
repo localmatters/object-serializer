@@ -33,7 +33,7 @@ public class SerializationContextTest extends TestCase {
 		serializer = createMock(Writer.class);
 		propertyResolver = createMock(PropertyResolver.class);
 		beans = new HashMap<String, Object>();
-		context = new SerializationContext(serializer, beans, propertyResolver);
+		context = new SerializationContext(serializer, beans, propertyResolver, true);
 	}
 
 	/**
@@ -42,12 +42,12 @@ public class SerializationContextTest extends TestCase {
 	public void testAppend() {
 		replay(serializer, propertyResolver);
 		assertEquals(context, context.appendSegment(""));
-		assertEquals(new SerializationContext(serializer, beans, propertyResolver, "listing"), context.appendSegment("listing"));
-		assertEquals(new SerializationContext(serializer, beans, propertyResolver, "listing.name"), context.appendSegment("listing").appendSegment("name"));
-		assertEquals(new SerializationContext(serializer, beans, propertyResolver, "listing.addresses{}"), context.appendSegment("listing").appendSegment("addresses").appendMap());
-		assertEquals(new SerializationContext(serializer, beans, propertyResolver, "listing.addresses{home}"), context.appendSegment("listing").appendSegment("addresses").appendMap("home"));
-		assertEquals(new SerializationContext(serializer, beans, propertyResolver, "listing.orders[1]"), context.appendSegment("listing").appendSegment("orders").appendIndex(1));
-		assertEquals(new SerializationContext(serializer, beans, propertyResolver, "addresses[1].key"), context.appendSegment("addresses").appendIndexAndSegment(1, "key"));
+		assertEquals(new SerializationContext(serializer, beans, propertyResolver, false, "listing"), context.appendSegment("listing"));
+		assertEquals(new SerializationContext(serializer, beans, propertyResolver, false, "listing.name"), context.appendSegment("listing").appendSegment("name"));
+		assertEquals(new SerializationContext(serializer, beans, propertyResolver, false, "listing.addresses{}"), context.appendSegment("listing").appendSegment("addresses").appendMap());
+		assertEquals(new SerializationContext(serializer, beans, propertyResolver, false, "listing.addresses{home}"), context.appendSegment("listing").appendSegment("addresses").appendMap("home"));
+		assertEquals(new SerializationContext(serializer, beans, propertyResolver, false, "listing.orders[1]"), context.appendSegment("listing").appendSegment("orders").appendIndex(1));
+		assertEquals(new SerializationContext(serializer, beans, propertyResolver, false, "addresses[1].key"), context.appendSegment("addresses").appendIndexAndSegment(1, "key"));
 		verify(serializer, propertyResolver);
 	}
 
@@ -98,7 +98,7 @@ public class SerializationContextTest extends TestCase {
 	 */
 	public void testEqualsWhenDifferentSerializer() {
 		Writer serializer2 = createMock(Writer.class);
-		SerializationContext context2 = new SerializationContext(serializer2, beans, propertyResolver);
+		SerializationContext context2 = new SerializationContext(serializer2, beans, propertyResolver, false);
 		replay(serializer, serializer2, propertyResolver);
 		assertFalse(context.equals(context2));
 		verify(serializer, serializer2, propertyResolver);
@@ -108,7 +108,7 @@ public class SerializationContextTest extends TestCase {
 	 * Tests the equals when has different map of beans
 	 */
 	public void testEqualsWhenDifferentBeans() {
-		SerializationContext context2 = new SerializationContext(serializer, new HashMap<String, Object>(), propertyResolver);
+		SerializationContext context2 = new SerializationContext(serializer, new HashMap<String, Object>(), propertyResolver, false);
 		replay(serializer, propertyResolver);
 		assertFalse(context.equals(context2));
 		verify(serializer, propertyResolver);
@@ -119,7 +119,7 @@ public class SerializationContextTest extends TestCase {
 	 */
 	public void testEqualsWhenDifferentResolver() {
 		PropertyResolver propertyResolver2 = createMock(PropertyResolver.class);
-		SerializationContext context2 = new SerializationContext(serializer, beans, propertyResolver2);
+		SerializationContext context2 = new SerializationContext(serializer, beans, propertyResolver2, false);
 		replay(serializer, propertyResolver, propertyResolver2);
 		assertFalse(context.equals(context2));
 		verify(serializer, propertyResolver, propertyResolver2);

@@ -35,7 +35,7 @@ public class ReferenceSerializationTest extends TestCase {
 	public void testHandle() throws Exception {
 		Serialization referenced = createMock(Serialization.class); 
 		Writer serializer = createMock(Writer.class);
-		SerializationContext ctx = new SerializationContext(serializer, new HashMap<String, Object>(), null);
+		SerializationContext ctx = new SerializationContext(serializer, new HashMap<String, Object>(), null, false);
 		Object object = new Object();
 		serialization.setReferenced(referenced);
 		expect(referenced.serialize(object, ctx)).andReturn("<name>John Doe</name>");

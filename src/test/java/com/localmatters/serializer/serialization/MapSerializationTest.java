@@ -38,7 +38,7 @@ public class MapSerializationTest extends TestCase {
 		serialization.setKey(keySerialization);
 		serialization.setValue(valueSerialization);
 		serializer = createMock(Writer.class);
-		ctx = new SerializationContext(serializer, new HashMap<String, Object>(), null);
+		ctx = new SerializationContext(serializer, new HashMap<String, Object>(), null, false);
 	}
 
 	/**

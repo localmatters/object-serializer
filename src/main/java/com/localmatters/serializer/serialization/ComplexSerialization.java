@@ -26,6 +26,9 @@ public class ComplexSerialization extends AbstractSerialization {
 	 * @return The attributes serializations
 	 */
 	public List<Serialization> getAttributes() {
+		if (attributes == null) {
+			setAttributes(new ArrayList<Serialization>());
+		}
 		return attributes;
 	}
 
@@ -34,9 +37,6 @@ public class ComplexSerialization extends AbstractSerialization {
 	 * @param attribute The attribute serialization to add
 	 */
 	public void addAttribute(Serialization attribute) {
-		if (getAttributes() == null) {
-			setAttributes(new ArrayList<Serialization>());
-		}
 		getAttributes().add(attribute);
 	}
 	
@@ -51,6 +51,9 @@ public class ComplexSerialization extends AbstractSerialization {
 	 * @return The (sub-)elements serializations
 	 */
 	public List<Serialization> getElements() {
+		if (elements == null) {
+			setElements(new ArrayList<Serialization>());
+		}
 		return elements;
 	}
 
@@ -59,9 +62,6 @@ public class ComplexSerialization extends AbstractSerialization {
 	 * @param element The element serialization to add
 	 */
 	public void addElement(Serialization element) {
-		if (getElements() == null) {
-			setElements(new ArrayList<Serialization>());
-		}
 		getElements().add(element);
 	}
 

@@ -28,6 +28,18 @@ public interface Writer {
 			SerializationContext context) throws SerializationException;
 
 	/**
+	 * Writes a comment
+	 * @param serialization The root serialization
+	 * @param comment The comment to write
+	 * @param context The serialization context
+	 * @return The resulting string
+	 * @throws SerializationException When the serialization fails
+	 */
+	public String writeComment(Serialization serialization, 
+			String comment, 
+			SerializationContext context) throws SerializationException;
+
+	/**
 	 * Writes the given value
 	 * @param serialization The value serialization
 	 * @param value The value to serialize

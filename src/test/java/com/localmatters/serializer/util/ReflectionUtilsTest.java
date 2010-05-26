@@ -24,6 +24,13 @@ import com.localmatters.serializer.test.DummyObject.Orders;
 public class ReflectionUtilsTest extends TestCase {
 
 	/**
+	 * Tests the instantiation of this class (for code completion)
+	 */
+	public void testInstantiation() {
+		assertNotNull(new ReflectionUtils() {});
+	}
+	
+	/**
 	 * Tests getting the primitive class
 	 */
 	public void testGetPrimitiveClass() {
@@ -201,21 +208,23 @@ public class ReflectionUtilsTest extends TestCase {
 	 */
 	public void testGetGetters() {
 		Collection<Method> getters = ReflectionUtils.getGetters(DummyObject.class);
-		assertEquals(5, CollectionUtils.size(getters));
+		assertEquals(6, CollectionUtils.size(getters));
 		Iterator<Method> itr = getters.iterator();
 		assertEquals("getAddresses", itr.next().getName());
 		assertEquals("getId", itr.next().getName());
 		assertEquals("getName", itr.next().getName());
 		assertEquals("getOrders", itr.next().getName());
 		assertEquals("getOrdersAsList", itr.next().getName());
+		assertEquals("getOrdersByAddresses", itr.next().getName());
 		assertFalse(itr.hasNext());
 		
 		getters = ReflectionUtils.getGetters(Address.class);
-		assertEquals(4, CollectionUtils.size(getters));
+		assertEquals(5, CollectionUtils.size(getters));
 		itr = getters.iterator();
 		assertEquals("getCity", itr.next().getName());
 		assertEquals("getState", itr.next().getName());
 		assertEquals("getStreet", itr.next().getName());
+		assertEquals("getZ", itr.next().getName());
 		assertEquals("getZip", itr.next().getName());
 		assertFalse(itr.hasNext());
 		
@@ -224,6 +233,23 @@ public class ReflectionUtilsTest extends TestCase {
 		itr = getters.iterator();
 		assertEquals("isEmpty", itr.next().getName());
 		assertFalse(itr.hasNext());
+	}
+	
+	/**
+	 * Tests retrieving the getter methods field name
+	 */
+	public void testGetGetterFieldName() throws Exception {
+		Collection<Method> getters = ReflectionUtils.getGetters(Address.class);
+		assertEquals(5, CollectionUtils.size(getters));
+		Iterator<Method> itr = getters.iterator();
+		assertEquals("city", ReflectionUtils.getGetterFieldName(itr.next()));
+		assertEquals("state", ReflectionUtils.getGetterFieldName(itr.next()));
+		assertEquals("street", ReflectionUtils.getGetterFieldName(itr.next()));
+		assertEquals("z", ReflectionUtils.getGetterFieldName(itr.next()));
+		assertEquals("zip", ReflectionUtils.getGetterFieldName(itr.next()));
+		assertFalse(itr.hasNext());
+		assertNull(ReflectionUtils.getGetterFieldName(Address.class.getMethod("getClass", (Class<?>[]) null)));
+		assertNull(ReflectionUtils.getGetterFieldName(Address.class.getMethod("toString", (Class<?>[]) null)));
 	}
 	
 }

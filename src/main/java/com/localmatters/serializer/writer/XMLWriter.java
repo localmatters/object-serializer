@@ -16,13 +16,14 @@ import com.localmatters.util.CollectionUtils;
  * This class defines a serialization writer that outputs XML.
  */
 public class XMLWriter implements Writer {
-	private static final String ROOT_FORMAT = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n%s";
-	private static final String EMPTY_TAG_FORMAT = "<%s/>";
-	private static final String SIMPLE_TAG_FORMAT = "<%s>%s</%s>";
-	private static final String ATTRIBUTE_ONLY_TAG_FORMAT = "<%s%s/>";
-	private static final String COMPLETE_TAG_FORMAT = "<%s%s>%s</%s>";
+	private static final String ROOT_FORMAT = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>%s";
+	private static final String EMPTY_TAG_FORMAT = "%s<%s/>";
+	private static final String SIMPLE_TAG_FORMAT = "%s<%s>%s%s</%s>";
+	private static final String ATTRIBUTE_ONLY_TAG_FORMAT = "%s<%s%s/>";
+	private static final String COMPLETE_TAG_FORMAT = "%s<%s%s>%s%s</%s>";
 	private static final String EMPTY_ATTRIBUTE_FORMAT = " %s=\"\"";
 	private static final String ATTRIBUTE_FORMAT = " %s=\"%s\"";
+	private static final String COMMENT_FORMAT = "\n%s<!-- %s -->";
 
 	/**
 	 * @see com.localmatters.serializer.writer.Writer#writeRoot(com.localmatters.serializer.serialization.Serialization, java.lang.Object, com.localmatters.serializer.SerializationContext)
@@ -40,18 +41,28 @@ public class XMLWriter implements Writer {
 			String str = String.valueOf(value);
 			if (StringUtils.isNotBlank(str)) {
 				if (StringUtils.isNotBlank(name)) {
-					return String.format(SIMPLE_TAG_FORMAT, name, StringEscapeUtils.escapeXml(str), name);
+					return String.format(SIMPLE_TAG_FORMAT, context.getPrefix(), name, StringEscapeUtils.escapeXml(str), context.getPrefix(), name);
 				} else {
 					return StringEscapeUtils.escapeXml(str);
 				}
 			}
 		}
 		if (serialization.isWriteEmpty() && StringUtils.isNotBlank(name)) {
-			return String.format(EMPTY_TAG_FORMAT, name);
+			return String.format(EMPTY_TAG_FORMAT, context.getPrefix(), name);
 		}
 		return StringUtils.EMPTY;
 	}
 	
+	/**
+	 * @see com.localmatters.serializer.writer.Writer#writeComment(com.localmatters.serializer.serialization.Serialization, java.lang.String, com.localmatters.serializer.SerializationContext)
+	 */
+	public String writeComment(Serialization serialization, String comment, SerializationContext context) {
+		if (StringUtils.isNotBlank(comment) || serialization.isWriteEmpty()) {
+			return String.format(COMMENT_FORMAT, context.getPrefix(), StringUtils.replace(StringUtils.defaultString(comment), "--", "**"));
+		}
+		return StringUtils.EMPTY;
+	}
+
 	/**
 	 * @see com.localmatters.serializer.writer.Writer#writeComplex(com.localmatters.serializer.serialization.Serialization, java.util.Collection, java.util.Collection, java.lang.Object, com.localmatters.serializer.SerializationContext)
 	 */
@@ -73,19 +84,19 @@ public class XMLWriter implements Writer {
 			}
 			
 			if ((attributes.length() == 0) && (elements.length() == 0)) {
-				return String.format(EMPTY_TAG_FORMAT, name);
+				return String.format(EMPTY_TAG_FORMAT, context.getPrefix(), name);
 			}
 			if (attributes.length() == 0) {
-				return String.format(SIMPLE_TAG_FORMAT, name, elements, name);
+				return String.format(SIMPLE_TAG_FORMAT, context.getPrefix(), name, elements, context.getPrefix(), name);
 			}
 			if (elements.length() == 0) {
-				return String.format(ATTRIBUTE_ONLY_TAG_FORMAT, name, attributes, name);
+				return String.format(ATTRIBUTE_ONLY_TAG_FORMAT, context.getPrefix(), name, attributes, name);
 			}
-			return String.format(COMPLETE_TAG_FORMAT, name, attributes, elements, name);
+			return String.format(COMPLETE_TAG_FORMAT, context.getPrefix(), name, attributes, elements, context.getPrefix(), name);
 			
 		}
 		if (serialization.isWriteEmpty()) {
-			return String.format(EMPTY_TAG_FORMAT, name);
+			return String.format(EMPTY_TAG_FORMAT, context.getPrefix(), name);
 		}
 		return StringUtils.EMPTY;
 	}
@@ -116,11 +127,11 @@ public class XMLWriter implements Writer {
 			}
 			if (sb.length() > 0) {
 				String name = serialization.getName();
-				return String.format(SIMPLE_TAG_FORMAT, name, sb, name);
+				return String.format(SIMPLE_TAG_FORMAT, context.getPrefix(), name, sb, context.getPrefix(), name);
 			}
 		} 
 		if (serialization.isWriteEmpty()) {
-			return String.format(EMPTY_TAG_FORMAT, serialization.getName());
+			return String.format(EMPTY_TAG_FORMAT, context.getPrefix(), serialization.getName());
 		}
 		return StringUtils.EMPTY;
 	}
@@ -134,14 +145,14 @@ public class XMLWriter implements Writer {
 			for (Map.Entry<?, ?> entry : map.entrySet()) {
 				String key = keySerialization.serialize(entry.getKey(), context.appendMap());
 				String value = valueSerialization.serialize(entry.getValue(), context.appendMap(key));
-				sb.append(String.format(SIMPLE_TAG_FORMAT, key, value, key));
+				sb.append(String.format(SIMPLE_TAG_FORMAT, context.getPrefix(), key, value, context.getPrefix(), key));
 			}
 
 			String name = serialization.getName();
-			return String.format(SIMPLE_TAG_FORMAT, name, sb, name);
+			return String.format(SIMPLE_TAG_FORMAT, context.getPrefix(), name, sb, context.getPrefix(), name);
 		}
 		if (serialization.isWriteEmpty()) {
-			return String.format(EMPTY_TAG_FORMAT, serialization.getName());
+			return String.format(EMPTY_TAG_FORMAT, context.getPrefix(), serialization.getName());
 		}
 		return StringUtils.EMPTY;
 	}

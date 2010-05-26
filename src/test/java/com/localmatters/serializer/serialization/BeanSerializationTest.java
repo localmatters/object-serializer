@@ -39,7 +39,7 @@ public class BeanSerializationTest extends TestCase {
 		serializer = createMock(Writer.class);
 		object = new Object();
 		beans = new HashMap<String, Object>();
-		ctx = new SerializationContext(serializer, beans, null);
+		ctx = new SerializationContext(serializer, beans, null, false);
 	}
 
 	/**

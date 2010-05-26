@@ -39,7 +39,7 @@ public class PropertySerializationTest extends TestCase {
 		serialization.setDelegate(delegate);
 		serializer = createMock(Writer.class);
 		object = new Object();
-		ctx = new SerializationContext(serializer, new HashMap<String, Object>(), resolver);
+		ctx = new SerializationContext(serializer, new HashMap<String, Object>(), resolver, false);
 	}
 
 	/**

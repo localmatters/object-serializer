@@ -16,13 +16,13 @@ import junit.framework.TestCase;
 import org.apache.commons.lang.StringUtils;
 
 import com.localmatters.serializer.SerializationContext;
+import com.localmatters.serializer.serialization.CommentSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
 import com.localmatters.serializer.serialization.IteratorSerialization;
 import com.localmatters.serializer.serialization.MapSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
 import com.localmatters.serializer.test.DummyObject;
-import com.localmatters.serializer.writer.XMLWriter;
 import com.localmatters.util.CollectionUtils;
 
 /**
@@ -38,7 +38,7 @@ public class XMLWriterTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		writer = new XMLWriter();
-		ctx = new SerializationContext(writer, new HashMap<String, Object>(), null);
+		ctx = new SerializationContext(writer, new HashMap<String, Object>(), null, false);
 	}
 	
 	/**
@@ -51,7 +51,42 @@ public class XMLWriterTest extends TestCase {
 		replay(serialization);
 		String result = writer.writeRoot(serialization, root, ctx);
 		verify(serialization);
-		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<listing/>", result);
+		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><listing/>", result);
+	}
+	
+	/**
+	 * Tests serializing a null comment that should not be written
+	 */
+	public void testCommentWhenNullAndNotWrite() {
+		CommentSerialization serialization = createMock(CommentSerialization.class);
+		expect(serialization.isWriteEmpty()).andReturn(false);
+		replay(serialization);
+		String result = writer.writeComment(serialization, null, ctx);
+		verify(serialization);
+		assertEquals(StringUtils.EMPTY, result);
+	}
+	
+	/**
+	 * Tests serializing a null comment that should be written
+	 */
+	public void testCommentWhenNullAndWrite() {
+		CommentSerialization serialization = createMock(CommentSerialization.class);
+		expect(serialization.isWriteEmpty()).andReturn(true);
+		replay(serialization);
+		String result = writer.writeComment(serialization, null, ctx);
+		verify(serialization);
+		assertEquals("\n<!--  -->", result);
+	}
+	
+	/**
+	 * Tests serializing a comment
+	 */
+	public void testComment() {
+		CommentSerialization serialization = createMock(CommentSerialization.class);
+		replay(serialization);
+		String result = writer.writeComment(serialization, "Hello -- World", ctx);
+		verify(serialization);
+		assertEquals("\n<!-- Hello ** World -->", result);
 	}
 	
 	/**

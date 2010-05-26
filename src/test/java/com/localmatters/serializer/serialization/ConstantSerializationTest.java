@@ -5,9 +5,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -15,14 +13,14 @@ import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.writer.Writer;
 
 /**
- * Tests the <code>ComplexSerialization</code>
+ * Tests the <code>ConstantSerialization</code>
  */
-public class ComplexSerializationTest extends TestCase {
-	private ComplexSerialization serialization;
-	private List<Serialization> attributes;
-	private List<Serialization> elements;
+public class ConstantSerializationTest extends TestCase {
+	private ConstantSerialization serialization;
+	private Serialization delegate;
 	private Writer serializer;
 	private Object object;
+	private Object constant;
 	private SerializationContext ctx;
 	
 	/**
@@ -30,25 +28,24 @@ public class ComplexSerializationTest extends TestCase {
 	 */
 	@Override
 	protected void setUp() throws Exception {
-		attributes = new ArrayList<Serialization>();
-		elements = new ArrayList<Serialization>();
-		serialization = new ComplexSerialization();
-		serialization.setName("listing");
-		serialization.setAttributes(attributes);
-		serialization.setElements(elements);
+		delegate = createMock(Serialization.class); 
+		constant = new Object();
+		serialization = new ConstantSerialization();
+		serialization.setConstant(constant);
+		serialization.setDelegate(delegate);
 		serializer = createMock(Writer.class);
 		object = new Object();
 		ctx = new SerializationContext(serializer, new HashMap<String, Object>(), null, false);
 	}
-	
+
 	/**
 	 * Tests the serialization
 	 */
 	public void testHandle() throws Exception {
-		expect(serializer.writeComplex(serialization, attributes, elements, object, ctx.appendSegment("listing"))).andReturn("<listing/>");
-		replay(serializer);
+		expect(delegate.serialize(constant, ctx)).andReturn("<type>home</type>");
+		replay(delegate, serializer);
 		String result = serialization.serialize(object, ctx);
-		verify(serializer);
-		assertEquals("<listing/>", result);
+		verify(delegate, serializer);
+		assertEquals("<type>home</type>", result);
 	}
 }

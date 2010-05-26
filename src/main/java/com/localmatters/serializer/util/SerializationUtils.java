@@ -5,8 +5,8 @@ package com.localmatters.serializer.util;
 
 import com.localmatters.serializer.serialization.AttributeSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
+import com.localmatters.serializer.serialization.ConstantSerialization;
 import com.localmatters.serializer.serialization.PropertySerialization;
-import com.localmatters.serializer.serialization.Serialization;
 
 /**
  * Class offering utils methods to create, work with <code>Serialization</code>.
@@ -31,9 +31,23 @@ public abstract class SerializationUtils {
 	 * @param property The property
 	 * @return The corresponding serialization
 	 */
-	public static Serialization createAttribute(String name, String property) {
+	public static PropertySerialization createPropertyAttribute(String name, String property) {
 		PropertySerialization serialization = new PropertySerialization();
 		serialization.setProperty(property);
+		serialization.setDelegate(createAttribute(name));
+		return serialization;
+	}
+
+	/**
+	 * Creates a new attribute serialization with the given name and constant
+	 * value
+	 * @param name The name of the serialization
+	 * @param constant The constant
+	 * @return The corresponding serialization
+	 */
+	public static ConstantSerialization createConstantAttribute(String name, Object constant) {
+		ConstantSerialization serialization = new ConstantSerialization();
+		serialization.setConstant(constant);
 		serialization.setDelegate(createAttribute(name));
 		return serialization;
 	}

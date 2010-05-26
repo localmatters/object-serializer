@@ -12,6 +12,7 @@ public class DummyObject {
 	private String name;
 	private Orders orders;
 	private Map<String, Address> addresses;
+	private Map<Address, Orders> ordersByAddresses;
 	
 	/**
 	 * @return The id
@@ -77,6 +78,20 @@ public class DummyObject {
 	}
 
 	/**
+	 * @return The ordersByAddresses
+	 */
+	public Map<Address, Orders> getOrdersByAddresses() {
+		return ordersByAddresses;
+	}
+
+	/**
+	 * @param ordersByAddresses The odersByAddresses to set
+	 */
+	public void setOrdersByAddresses(Map<Address, Orders> ordersByAddresses) {
+		this.ordersByAddresses = ordersByAddresses;
+	}
+
+	/**
 	 * The address class
 	 */
 	public class Address {
@@ -84,48 +99,63 @@ public class DummyObject {
 		private String zip;
 		private String city;
 		private String state;
+		
 		/**
 		 * @return The street
 		 */
 		public String getStreet() {
 			return street;
 		}
+		
 		/**
 		 * @param street The street to set
 		 */
 		public void setStreet(String street) {
 			this.street = street;
 		}
+		
 		/**
 		 * @return The zip
 		 */
 		public String getZip() {
 			return zip;
 		}
+		
+		/**
+		 * @return The zip
+		 */
+		public String getZ() {
+			return zip;
+		}
+		
 		/**
 		 * @param zip The zip to set
 		 */
 		public void setZip(String zip) {
 			this.zip = zip;
 		}
+		
 		/**
 		 * @return The city
 		 */
 		public String getCity() {
 			return city;
 		}
+		
 		/**
 		 * @param city The city to set
 		 */
 		public void setCity(String city) {
 			this.city = city;
 		}
+		
 		/**
 		 * @return The state
 		 */
 		public String getState() {
 			return state;
 		}
+		
 		/**
 		 * @param state The state to set
 		 */

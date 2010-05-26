@@ -16,6 +16,7 @@ import junit.framework.TestCase;
 import org.apache.commons.lang.StringUtils;
 
 import com.localmatters.serializer.SerializationContext;
+import com.localmatters.serializer.serialization.CommentSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
 import com.localmatters.serializer.serialization.IteratorSerialization;
 import com.localmatters.serializer.serialization.MapSerialization;
@@ -38,7 +39,7 @@ public class JSONWriterTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		writer = new JSONWriter();
-		ctx = new SerializationContext(writer, new HashMap<String, Object>(), null);
+		ctx = new SerializationContext(writer, new HashMap<String, Object>(), null, false);
 	}
 	
 	/**
@@ -55,6 +56,17 @@ public class JSONWriterTest extends TestCase {
 		assertEquals("{\"listing\":{}}", result);
 	}
 	
+	/**
+	 * Tests serializing a comment
+	 */
+	public void testComment() {
+		CommentSerialization serialization = createMock(CommentSerialization.class);
+		replay(serialization);
+		String result = writer.writeComment(serialization, null, ctx);
+		verify(serialization);
+		assertEquals(StringUtils.EMPTY, result);
+	}
+
 	/**
 	 * Tests serializing a null value that should not be written
 	 */

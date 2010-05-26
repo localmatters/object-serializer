@@ -37,6 +37,14 @@ public class JSONWriter implements Writer {
 	}
 
 	/**
+	 * @see com.localmatters.serializer.writer.Writer#writeComment(com.localmatters.serializer.serialization.Serialization, java.lang.String, com.localmatters.serializer.SerializationContext)
+	 */
+	public String writeComment(Serialization serialization, String comment, SerializationContext context) {
+		// not supported at the moment
+		return StringUtils.EMPTY;
+	}
+
+	/**
 	 * @see com.localmatters.serializer.writer.Writer#writeValue(com.localmatters.serializer.serialization.Serialization, java.lang.Object, java.lang.String)
 	 */
 	public String writeValue(Serialization serialization, Object value, SerializationContext context) {

@@ -31,7 +31,7 @@ public class ValueSerializationTest extends TestCase {
 		serialization.setName("name");
 		serializer = createMock(Writer.class);
 		value = new Object();
-		ctx = new SerializationContext(serializer, new HashMap<String, Object>(), null);
+		ctx = new SerializationContext(serializer, new HashMap<String, Object>(), null, false);
 	}
 	
 	/**

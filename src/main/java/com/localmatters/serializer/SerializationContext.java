@@ -14,6 +14,7 @@ import com.localmatters.serializer.writer.Writer;
  * path as the other elements should be the same (instance equality).
  */
 public class SerializationContext {
+	private static final String INDENTATION = "   ";
 	private static final String SEPARATOR = ".";
 	private static final String MAP = "{}";
 	private static final String INDEX_FORMAT = "[%d]";
@@ -22,16 +23,18 @@ public class SerializationContext {
 	private Writer writer;
 	private PropertyResolver propertyResolver;
 	private Map<String, Object> beans;
+	private boolean pretty = false;
+	private String prefix = "";
 
 	/**
 	 * Default constructor
 	 * @param writer The writer
 	 * @param beans The map of beans available to the serialization
 	 * @param propertyResolver The resolver to resolve the property of an object
-	 * @param path The path to this level
+	 * @param pretty Whether the output should be formatted and with comments
 	 */
-	public SerializationContext(Writer writer, Map<String, Object> beans, PropertyResolver propertyResolver) {
-		this(writer, beans, propertyResolver, StringUtils.EMPTY);
+	public SerializationContext(Writer writer, Map<String, Object> beans, PropertyResolver propertyResolver, boolean pretty) {
+		this(writer, beans, propertyResolver, pretty, StringUtils.EMPTY);
 	}
 
 	/**
@@ -40,13 +43,22 @@ public class SerializationContext {
 	 * @param serializer The serializer
 	 * @param beans The map of beans available to the serialization
 	 * @param propertyResolver The resolver to resolve the property of an object
+	 * @param pretty Whether the output should be formatted and with comments
 	 * @param path The path to this level
 	 */
-	protected SerializationContext(Writer serializer, Map<String, Object> beans, PropertyResolver propertyResolver, String path) {
+	protected SerializationContext(Writer serializer, Map<String, Object> beans, PropertyResolver propertyResolver, boolean pretty, String path) {
 		setWriter(serializer);
 		setBeans(beans);
 		setPropertyResolver(propertyResolver);
 		setPath(path);
+		setPretty(pretty);
+		if (isPretty() && StringUtils.isNotBlank(path)) {
+			int count = StringUtils.countMatches(path, SEPARATOR);
+			prefix = "\n";
+			for (int i=0; i<count; i++) {
+				prefix += INDENTATION;
+			}
+		}
 	}
 	
 	/**
@@ -56,7 +68,7 @@ public class SerializationContext {
 	 * extension
 	 */
 	private SerializationContext append(String extension) {
-		return new SerializationContext(getWriter(), getBeans(), getPropertyResolver(), getPath() + extension);
+		return new SerializationContext(getWriter(), getBeans(), getPropertyResolver(), isPretty(), getPath() + extension);
 	}
 	
 	/**
@@ -69,7 +81,7 @@ public class SerializationContext {
 		if (StringUtils.isNotBlank(getPath())) {
 			return append(SEPARATOR + segment);
 		}
-		return new SerializationContext(getWriter(), getBeans(), getPropertyResolver(), segment);
+		return new SerializationContext(getWriter(), getBeans(), getPropertyResolver(), isPretty(), segment);
 	}
 	
 	/**
@@ -213,5 +225,26 @@ public class SerializationContext {
 	 */
 	public void setPropertyResolver(PropertyResolver propertyResolver) {
 		this.propertyResolver = propertyResolver;
+	}
+
+	/**
+	 * @return Whether the output should be formatted and with comments
+	 */
+	public boolean isPretty() {
+		return pretty;
+	}
+
+	/**
+	 * @param pretty Whether the output should be formatted and with comments
+	 */
+	private void setPretty(boolean pretty) {
+		this.pretty = pretty;
+	}
+
+	/**
+	 * @return The prefix to format the output
+	 */
+	public String getPrefix() {
+		return prefix;
 	}
 }

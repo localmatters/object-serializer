@@ -1,6 +1,7 @@
 package com.localmatters.serializer.config;
 
 import static com.localmatters.serializer.config.SerializationElementHandler.ATTRIBUTE_BEAN;
+import static com.localmatters.serializer.config.SerializationElementHandler.ATTRIBUTE_CONSTANT;
 import static com.localmatters.serializer.config.SerializationElementHandler.ATTRIBUTE_DISPLAY_EMPTY;
 import static com.localmatters.serializer.config.SerializationElementHandler.ATTRIBUTE_ID;
 import static com.localmatters.serializer.config.SerializationElementHandler.ATTRIBUTE_KEY;
@@ -37,11 +38,10 @@ import junit.framework.TestCase;
 
 import org.dom4j.Element;
 
-import com.localmatters.serializer.config.ConfigurationException;
-import com.localmatters.serializer.config.SerializationElementHandler;
 import com.localmatters.serializer.serialization.AttributeSerialization;
 import com.localmatters.serializer.serialization.BeanSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
+import com.localmatters.serializer.serialization.ConstantSerialization;
 import com.localmatters.serializer.serialization.IteratorSerialization;
 import com.localmatters.serializer.serialization.MapSerialization;
 import com.localmatters.serializer.serialization.PropertySerialization;
@@ -112,6 +112,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		ValueSerialization serialization = new ValueSerialization();
 
 		expect(element.attributeValue(ATTRIBUTE_ID)).andReturn("12345");
+		expect(element.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(element.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
 		expect(element.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
 		expect(element.attributeValue(ATTRIBUTE_NAME)).andReturn("amount");
@@ -126,6 +127,34 @@ public class SerializationElementHandlerTest extends TestCase {
 
 		assertSame(serialization, result);
 		assertEquals(1, CollectionUtils.sizeOf(handler.getSerializations()));
+	}
+	
+	/**
+	 * Tests the <code>handleConstant</code> method
+	 */
+	public void testHandleConstant() {
+		ConstantSerialization serialization = new ConstantSerialization();
+		ValueSerialization valueConfig = new ValueSerialization();
+
+		expect(element.attributeValue(ATTRIBUTE_CONSTANT)).andReturn("abcd1234");
+		expect(element.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
+		expect(element.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
+		expect(element.attributeValue(ATTRIBUTE_NAME)).andReturn("amount");
+		expect(element.getName()).andReturn(TYPE_VALUE);
+		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
+		expect(factory.create(ValueSerialization.class)).andReturn(valueConfig);
+		expect(factory.create(ConstantSerialization.class)).andReturn(serialization);
+		expect(element.attributes()).andReturn(CollectionUtils.asList("abcd1234", "amount"));
+
+		replay(factory, element);
+		Serialization result = handler.handleConstant(element, attributes);
+		verify(factory, element);
+
+		assertSame(serialization, result);
+		assertEquals("abcd1234", serialization.getConstant());
+		assertSame(valueConfig, serialization.getDelegate());
+		assertEquals(valueConfig.getName(), serialization.getName());
+		assertEquals(valueConfig.isWriteEmpty(), serialization.isWriteEmpty());
 	}
 	
 	/**
@@ -149,6 +178,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		verify(factory, element);
 
 		assertSame(serialization, result);
+		assertEquals("searchResults", serialization.getBean());
 		assertSame(valueConfig, serialization.getDelegate());
 		assertEquals(valueConfig.getName(), serialization.getName());
 		assertEquals(valueConfig.isWriteEmpty(), serialization.isWriteEmpty());
@@ -174,6 +204,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		verify(factory, element);
 
 		assertSame(serialization, result);
+		assertEquals("address.street", serialization.getProperty());
 		assertSame(valueConfig, serialization.getDelegate());
 		assertEquals(valueConfig.getName(), serialization.getName());
 		assertEquals(valueConfig.isWriteEmpty(), serialization.isWriteEmpty());
@@ -313,6 +344,7 @@ public class SerializationElementHandlerTest extends TestCase {
 
 		expect(element.elements()).andReturn(CollectionUtils.asList(child));
 		expect(child.attributeValue(ATTRIBUTE_ID)).andReturn(null);
+		expect(child.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_NAME)).andReturn("amount");
@@ -344,6 +376,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(element.getName()).andReturn(TYPE_LIST);
 		expect(element.elements()).andReturn(CollectionUtils.asList(child));
 		expect(child.attributeValue(ATTRIBUTE_ID)).andReturn(null);
+		expect(child.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_NAME)).andReturn("amount");
@@ -394,6 +427,7 @@ public class SerializationElementHandlerTest extends TestCase {
 
 		expect(element.elements()).andReturn(CollectionUtils.asList(child));
 		expect(child.attributeValue(ATTRIBUTE_ID)).andReturn(null);
+		expect(child.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_NAME)).andReturn("amount");
@@ -430,6 +464,7 @@ public class SerializationElementHandlerTest extends TestCase {
 
 		expect(element.elements()).andReturn(CollectionUtils.asList(child));
 		expect(child.attributeValue(ATTRIBUTE_ID)).andReturn(null);
+		expect(child.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_NAME)).andReturn("amount");
@@ -472,6 +507,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(element.getName()).andReturn(TYPE_MAP);
 		expect(element.elements()).andReturn(CollectionUtils.asList(child));
 		expect(child.attributeValue(ATTRIBUTE_ID)).andReturn(null);
+		expect(child.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_NAME)).andReturn("amount");
@@ -574,6 +610,7 @@ public class SerializationElementHandlerTest extends TestCase {
 
 		expect(element.elements()).andReturn(CollectionUtils.asList(attribute, subElement));
 		expect(attribute.attributeValue(ATTRIBUTE_ID)).andReturn(null);
+		expect(attribute.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(attribute.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
 		expect(attribute.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
 		expect(attribute.attributeValue(ATTRIBUTE_NAME)).andReturn("amount");
@@ -585,6 +622,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(factory.create(AttributeSerialization.class)).andReturn(attributeConfig);
 		expect(attribute.getName()).andReturn(TYPE_ATTRIBUTE);
 		expect(subElement.attributeValue(ATTRIBUTE_ID)).andReturn(null);
+		expect(subElement.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(subElement.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
 		expect(subElement.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
 		expect(subElement.attributeValue(ATTRIBUTE_NAME)).andReturn("order");

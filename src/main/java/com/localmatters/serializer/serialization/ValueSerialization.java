@@ -12,7 +12,7 @@ public class ValueSerialization extends AbstractSerialization {
 	 * @see com.localmatters.serializer.serialization.Serialization#serialize(java.lang.Object, com.localmatters.serializer.SerializationContext)
 	 */
 	public String serialize(Object obj, SerializationContext context) throws SerializationException {
-		return context.getSerializer().writeValue(this, obj, context.appendSegment(getName()));
+		return context.getWriter().writeValue(this, obj, context.appendSegment(getName()));
 	}
 
 }

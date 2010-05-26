@@ -38,7 +38,7 @@ public class IteratorSerializationTest extends TestCase {
 		elementSerialization = createMock(Serialization.class);
 		serialization = new IteratorSerialization();
 		serialization.setName("orders");
-		serialization.setElementSerialization(elementSerialization);
+		serialization.setElement(elementSerialization);
 		serializer = createMock(Writer.class);
 		ctx = new SerializationContext(serializer, new HashMap<String, Object>(), null);
 	}

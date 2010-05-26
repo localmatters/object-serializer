@@ -1,6 +1,7 @@
 package com.localmatters.serializer.serialization;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.SerializationException;
@@ -11,41 +12,63 @@ import com.localmatters.serializer.SerializationException;
  * can have attributes and sub-elements.
  */
 public class ComplexSerialization extends AbstractSerialization {
-	private Collection<Serialization> attributeSerializations;
-	private Collection<Serialization> elementSerializations;
+	private List<Serialization> attributes;
+	private List<Serialization> elements;
 	
 	/**
 	 * @see com.localmatters.serializer.serialization.Serialization#serialize(java.lang.Object, com.localmatters.serializer.SerializationContext)
 	 */
 	public String serialize(Object obj, SerializationContext context) throws SerializationException {
-		return context.getSerializer().writeComplex(this, getAttributeSerializations(), getElementSerializations(), obj, context.appendSegment(getName()));
+		return context.getWriter().writeComplex(this, getAttributes(), getElements(), obj, context.appendSegment(getName()));
 	}
 
 	/**
 	 * @return The attributes serializations
 	 */
-	public Collection<Serialization> getAttributeSerializations() {
-		return attributeSerializations;
+	public List<Serialization> getAttributes() {
+		return attributes;
 	}
 
 	/**
-	 * @param attributeSerializations The attributes serializations
+	 * Adds the given attribute serialization
+	 * @param attribute The attribute serialization to add
 	 */
-	public void setAttributeSerializations(Collection<Serialization> attributeSerializations) {
-		this.attributeSerializations = attributeSerializations;
+	public void addAttribute(Serialization attribute) {
+		if (getAttributes() == null) {
+			setAttributes(new ArrayList<Serialization>());
+		}
+		getAttributes().add(attribute);
+	}
+	
+	/**
+	 * @param attributes The attributes serializations
+	 */
+	public void setAttributes(List<Serialization> attributes) {
+		this.attributes = attributes;
 	}
 
 	/**
 	 * @return The (sub-)elements serializations
 	 */
-	public Collection<Serialization> getElementSerializations() {
-		return elementSerializations;
+	public List<Serialization> getElements() {
+		return elements;
 	}
 
 	/**
-	 * @param elementSerializations The (sub-)elements serializations
+	 * Adds the given element serialization
+	 * @param element The element serialization to add
 	 */
-	public void setElementSerializations(Collection<Serialization> elementSerializations) {
-		this.elementSerializations = elementSerializations;
+	public void addElement(Serialization element) {
+		if (getElements() == null) {
+			setElements(new ArrayList<Serialization>());
+		}
+		getElements().add(element);
+	}
+
+	/**
+	 * @param elements The (sub-)elements serializations
+	 */
+	public void setElements(List<Serialization> elements) {
+		this.elements = elements;
 	}
 }

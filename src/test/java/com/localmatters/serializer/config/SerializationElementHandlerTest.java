@@ -92,7 +92,7 @@ public class SerializationElementHandlerTest extends TestCase {
 	 */
 	public void testHandleIdWhenDuplicate() {
 		ValueSerialization serialization = new ValueSerialization();
-		handler.getConfigs().put("12345", serialization);
+		handler.getSerializations().put("12345", serialization);
 
 		expect(element.attributeValue(ATTRIBUTE_ID)).andReturn("12345");
 		replay(factory, element);
@@ -125,7 +125,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		verify(factory, element);
 
 		assertSame(serialization, result);
-		assertEquals(1, CollectionUtils.sizeOf(handler.getConfigs()));
+		assertEquals(1, CollectionUtils.sizeOf(handler.getSerializations()));
 	}
 	
 	/**
@@ -327,7 +327,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		verify(factory, element, child);
 
 		assertSame(serialization, result);
-		assertSame(elementConfig, serialization.getElementSerialization());
+		assertSame(elementConfig, serialization.getElement());
 		assertEquals("amount", elementConfig.getName());
 		assertTrue(elementConfig.isWriteEmpty());
 	}
@@ -362,7 +362,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		assertSame(serialization, result);
 		assertEquals("orders", serialization.getName());
 		assertFalse(serialization.isWriteEmpty());
-		assertSame(elementConfig, serialization.getElementSerialization());
+		assertSame(elementConfig, serialization.getElement());
 		assertEquals("amount", elementConfig.getName());
 		assertTrue(elementConfig.isWriteEmpty());
 	}
@@ -410,10 +410,10 @@ public class SerializationElementHandlerTest extends TestCase {
 		verify(factory, element, child);
 
 		assertSame(serialization, result);
-		assertSame(keyConfig, serialization.getKeySerialization());
+		assertSame(keyConfig, serialization.getKey());
 		assertNull(keyConfig.getName());
 		assertTrue(keyConfig.isWriteEmpty());
-		assertSame(valueConfig, serialization.getValueSerialization());
+		assertSame(valueConfig, serialization.getValue());
 		assertEquals("amount", valueConfig.getName());
 		assertTrue(valueConfig.isWriteEmpty());
 	}
@@ -447,13 +447,13 @@ public class SerializationElementHandlerTest extends TestCase {
 		verify(factory, element, child);
 
 		assertSame(serialization, result);
-		assertSame(propertyConfig, serialization.getKeySerialization());
+		assertSame(propertyConfig, serialization.getKey());
 		assertNull(propertyConfig.getName());
 		assertTrue(propertyConfig.isWriteEmpty());
 		assertSame(keyConfig, propertyConfig.getDelegate());
 		assertNull(keyConfig.getName());
 		assertTrue(keyConfig.isWriteEmpty());
-		assertSame(valueConfig, serialization.getValueSerialization());
+		assertSame(valueConfig, serialization.getValue());
 		assertEquals("amount", valueConfig.getName());
 		assertTrue(valueConfig.isWriteEmpty());
 	}
@@ -493,13 +493,13 @@ public class SerializationElementHandlerTest extends TestCase {
 		assertSame(serialization, result);
 		assertEquals("addresses", serialization.getName());
 		assertTrue(serialization.isWriteEmpty());
-		assertSame(propertyConfig, serialization.getKeySerialization());
+		assertSame(propertyConfig, serialization.getKey());
 		assertNull(propertyConfig.getName());
 		assertTrue(propertyConfig.isWriteEmpty());
 		assertSame(keyConfig, propertyConfig.getDelegate());
 		assertNull(keyConfig.getName());
 		assertTrue(keyConfig.isWriteEmpty());
-		assertSame(valueConfig, serialization.getValueSerialization());
+		assertSame(valueConfig, serialization.getValue());
 		assertEquals("amount", valueConfig.getName());
 		assertTrue(valueConfig.isWriteEmpty());
 	}
@@ -600,10 +600,10 @@ public class SerializationElementHandlerTest extends TestCase {
 		verify(factory, element, attribute, subElement);
 
 		assertSame(serialization, result);
-		assertEquals(1, CollectionUtils.sizeOf(serialization.getAttributeSerializations()));
-		assertSame(attributeConfig, serialization.getAttributeSerializations().iterator().next());
-		assertEquals(1, CollectionUtils.sizeOf(serialization.getElementSerializations()));
-		assertSame(subElementConfig, serialization.getElementSerializations().iterator().next());
+		assertEquals(1, CollectionUtils.sizeOf(serialization.getAttributes()));
+		assertSame(attributeConfig, serialization.getAttributes().get(0));
+		assertEquals(1, CollectionUtils.sizeOf(serialization.getElements()));
+		assertSame(subElementConfig, serialization.getElements().get(0));
 	}
 	
 	/**
@@ -622,8 +622,8 @@ public class SerializationElementHandlerTest extends TestCase {
 		verify(factory, element);
 
 		assertSame(serialization, result);
-		assertTrue(CollectionUtils.isEmpty(serialization.getAttributeSerializations()));
-		assertTrue(CollectionUtils.isEmpty(serialization.getElementSerializations()));
+		assertTrue(CollectionUtils.isEmpty(serialization.getAttributes()));
+		assertTrue(CollectionUtils.isEmpty(serialization.getElements()));
 		assertEquals(1, CollectionUtils.sizeOf(handler.getComplexWithIds()));
 		assertSame(serialization, handler.getComplexWithIds().get("54321"));
 		assertEquals(1, CollectionUtils.sizeOf(handler.getExtensions()));
@@ -671,8 +671,8 @@ public class SerializationElementHandlerTest extends TestCase {
 		assertSame(serialization, result);
 		assertEquals("listing", serialization.getName());
 		assertTrue(serialization.isWriteEmpty());
-		assertTrue(CollectionUtils.isEmpty(serialization.getAttributeSerializations()));
-		assertTrue(CollectionUtils.isEmpty(serialization.getElementSerializations()));
+		assertTrue(CollectionUtils.isEmpty(serialization.getAttributes()));
+		assertTrue(CollectionUtils.isEmpty(serialization.getElements()));
 		assertEquals(1, CollectionUtils.sizeOf(handler.getExtensions()));
 		assertEquals("parent", handler.getExtensions().get(serialization));
 	}
@@ -698,8 +698,8 @@ public class SerializationElementHandlerTest extends TestCase {
 		assertSame(serialization, result);
 		assertEquals("listing", serialization.getName());
 		assertTrue(serialization.isWriteEmpty());
-		assertTrue(CollectionUtils.isEmpty(serialization.getAttributeSerializations()));
-		assertTrue(CollectionUtils.isEmpty(serialization.getElementSerializations()));
+		assertTrue(CollectionUtils.isEmpty(serialization.getAttributes()));
+		assertTrue(CollectionUtils.isEmpty(serialization.getElements()));
 	}
 
 	/**
@@ -865,17 +865,17 @@ public class SerializationElementHandlerTest extends TestCase {
 		config1.setWriteEmpty(Boolean.TRUE);
 		Serialization config1Attr = new AttributeSerialization();
 		Serialization config1Ellement = new ValueSerialization();
-		config1.setAttributeSerializations(CollectionUtils.asList(config1Attr));
-		config1.setElementSerializations(CollectionUtils.asList(config1Ellement));
+		config1.setAttributes(CollectionUtils.asList(config1Attr));
+		config1.setElements(CollectionUtils.asList(config1Ellement));
 		ComplexSerialization config2 = new ComplexSerialization();
 		ComplexSerialization config3 = new ComplexSerialization();
 		Serialization config3Attr = new AttributeSerialization();
-		config3.setAttributeSerializations(CollectionUtils.asList(config3Attr));
+		config3.setAttributes(CollectionUtils.asList(config3Attr));
 		ComplexSerialization config4 = new ComplexSerialization();
 		Serialization config4Ellement = new ValueSerialization();
 		config4.setName("config4");
 		config4.setWriteEmpty(Boolean.FALSE);
-		config4.setElementSerializations(CollectionUtils.asList(config4Ellement));
+		config4.setElements(CollectionUtils.asList(config4Ellement));
 		Map<ComplexSerialization, String> extensions = new HashMap<ComplexSerialization, String>(); 
 		extensions.put(config1, "2");
 		extensions.put(config2, "3");
@@ -892,20 +892,20 @@ public class SerializationElementHandlerTest extends TestCase {
 		assertTrue(CollectionUtils.isEmpty(invalid));
 		assertEquals("config4", config4.getName());
 		assertFalse(config4.isWriteEmpty());
-		assertTrue(CollectionUtils.isEmpty(config4.getAttributeSerializations()));
-		assertEquals(CollectionUtils.asList(config4Ellement), config4.getElementSerializations());
+		assertTrue(CollectionUtils.isEmpty(config4.getAttributes()));
+		assertEquals(CollectionUtils.asList(config4Ellement), config4.getElements());
 		assertEquals("config4", config3.getName());
 		assertFalse(config3.isWriteEmpty());
-		assertEquals(CollectionUtils.asList(config3Attr), config3.getAttributeSerializations());
-		assertEquals(CollectionUtils.asList(config4Ellement), config3.getElementSerializations());
+		assertEquals(CollectionUtils.asList(config3Attr), config3.getAttributes());
+		assertEquals(CollectionUtils.asList(config4Ellement), config3.getElements());
 		assertEquals("config4", config2.getName());
 		assertFalse(config2.isWriteEmpty());
-		assertEquals(CollectionUtils.asList(config3Attr), config2.getAttributeSerializations());
-		assertEquals(CollectionUtils.asList(config4Ellement), config2.getElementSerializations());
+		assertEquals(CollectionUtils.asList(config3Attr), config2.getAttributes());
+		assertEquals(CollectionUtils.asList(config4Ellement), config2.getElements());
 		assertEquals("config1", config1.getName());
 		assertTrue(config1.isWriteEmpty());
-		assertEquals(CollectionUtils.asList(config3Attr, config1Attr), config1.getAttributeSerializations());
-		assertEquals(CollectionUtils.asList(config4Ellement, config1Ellement), config1.getElementSerializations());
+		assertEquals(CollectionUtils.asList(config3Attr, config1Attr), config1.getAttributes());
+		assertEquals(CollectionUtils.asList(config4Ellement, config1Ellement), config1.getElements());
 	}
 
 }

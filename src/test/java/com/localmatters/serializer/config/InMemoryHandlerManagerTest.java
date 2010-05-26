@@ -109,13 +109,13 @@ public class InMemoryHandlerManagerTest extends TestCase {
 		
 		// complex
 		ComplexSerialization complex = (ComplexSerialization) delegate;
-		assertEquals(1, CollectionUtils.sizeOf(complex.getAttributeSerializations()));
-		assertEquals(1, CollectionUtils.sizeOf(complex.getElementSerializations()));
-		assertTrue(complex.getAttributeSerializations().iterator().next() instanceof PropertySerialization);
-		assertTrue(complex.getElementSerializations().iterator().next() instanceof ReferenceSerialization);
+		assertEquals(1, CollectionUtils.sizeOf(complex.getAttributes()));
+		assertEquals(1, CollectionUtils.sizeOf(complex.getElements()));
+		assertTrue(complex.getAttributes().get(0) instanceof PropertySerialization);
+		assertTrue(complex.getElements().get(0) instanceof ReferenceSerialization);
 		
 		// attribute property
-		property = (PropertySerialization) complex.getAttributeSerializations().iterator().next();
+		property = (PropertySerialization) complex.getAttributes().iterator().next();
 		assertEquals("businessName", property.getProperty());
 		delegate = property.getDelegate();
 		assertNotNull(delegate);
@@ -124,7 +124,7 @@ public class InMemoryHandlerManagerTest extends TestCase {
 		assertTrue(delegate instanceof AttributeSerialization);
 		
 		// address reference
-		ReferenceSerialization reference = (ReferenceSerialization) complex.getElementSerializations().iterator().next();
+		ReferenceSerialization reference = (ReferenceSerialization) complex.getElements().iterator().next();
 		assertNotNull(reference);
 		assertEquals("listingAddress", reference.getName());
 		assertTrue(reference.isWriteEmpty());

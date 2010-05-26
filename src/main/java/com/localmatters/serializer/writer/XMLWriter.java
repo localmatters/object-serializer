@@ -30,7 +30,7 @@ public class XMLWriter implements Writer {
 	public String writeRoot(Serialization serialization, Object root, SerializationContext context) throws SerializationException {
 		return String.format(ROOT_FORMAT, serialization.serialize(root, context));
 	}
-	
+
 	/**
 	 * @see com.localmatters.serializer.writer.Writer#writeValue(com.localmatters.serializer.serialization.Serialization, java.lang.Object, java.lang.String)
 	 */

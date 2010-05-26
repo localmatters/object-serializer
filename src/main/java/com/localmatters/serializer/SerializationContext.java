@@ -19,19 +19,19 @@ public class SerializationContext {
 	private static final String INDEX_FORMAT = "[%d]";
 	private static final String MAP_FORMAT = "{%s}";
 	private String path;
-	private Writer serializer;
+	private Writer writer;
 	private PropertyResolver propertyResolver;
 	private Map<String, Object> beans;
 
 	/**
 	 * Default constructor
-	 * @param serializer The serializer
+	 * @param writer The writer
 	 * @param beans The map of beans available to the serialization
 	 * @param propertyResolver The resolver to resolve the property of an object
 	 * @param path The path to this level
 	 */
-	public SerializationContext(Writer serializer, Map<String, Object> beans, PropertyResolver propertyResolver) {
-		this(serializer, beans, propertyResolver, StringUtils.EMPTY);
+	public SerializationContext(Writer writer, Map<String, Object> beans, PropertyResolver propertyResolver) {
+		this(writer, beans, propertyResolver, StringUtils.EMPTY);
 	}
 
 	/**
@@ -43,7 +43,7 @@ public class SerializationContext {
 	 * @param path The path to this level
 	 */
 	protected SerializationContext(Writer serializer, Map<String, Object> beans, PropertyResolver propertyResolver, String path) {
-		setSerializer(serializer);
+		setWriter(serializer);
 		setBeans(beans);
 		setPropertyResolver(propertyResolver);
 		setPath(path);
@@ -56,7 +56,7 @@ public class SerializationContext {
 	 * extension
 	 */
 	private SerializationContext append(String extension) {
-		return new SerializationContext(getSerializer(), getBeans(), getPropertyResolver(), getPath() + extension);
+		return new SerializationContext(getWriter(), getBeans(), getPropertyResolver(), getPath() + extension);
 	}
 	
 	/**
@@ -69,7 +69,7 @@ public class SerializationContext {
 		if (StringUtils.isNotBlank(getPath())) {
 			return append(SEPARATOR + segment);
 		}
-		return new SerializationContext(getSerializer(), getBeans(), getPropertyResolver(), segment);
+		return new SerializationContext(getWriter(), getBeans(), getPropertyResolver(), segment);
 	}
 	
 	/**
@@ -140,7 +140,7 @@ public class SerializationContext {
 			// same objects to be equal (and this is the way they are expected
 			// tp be built.
 			return getPath().equals(ctx.getPath()) && 
-				(getSerializer() == ctx.getSerializer()) &&
+				(getWriter() == ctx.getWriter()) &&
 				(getBeans() == ctx.getBeans()) &&
 				(getPropertyResolver() == ctx.getPropertyResolver());
 		}
@@ -153,7 +153,7 @@ public class SerializationContext {
 	@Override
 	public int hashCode() {
 		// see the equals method to see why this is intended
-		return (getPath() + getSerializer() + getBeans() + getPropertyResolver()).hashCode();
+		return (getPath() + getWriter() + getBeans() + getPropertyResolver()).hashCode();
 	}
 	
 	/**
@@ -165,17 +165,17 @@ public class SerializationContext {
 	}
 	
 	/**
-	 * @return The serializer
+	 * @return The writer
 	 */
-	public Writer getSerializer() {
-		return serializer;
+	public Writer getWriter() {
+		return writer;
 	}
 	
 	/**
-	 * @param serializer The serializer
+	 * @param writer The writer
 	 */
-	private void setSerializer(Writer serializer) {
-		this.serializer = serializer;
+	private void setWriter(Writer writer) {
+		this.writer = writer;
 	}
 	
 	/**

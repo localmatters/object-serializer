@@ -14,7 +14,7 @@ public class AttributeSerialization extends ValueSerialization {
 	 */
 	@Override
 	public String serialize(Object obj, SerializationContext context) throws SerializationException {
-		return context.getSerializer().writeAttribute(this, obj, context.appendSegment(getName()));
+		return context.getWriter().writeAttribute(this, obj, context.appendSegment(getName()));
 	}
 
 }

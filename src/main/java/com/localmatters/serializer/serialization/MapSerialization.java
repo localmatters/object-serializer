@@ -13,8 +13,8 @@ import com.localmatters.serializer.SerializationException;
  * keys should be serialized as more complex elements. 
  */
 public class MapSerialization extends AbstractSerialization {
-	private Serialization keySerialization;
-	private Serialization valueSerialization;
+	private Serialization key;
+	private Serialization value;
 
 	/**
 	 * @see com.localmatters.serializer.serialization.Serialization#serialize(java.lang.Object, com.localmatters.serializer.SerializationContext)
@@ -27,34 +27,34 @@ public class MapSerialization extends AbstractSerialization {
 			throw new MapExpectedException(context.appendSegment(getName()));
 		}
 		
-		return context.getSerializer().writeMap(this, getKeySerialization(), getValueSerialization(), map, context.appendSegment(getName()));
+		return context.getWriter().writeMap(this, getKey(), getValue(), map, context.appendSegment(getName()));
 	}
 
 	/**
 	 * @return The keys serialization
 	 */
-	public Serialization getKeySerialization() {
-		return keySerialization;
+	public Serialization getKey() {
+		return key;
 	}
 
 	/**
-	 * @param keySerialization The keys serialization
+	 * @param key The keys serialization
 	 */
-	public void setKeySerialization(Serialization keySerialization) {
-		this.keySerialization = keySerialization;
+	public void setKey(Serialization key) {
+		this.key = key;
 	}
 
 	/**
 	 * @return The values serialization
 	 */
-	public Serialization getValueSerialization() {
-		return valueSerialization;
+	public Serialization getValue() {
+		return value;
 	}
 
 	/**
-	 * @param valueSerialization The values serialization
+	 * @param value The values serialization
 	 */
-	public void setValueSerialization(Serialization valueSerialization) {
-		this.valueSerialization = valueSerialization;
+	public void setValue(Serialization value) {
+		this.value = value;
 	}
 }

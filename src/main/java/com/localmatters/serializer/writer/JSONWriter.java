@@ -3,13 +3,13 @@ package com.localmatters.serializer.writer;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.SerializationException;
 import com.localmatters.serializer.serialization.Serialization;
+import com.localmatters.serializer.util.ReflectionUtils;
 import com.localmatters.util.CollectionUtils;
 import com.localmatters.util.StringUtils;
 
@@ -17,8 +17,6 @@ import com.localmatters.util.StringUtils;
  * This class defines a serialization writer that outputs JSON.
  */
 public class JSONWriter implements Writer {
-	@SuppressWarnings("unchecked")
-	private static final Set NUMBER_CLASSES = CollectionUtils.asSet(Integer.class, Byte.class, Short.class, Double.class, Long.class, Float.class);
 	private static final String ROOT_FORMAT = "{\"%s\":%s}";
 	private static final String SEPARATOR = ",";
 	private static final String NULL = "null";
@@ -48,7 +46,7 @@ public class JSONWriter implements Writer {
 			}
 		} else {
 			String str = String.valueOf(value);
-			if (NUMBER_CLASSES.contains(value.getClass())) {
+			if (ReflectionUtils.isNumeric(value.getClass()) || ReflectionUtils.isBoolean(value.getClass())) {
 				return str;
 			}
 			if (StringUtils.isNotEmpty(str)) { 

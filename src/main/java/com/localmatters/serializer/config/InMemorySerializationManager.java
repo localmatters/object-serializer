@@ -41,7 +41,7 @@ public class InMemorySerializationManager extends AbstractRefreshableContent imp
 			}
 			throw new ConfigurationException(String.format("Unable to load the handlers configuration %s!", getContentSource()), e);
 		}
-		serializations = handler.getConfigs();
+		serializations = handler.getSerializations();
 	}
 
 	/**

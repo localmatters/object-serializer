@@ -14,7 +14,7 @@ import com.localmatters.serializer.SerializationException;
  */
 public class IteratorSerialization extends AbstractSerialization {
 	protected static final Iterator<?> EMTPY_ITERATOR = Collections.EMPTY_LIST.iterator();
-	private Serialization elementSerialization;
+	private Serialization element;
 
 	/**
 	 * @see com.localmatters.serializer.serialization.Serialization#serialize(java.lang.Object, com.localmatters.serializer.SerializationContext)
@@ -37,20 +37,20 @@ public class IteratorSerialization extends AbstractSerialization {
 			throw new IteratorExpectedException(context.appendSegment(getName()));
 		}
 		
-		return context.getSerializer().writeIterator(this, getElementSerialization(), itr, context.appendSegment(getName()));
+		return context.getWriter().writeIterator(this, getElement(), itr, context.appendSegment(getName()));
 	}
 
 	/**
 	 * @return The index elements serialization
 	 */
-	public Serialization getElementSerialization() {
-		return elementSerialization;
+	public Serialization getElement() {
+		return element;
 	}
 
 	/**
-	 * @param elementSerialization The index elements serialization
+	 * @param element The index elements serialization
 	 */
-	public void setElementSerialization(Serialization elementSerialization) {
-		this.elementSerialization = elementSerialization;
+	public void setElement(Serialization element) {
+		this.element = element;
 	}
 }

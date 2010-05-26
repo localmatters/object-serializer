@@ -57,7 +57,7 @@ public class SerializationElementHandler implements ElementHandler {
 	protected static final String INVALID_LOOP_REFERENCES = "The configuration defines a loop of parents; which is not allowed!";
 	
 	private LMObjectFactory objectFactory;
-	private Map<String, Serialization> configs = new HashMap<String, Serialization>();
+	private Map<String, Serialization> serializations = new HashMap<String, Serialization>();
 	private Map<ReferenceSerialization, String> references = new HashMap<ReferenceSerialization, String>();
 	private Map<String, ComplexSerialization> complexWithIds = new HashMap<String, ComplexSerialization>();
 	private Map<ComplexSerialization, String> extensions = new HashMap<ComplexSerialization, String>();
@@ -87,7 +87,7 @@ public class SerializationElementHandler implements ElementHandler {
 			handleId(element, new HashMap<String, String>(), true);
 		}
 		
-		Set<String> invalids = resolveReferences(getReferences(), getConfigs());
+		Set<String> invalids = resolveReferences(getReferences(), getSerializations());
 		invalids.addAll(resolveExtensions(getExtensions(), getComplexWithIds()));
 		
 		if (CollectionUtils.isNotEmpty(invalids)) {
@@ -136,14 +136,14 @@ public class SerializationElementHandler implements ElementHandler {
 					invalids.add(id);
 				} else if (!extensions.containsKey(parent)) {
 					itr.remove();
-					ComplexSerialization config = extension.getKey();
-					config.setAttributeSerializations(CollectionUtils.mergeAsList(parent.getAttributeSerializations(), config.getAttributeSerializations()));
-					config.setElementSerializations(CollectionUtils.mergeAsList(parent.getElementSerializations(), config.getElementSerializations()));
-					if (StringUtils.isBlank(config.getName())) {
-						config.setName(parent.getName());
+					ComplexSerialization serialization = extension.getKey();
+					serialization.setAttributes(CollectionUtils.mergeAsList(parent.getAttributes(), serialization.getAttributes()));
+					serialization.setElements(CollectionUtils.mergeAsList(parent.getElements(), serialization.getElements()));
+					if (StringUtils.isBlank(serialization.getName())) {
+						serialization.setName(parent.getName());
 					}
-					if (config.getWriteEmpty() == null) {
-						config.setWriteEmpty(parent.isWriteEmpty());
+					if (serialization.getWriteEmpty() == null) {
+						serialization.setWriteEmpty(parent.isWriteEmpty());
 					}
 				}
 			}
@@ -166,13 +166,13 @@ public class SerializationElementHandler implements ElementHandler {
 	protected Serialization handleId(Element element, Map<String, String> attributes, boolean required) {
 		String id = element.attributeValue(ATTRIBUTE_ID);
 		if (StringUtils.isNotBlank(id)) {
-			if (configs.containsKey(id)) {
+			if (serializations.containsKey(id)) {
 				throw new ConfigurationException(DUPLICATE_ID_FORMAT, id);
 			}
 			attributes.put(ATTRIBUTE_ID, id);
-			Serialization config = handleBean(element, attributes);
-			configs.put(id, config);
-			return config;
+			Serialization serialization = handleBean(element, attributes);
+			serializations.put(id, serialization);
+			return serialization;
 		} 
 		if (required) {
 			throw new ConfigurationException(MISSING_ID);
@@ -199,11 +199,11 @@ public class SerializationElementHandler implements ElementHandler {
 		String bean = element.attributeValue(ATTRIBUTE_BEAN);
 		if (StringUtils.isNotBlank(bean)) {
 			attributes.put(ATTRIBUTE_BEAN, bean);
-			Serialization delegateConfig = handleProperty(element, attributes);
-			BeanSerialization config = getObjectFactory().create(BeanSerialization.class);
-			config.setBean(bean);
-			config.setDelegate(delegateConfig);
-			return config;
+			Serialization delegate = handleProperty(element, attributes);
+			BeanSerialization serialization = getObjectFactory().create(BeanSerialization.class);
+			serialization.setBean(bean);
+			serialization.setDelegate(delegate);
+			return serialization;
 		} 
 		return handleProperty(element, attributes);
 	}
@@ -218,11 +218,11 @@ public class SerializationElementHandler implements ElementHandler {
 		String property = element.attributeValue(ATTRIBUTE_PROPERTY);
 		if (StringUtils.isNotBlank(property)) {
 			attributes.put(ATTRIBUTE_PROPERTY, property);
-			Serialization delegateConfig = handleType(element, attributes);
-			PropertySerialization config = getObjectFactory().create(PropertySerialization.class);
-			config.setProperty(property);
-			config.setDelegate(delegateConfig);
-			return config;
+			Serialization delegate = handleType(element, attributes);
+			PropertySerialization serialization = getObjectFactory().create(PropertySerialization.class);
+			serialization.setProperty(property);
+			serialization.setDelegate(delegate);
+			return serialization;
 		} 
 		return handleType(element, attributes);
 	}
@@ -236,12 +236,12 @@ public class SerializationElementHandler implements ElementHandler {
 	 */
 	@SuppressWarnings("unchecked")
 	protected Serialization handleType(Element element, Map<String, String> attributes) {
-		AbstractSerialization config = null;
+		AbstractSerialization serialization = null;
 		String name = element.attributeValue(ATTRIBUTE_NAME);
 		String type = element.getName();
 
 		if (TYPE_REFERENCE.equalsIgnoreCase(type)) {
-			config = handleReference(element, attributes);
+			serialization = handleReference(element, attributes);
 		} else if (TYPE_COMPLEX.equalsIgnoreCase(type)) {
 			String parent = element.attributeValue(ATTRIBUTE_PARENT);
 			if (StringUtils.isNotBlank(parent)) {
@@ -249,7 +249,7 @@ public class SerializationElementHandler implements ElementHandler {
 			} else if (StringUtils.isBlank(name)) {
 				throw new ConfigurationException(MISSING_NAME_OR_PARENT_FORMAT, element.getPath());
 			}
-			config = handleComplex(element, attributes);
+			serialization = handleComplex(element, attributes);
 		} else {
 			// the name is required for every type except the reference or 
 			// complex with parent that will inherit it if it is not set
@@ -257,13 +257,13 @@ public class SerializationElementHandler implements ElementHandler {
 				throw new ConfigurationException(MISSING_ATTRIBUTE_FORMAT, ATTRIBUTE_NAME, element.getPath());
 			}
 			if (TYPE_ATTRIBUTE.equalsIgnoreCase(type)) {
-				config = handleAttribute(element, attributes);
+				serialization = handleAttribute(element, attributes);
 			} else if (TYPE_VALUE.equalsIgnoreCase(type)) {
-				config = handleValue(element, attributes);
+				serialization = handleValue(element, attributes);
 			} else if (TYPE_LIST.equalsIgnoreCase(type)) {
-				config = handleList(element, attributes);
+				serialization = handleList(element, attributes);
 			} else if (TYPE_MAP.equalsIgnoreCase(type)) {
-				config = handleMap(element, attributes);
+				serialization = handleMap(element, attributes);
 			} else {
 				throw new ConfigurationException(INVALID_TYPE_FORMAT, type, element.getPath());
 			}
@@ -271,12 +271,12 @@ public class SerializationElementHandler implements ElementHandler {
 		
 		if (StringUtils.isNotBlank(name)) {
 			attributes.put(ATTRIBUTE_NAME, name);
-			config.setName(name);
+			serialization.setName(name);
 		}
 		String displayEmpty = element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY);
 		if (StringUtils.isNotBlank(displayEmpty)) {
 			attributes.put(ATTRIBUTE_DISPLAY_EMPTY, displayEmpty);
-			config.setWriteEmpty(Boolean.valueOf(displayEmpty));
+			serialization.setWriteEmpty(Boolean.valueOf(displayEmpty));
 		}
 
 		// validates the number of attributes with the ones that have been
@@ -291,7 +291,7 @@ public class SerializationElementHandler implements ElementHandler {
 			}
 			throw new ConfigurationException(INVALID_ATTRIBUTES_FORMAT, invalids, type, element.getPath());
 		}
-		return config;
+		return serialization;
 	}
 
 	/**
@@ -302,33 +302,29 @@ public class SerializationElementHandler implements ElementHandler {
 	 */
 	@SuppressWarnings("unchecked")
 	protected ComplexSerialization handleComplex(Element element, Map<String, String> attributes) {
-		List<Serialization> attributeConfigs = new ArrayList<Serialization>();
-		List<Serialization> elementConfigs = new ArrayList<Serialization>();
-		
+		ComplexSerialization serialization = getObjectFactory().create(ComplexSerialization.class);
+
 		List<Element> children = element.elements();
 		if (CollectionUtils.isNotEmpty(children)) {
 			for (Element child : children) {
-				Serialization childConfig = handleId(child);
+				Serialization childSerialization = handleId(child);
 				if (TYPE_ATTRIBUTE.equalsIgnoreCase(child.getName())) {
-					attributeConfigs.add(childConfig);
+					serialization.addAttribute(childSerialization);
 				} else {
-					elementConfigs.add(childConfig);
+					serialization.addElement(childSerialization);
 				}
 			}
 		}
 		
-		ComplexSerialization config = getObjectFactory().create(ComplexSerialization.class);
-		config.setAttributeSerializations(attributeConfigs);
-		config.setElementSerializations(elementConfigs);
 		
 		if (attributes.containsKey(ATTRIBUTE_ID)) {
-			getComplexWithIds().put(attributes.get(ATTRIBUTE_ID), config);
+			getComplexWithIds().put(attributes.get(ATTRIBUTE_ID), serialization);
 		}
 		if (attributes.containsKey(ATTRIBUTE_PARENT)) {
-			getExtensions().put(config, attributes.get(ATTRIBUTE_PARENT));
+			getExtensions().put(serialization, attributes.get(ATTRIBUTE_PARENT));
 		}
 		
-		return config;
+		return serialization;
 	}
 
 	/**
@@ -368,9 +364,9 @@ public class SerializationElementHandler implements ElementHandler {
 		}
 		attributes.put(ATTRIBUTE_TARGET, target);
 
-		ReferenceSerialization config = getObjectFactory().create(ReferenceSerialization.class);
-		getReferences().put(config, target);
-		return config;
+		ReferenceSerialization serialization = getObjectFactory().create(ReferenceSerialization.class);
+		getReferences().put(serialization, target);
+		return serialization;
 	}
 
 	/**
@@ -385,10 +381,10 @@ public class SerializationElementHandler implements ElementHandler {
 		if (CollectionUtils.sizeOf(children) != 1) {
 			throw new ConfigurationException(INVALID_LIST_FORMAT, element.getPath());
 		}
-		Serialization elementConfig = handleId(children.get(0));
-		IteratorSerialization config = getObjectFactory().create(IteratorSerialization.class);
-		config.setElementSerialization(elementConfig);
-		return config;
+		Serialization elem = handleId(children.get(0));
+		IteratorSerialization serialization = getObjectFactory().create(IteratorSerialization.class);
+		serialization.setElement(elem);
+		return serialization;
 	}
 
 	/**
@@ -403,29 +399,29 @@ public class SerializationElementHandler implements ElementHandler {
 		if (CollectionUtils.sizeOf(children) != 1) {
 			throw new ConfigurationException(INVALID_MAP_FORMAT, element.getPath());
 		}
-		Serialization valueConfig = handleId(children.get(0));
+		Serialization value = handleId(children.get(0));
 
-		Serialization keyConfig = getObjectFactory().create(ValueSerialization.class);
-		String key = element.attributeValue(ATTRIBUTE_KEY);
-		if (StringUtils.isNotBlank(key)) {
-			attributes.put(ATTRIBUTE_KEY, key);
+		Serialization key = getObjectFactory().create(ValueSerialization.class);
+		String property = element.attributeValue(ATTRIBUTE_KEY);
+		if (StringUtils.isNotBlank(property)) {
+			attributes.put(ATTRIBUTE_KEY, property);
 			PropertySerialization propertyConfig = getObjectFactory().create(PropertySerialization.class);
-			propertyConfig.setProperty(key);
-			propertyConfig.setDelegate(keyConfig);
-			keyConfig = propertyConfig;
+			propertyConfig.setProperty(property);
+			propertyConfig.setDelegate(key);
+			key = propertyConfig;
 		}
 
-		MapSerialization config = getObjectFactory().create(MapSerialization.class);
-		config.setKeySerialization(keyConfig);
-		config.setValueSerialization(valueConfig);
-		return config;
+		MapSerialization serialization = getObjectFactory().create(MapSerialization.class);
+		serialization.setKey(key);
+		serialization.setValue(value);
+		return serialization;
 	}
 
 	/**
-	 * @return The map of configuration
+	 * @return The map of serialization
 	 */
-	public Map<String, Serialization> getConfigs() {
-		return configs;
+	public Map<String, Serialization> getSerializations() {
+		return serializations;
 	}
 
 	/**

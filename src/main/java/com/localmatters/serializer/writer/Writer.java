@@ -28,18 +28,6 @@ public interface Writer {
 			SerializationContext context) throws SerializationException;
 
 	/**
-	 * Writes a comment
-	 * @param serialization The root serialization
-	 * @param comment The comment to write
-	 * @param context The serialization context
-	 * @return The resulting string
-	 * @throws SerializationException When the serialization fails
-	 */
-	public String writeComment(Serialization serialization, 
-			String comment, 
-			SerializationContext context) throws SerializationException;
-
-	/**
 	 * Writes the given value
 	 * @param serialization The value serialization
 	 * @param value The value to serialize
@@ -54,6 +42,7 @@ public interface Writer {
 	/**
 	 * Writes a complex element
 	 * @param serialization The complex serialization
+	 * @param comments The comments to write
 	 * @param attributeHandlers The attributes serialization handlers
 	 * @param elementHandlers The (sub-)elements serialization handlers
 	 * @param complex The input object
@@ -62,6 +51,7 @@ public interface Writer {
 	 * @throws SerializationException When the serialization fails
 	 */
 	public String writeComplex(Serialization serialization, 
+			Collection<String> comments, 
 			Collection<Serialization> attributeHandlers, 
 			Collection<Serialization> elementHandlers, 
 			Object complex, 
@@ -82,6 +72,7 @@ public interface Writer {
 	/**
 	 * Writes an iterator
 	 * @param serialization The iterator serialization
+	 * @param comments The comments to write
 	 * @param elementHandler The elements serialization handler
 	 * @param iterator The iterator to serialize
 	 * @param context The serialization context
@@ -89,6 +80,7 @@ public interface Writer {
 	 * @throws SerializationException When the serialization fails
 	 */
 	public String writeIterator(Serialization serialization, 
+			Collection<String> comments, 
 			Serialization elementHandler, 
 			Iterator<?> iterator, 
 			SerializationContext context) throws SerializationException;
@@ -96,6 +88,7 @@ public interface Writer {
 	/**
 	 * Writes a map
 	 * @param serialization The map serialization
+	 * @param comments The comments to write
 	 * @param keyHandler The keys serialization handler
 	 * @param valuesHandler The values serialization handler
 	 * @param map The map to serialize
@@ -104,6 +97,7 @@ public interface Writer {
 	 * @throws SerializationException When the serialization fails
 	 */
 	public String writeMap(Serialization serialization, 
+			Collection<String> comments, 
 			Serialization keyHandler, 
 			Serialization valueHandler, 
 			Map<?,?> map, 

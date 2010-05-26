@@ -11,7 +11,7 @@ import com.localmatters.serializer.SerializationException;
  * This class handles the serialization of a complex structure; i.e. one that 
  * can have attributes and sub-elements.
  */
-public class ComplexSerialization extends AbstractSerialization {
+public class ComplexSerialization extends CommentSerialization {
 	private List<Serialization> attributes;
 	private List<Serialization> elements;
 	
@@ -19,7 +19,7 @@ public class ComplexSerialization extends AbstractSerialization {
 	 * @see com.localmatters.serializer.serialization.Serialization#serialize(java.lang.Object, com.localmatters.serializer.SerializationContext)
 	 */
 	public String serialize(Object obj, SerializationContext context) throws SerializationException {
-		return context.getWriter().writeComplex(this, getAttributes(), getElements(), obj, context.appendSegment(getName()));
+		return context.getWriter().writeComplex(this, getComments(), getAttributes(), getElements(), obj, context.appendSegment(getName()));
 	}
 
 	/**

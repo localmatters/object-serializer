@@ -12,7 +12,7 @@ import com.localmatters.serializer.SerializationException;
  * <code>IteratorSerialization</code> can be used to handle maps for which the 
  * keys should be serialized as more complex elements. 
  */
-public class MapSerialization extends AbstractSerialization {
+public class MapSerialization extends CommentSerialization {
 	private Serialization key;
 	private Serialization value;
 
@@ -27,7 +27,7 @@ public class MapSerialization extends AbstractSerialization {
 			throw new MapExpectedException(context.appendSegment(getName()));
 		}
 		
-		return context.getWriter().writeMap(this, getKey(), getValue(), map, context.appendSegment(getName()));
+		return context.getWriter().writeMap(this, getComments(), getKey(), getValue(), map, context.appendSegment(getName()));
 	}
 
 	/**

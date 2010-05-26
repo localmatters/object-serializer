@@ -46,6 +46,7 @@ public class SerializationElementHandler implements ElementHandler {
 	protected static final String TYPE_VALUE = "value";
 	protected static final String TYPE_COMPLEX = "complex";
 	protected static final String TYPE_REFERENCE = "ref";
+	protected static final String TYPE_COMMENT = "comment";
 	protected static final String DUPLICATE_ID_FORMAT = "Duplicate elements found with the same id (\"%s\")!";
 	protected static final String MISSING_ID = "All elements directly under the root must have a non-blank id!";
 	protected static final String INVALID_TYPE_FORMAT = "Invalid element <%s> at [%s]!";
@@ -159,11 +160,11 @@ public class SerializationElementHandler implements ElementHandler {
 	}
 	
 	/**
-	 * Handles the optional id attribute
+	 * Handles the id attribute
 	 * @param element The element
 	 * @param attributes The map of attributes consumed for this element
 	 * @param required Whether the id is required or not
-	 * @return The configuration for this element
+	 * @return The serialization for this element
 	 */
 	protected Serialization handleId(Element element, Map<String, String> attributes, boolean required) {
 		String id = element.attributeValue(ATTRIBUTE_ID);
@@ -185,7 +186,7 @@ public class SerializationElementHandler implements ElementHandler {
 	/**
 	 * Handles the optional id attribute
 	 * @param element The element
-	 * @return The configuration for this element
+	 * @return The serialization for this element
 	 */
 	protected Serialization handleId(Element element) {
 		return handleId(element, new HashMap<String, String>(), false);
@@ -195,7 +196,7 @@ public class SerializationElementHandler implements ElementHandler {
 	 * Handles the optional constant attribute
 	 * @param element The element
 	 * @param attributes The map of attributes consumed for this element
-	 * @return The configuration for this element
+	 * @return The serialization for this element
 	 */
 	protected Serialization handleConstant(Element element, Map<String, String> attributes) {
 		String constant = element.attributeValue(ATTRIBUTE_CONSTANT);
@@ -214,7 +215,7 @@ public class SerializationElementHandler implements ElementHandler {
 	 * Handles the optional bean attribute
 	 * @param element The element
 	 * @param attributes The map of attributes consumed for this element
-	 * @return The configuration for this element
+	 * @return The serialization for this element
 	 */
 	protected Serialization handleBean(Element element, Map<String, String> attributes) {
 		String bean = element.attributeValue(ATTRIBUTE_BEAN);
@@ -233,7 +234,7 @@ public class SerializationElementHandler implements ElementHandler {
 	 * Handles the optional property attribute
 	 * @param element The element
 	 * @param attributes The map of attributes consumed for this element
-	 * @return The configuration for this element
+	 * @return The serialization for this element
 	 */
 	protected Serialization handleProperty(Element element, Map<String, String> attributes) {
 		String property = element.attributeValue(ATTRIBUTE_PROPERTY);
@@ -253,7 +254,7 @@ public class SerializationElementHandler implements ElementHandler {
 	 * which is a special case)
 	 * @param element The element
 	 * @param attributes The map of attributes consumed for this element
-	 * @return The configuration for this element
+	 * @return The serialization for this element
 	 */
 	@SuppressWarnings("unchecked")
 	protected Serialization handleType(Element element, Map<String, String> attributes) {
@@ -272,8 +273,8 @@ public class SerializationElementHandler implements ElementHandler {
 			}
 			serialization = handleComplex(element, attributes);
 		} else {
-			// the name is required for every type except the reference or 
-			// complex with parent that will inherit it if it is not set
+			// the name is required for every type except the reference, comment
+			// or complex with parent that will inherit it if it is not set
 			if (StringUtils.isBlank(name)) {
 				throw new ConfigurationException(MISSING_ATTRIBUTE_FORMAT, ATTRIBUTE_NAME, element.getPath());
 			}
@@ -314,12 +315,12 @@ public class SerializationElementHandler implements ElementHandler {
 		}
 		return serialization;
 	}
-
+	
 	/**
 	 * Handles a complex element
 	 * @param element The element
 	 * @param attributes The map of attributes consumed for this element
-	 * @return The configuration for this element
+	 * @return The serialization for this element
 	 */
 	@SuppressWarnings("unchecked")
 	protected ComplexSerialization handleComplex(Element element, Map<String, String> attributes) {
@@ -328,11 +329,16 @@ public class SerializationElementHandler implements ElementHandler {
 		List<Element> children = element.elements();
 		if (CollectionUtils.isNotEmpty(children)) {
 			for (Element child : children) {
-				Serialization childSerialization = handleId(child);
-				if (TYPE_ATTRIBUTE.equalsIgnoreCase(child.getName())) {
-					serialization.addAttribute(childSerialization);
+				String type = child.getName();
+				if (TYPE_COMMENT.equalsIgnoreCase(type)) {
+					serialization.addComment(child.getStringValue());
 				} else {
-					serialization.addElement(childSerialization);
+					Serialization childSerialization = handleId(child);
+					if (TYPE_ATTRIBUTE.equalsIgnoreCase(type)) {
+						serialization.addAttribute(childSerialization);
+					} else {
+						serialization.addElement(childSerialization);
+				}
 				}
 			}
 		}
@@ -352,7 +358,7 @@ public class SerializationElementHandler implements ElementHandler {
 	 * Handles a complex element attribute (<code>&lt;attribute&gt;</code>).
 	 * @param element The element
 	 * @param attributes The map of attributes consumed for this element
-	 * @return The configuration for this element
+	 * @return The serialization for this element
 	 */
 	protected AttributeSerialization handleAttribute(Element element, Map<String, String> attributes) {
 		Element parent = element.getParent();
@@ -366,7 +372,7 @@ public class SerializationElementHandler implements ElementHandler {
 	 * Handles a value element
 	 * @param element The element
 	 * @param attributes The map of attributes consumed for this element
-	 * @return The configuration for this element
+	 * @return The serialization for this element
 	 */
 	protected ValueSerialization handleValue(Element element, Map<String, String> attributes) {
 		return getObjectFactory().create(ValueSerialization.class);
@@ -376,7 +382,7 @@ public class SerializationElementHandler implements ElementHandler {
 	 * Handles a reference
 	 * @param element The element
 	 * @param attributes The map of attributes consumed for this element
-	 * @return The configuration for this element
+	 * @return The serialization for this element
 	 */
 	protected ReferenceSerialization handleReference(Element element, Map<String, String> attributes) {
 		String target = element.attributeValue(ATTRIBUTE_TARGET);
@@ -394,17 +400,32 @@ public class SerializationElementHandler implements ElementHandler {
 	 * Handles a list
 	 * @param element The element
 	 * @param attributes The map of attributes consumed for this element
-	 * @return The configuration for this element
+	 * @return The serialization for this element
 	 */
 	@SuppressWarnings("unchecked")
 	protected IteratorSerialization handleList(Element element, Map<String, String> attributes) {
+		IteratorSerialization serialization = getObjectFactory().create(IteratorSerialization.class);
+		
+		boolean foundElement = false;
 		List<Element> children = element.elements();
-		if (CollectionUtils.sizeOf(children) != 1) {
+		if (CollectionUtils.isNotEmpty(children)) {
+			for (Element child : children) {
+				String type = child.getName();
+				if (TYPE_COMMENT.equalsIgnoreCase(type)) {
+					serialization.addComment(child.getStringValue());
+				} else if (foundElement) {
+					throw new ConfigurationException(INVALID_LIST_FORMAT, element.getPath());
+				} else {
+					foundElement = true;
+					Serialization elem = handleId(children.get(0));
+					serialization.setElement(elem);
+				}
+			}
+		}
+
+		if (!foundElement) {
 			throw new ConfigurationException(INVALID_LIST_FORMAT, element.getPath());
 		}
-		Serialization elem = handleId(children.get(0));
-		IteratorSerialization serialization = getObjectFactory().create(IteratorSerialization.class);
-		serialization.setElement(elem);
 		return serialization;
 	}
 
@@ -412,15 +433,32 @@ public class SerializationElementHandler implements ElementHandler {
 	 * Handles a map
 	 * @param element The element
 	 * @param attributes The map of attributes consumed for this element
-	 * @return The configuration for this element
+	 * @return The serialization for this element
 	 */
 	@SuppressWarnings("unchecked")
 	protected MapSerialization handleMap(Element element, Map<String, String> attributes) {
+		MapSerialization serialization = getObjectFactory().create(MapSerialization.class);
+		
+		boolean foundElement = false;
 		List<Element> children = element.elements();
-		if (CollectionUtils.sizeOf(children) != 1) {
+		if (CollectionUtils.isNotEmpty(children)) {
+			for (Element child : children) {
+				String type = child.getName();
+				if (TYPE_COMMENT.equalsIgnoreCase(type)) {
+					serialization.addComment(child.getStringValue());
+				} else if (foundElement) {
+					throw new ConfigurationException(INVALID_MAP_FORMAT, element.getPath());
+				} else {
+					foundElement = true;
+					Serialization elem = handleId(children.get(0));
+					serialization.setValue(elem);
+				}
+			}
+		}
+
+		if (!foundElement) {
 			throw new ConfigurationException(INVALID_MAP_FORMAT, element.getPath());
 		}
-		Serialization value = handleId(children.get(0));
 
 		Serialization key = getObjectFactory().create(ValueSerialization.class);
 		String property = element.attributeValue(ATTRIBUTE_KEY);
@@ -432,9 +470,7 @@ public class SerializationElementHandler implements ElementHandler {
 			key = propertyConfig;
 		}
 
-		MapSerialization serialization = getObjectFactory().create(MapSerialization.class);
 		serialization.setKey(key);
-		serialization.setValue(value);
 		return serialization;
 	}
 

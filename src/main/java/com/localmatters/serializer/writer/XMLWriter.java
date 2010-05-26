@@ -5,12 +5,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
 
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.SerializationException;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.util.CollectionUtils;
+import com.localmatters.util.StringUtils;
 
 /**
  * This class defines a serialization writer that outputs XML.
@@ -23,7 +23,7 @@ public class XMLWriter implements Writer {
 	private static final String COMPLETE_TAG_FORMAT = "%s<%s%s>%s%s</%s>";
 	private static final String EMPTY_ATTRIBUTE_FORMAT = " %s=\"\"";
 	private static final String ATTRIBUTE_FORMAT = " %s=\"%s\"";
-	private static final String COMMENT_FORMAT = "\n%s<!-- %s -->";
+	private static final String COMMENT_FORMAT = "%s<!-- %s -->";
 
 	/**
 	 * @see com.localmatters.serializer.writer.Writer#writeRoot(com.localmatters.serializer.serialization.Serialization, java.lang.Object, com.localmatters.serializer.SerializationContext)
@@ -52,21 +52,34 @@ public class XMLWriter implements Writer {
 		}
 		return StringUtils.EMPTY;
 	}
-	
+
 	/**
-	 * @see com.localmatters.serializer.writer.Writer#writeComment(com.localmatters.serializer.serialization.Serialization, java.lang.String, com.localmatters.serializer.SerializationContext)
+	 * Gets the prefix taking the comments into account
+	 * @param context The context
+	 * @param comments The comments to write 
+	 * @return The string describing the comment
 	 */
-	public String writeComment(Serialization serialization, String comment, SerializationContext context) {
-		if (StringUtils.isNotBlank(comment) || serialization.isWriteEmpty()) {
-			return String.format(COMMENT_FORMAT, context.getPrefix(), StringUtils.replace(StringUtils.defaultString(comment), "--", "**"));
+	private String getPrefixWithComments(SerializationContext context, Collection<String> comments) {
+		if (context.isPretty()) {
+			StringBuilder sb = new StringBuilder();
+			if (CollectionUtils.isNotEmpty(comments)) {
+				sb.append("\n");
+				for (String comment : comments) {
+					if (StringUtils.isNotBlank(comment)) {
+						sb.append(String.format(COMMENT_FORMAT, context.getPrefix(), comment));
+					}
+				}
+			}
+			sb.append(context.getPrefix());
+			return sb.toString();
 		}
 		return StringUtils.EMPTY;
 	}
 
 	/**
-	 * @see com.localmatters.serializer.writer.Writer#writeComplex(com.localmatters.serializer.serialization.Serialization, java.util.Collection, java.util.Collection, java.lang.Object, com.localmatters.serializer.SerializationContext)
+	 * @see com.localmatters.serializer.writer.Writer#writeComplex(com.localmatters.serializer.serialization.Serialization, java.util.Collection, java.util.Collection, java.util.Collection, java.lang.Object, com.localmatters.serializer.SerializationContext)
 	 */
-	public String writeComplex(Serialization serialization, Collection<Serialization> attributeSerializations, Collection<Serialization> elementSerializations, Object object, SerializationContext context) throws SerializationException {
+	public String writeComplex(Serialization serialization, Collection<String> comments, Collection<Serialization> attributeSerializations, Collection<Serialization> elementSerializations, Object object, SerializationContext context) throws SerializationException {
 		String name = serialization.getName();
 		if (object != null) {
 			StringBuilder attributes = new StringBuilder();
@@ -84,19 +97,19 @@ public class XMLWriter implements Writer {
 			}
 			
 			if ((attributes.length() == 0) && (elements.length() == 0)) {
-				return String.format(EMPTY_TAG_FORMAT, context.getPrefix(), name);
+				return String.format(EMPTY_TAG_FORMAT, getPrefixWithComments(context, comments), name);
 			}
 			if (attributes.length() == 0) {
-				return String.format(SIMPLE_TAG_FORMAT, context.getPrefix(), name, elements, context.getPrefix(), name);
+				return String.format(SIMPLE_TAG_FORMAT, getPrefixWithComments(context, comments), name, elements, context.getPrefix(), name);
 			}
 			if (elements.length() == 0) {
-				return String.format(ATTRIBUTE_ONLY_TAG_FORMAT, context.getPrefix(), name, attributes, name);
+				return String.format(ATTRIBUTE_ONLY_TAG_FORMAT, getPrefixWithComments(context, comments), name, attributes, name);
 			}
-			return String.format(COMPLETE_TAG_FORMAT, context.getPrefix(), name, attributes, elements, context.getPrefix(), name);
+			return String.format(COMPLETE_TAG_FORMAT, getPrefixWithComments(context, comments), name, attributes, elements, context.getPrefix(), name);
 			
 		}
 		if (serialization.isWriteEmpty()) {
-			return String.format(EMPTY_TAG_FORMAT, context.getPrefix(), name);
+			return String.format(EMPTY_TAG_FORMAT, getPrefixWithComments(context, comments), name);
 		}
 		return StringUtils.EMPTY;
 	}
@@ -116,9 +129,9 @@ public class XMLWriter implements Writer {
 	}
 	
 	/**
-	 * @see com.localmatters.serializer.writer.Writer#writeIterator(com.localmatters.serializer.serialization.Serialization, com.localmatters.serializer.serialization.Serialization, java.util.Iterator, com.localmatters.serializer.SerializationContext)
+	 * @see com.localmatters.serializer.writer.Writer#writeIterator(com.localmatters.serializer.serialization.Serialization, java.util.Collection, com.localmatters.serializer.serialization.Serialization, java.util.Iterator, com.localmatters.serializer.SerializationContext)
 	 */
-	public String writeIterator(Serialization serialization, Serialization elementSerialization, Iterator<?> index, SerializationContext context) throws SerializationException {
+	public String writeIterator(Serialization serialization, Collection<String> comments, Serialization elementSerialization, Iterator<?> index, SerializationContext context) throws SerializationException {
 		if (index.hasNext()) {
 			StringBuilder sb = new StringBuilder();
 			int i = 0;
@@ -127,32 +140,32 @@ public class XMLWriter implements Writer {
 			}
 			if (sb.length() > 0) {
 				String name = serialization.getName();
-				return String.format(SIMPLE_TAG_FORMAT, context.getPrefix(), name, sb, context.getPrefix(), name);
+				return String.format(SIMPLE_TAG_FORMAT, getPrefixWithComments(context, comments), name, sb, context.getPrefix(), name);
 			}
 		} 
 		if (serialization.isWriteEmpty()) {
-			return String.format(EMPTY_TAG_FORMAT, context.getPrefix(), serialization.getName());
+			return String.format(EMPTY_TAG_FORMAT, getPrefixWithComments(context, comments), serialization.getName());
 		}
 		return StringUtils.EMPTY;
 	}
 
 	/**
-	 * @see com.localmatters.serializer.writer.Writer#writeMap(com.localmatters.serializer.serialization.Serialization, com.localmatters.serializer.serialization.Serialization, com.localmatters.serializer.serialization.Serialization, java.util.Map, com.localmatters.serializer.SerializationContext)
+	 * @see com.localmatters.serializer.writer.Writer#writeMap(com.localmatters.serializer.serialization.Serialization, java.util.Collection, com.localmatters.serializer.serialization.Serialization, com.localmatters.serializer.serialization.Serialization, java.util.Map, com.localmatters.serializer.SerializationContext)
 	 */
-	public String writeMap(Serialization serialization, Serialization keySerialization, Serialization valueSerialization, Map<?,?> map, SerializationContext context) throws SerializationException {
+	public String writeMap(Serialization serialization, Collection<String> comments, Serialization keySerialization, Serialization valueSerialization, Map<?,?> map, SerializationContext context) throws SerializationException {
 		if (CollectionUtils.isNotEmpty(map)) {
 			StringBuilder sb = new StringBuilder();
 			for (Map.Entry<?, ?> entry : map.entrySet()) {
 				String key = keySerialization.serialize(entry.getKey(), context.appendMap());
 				String value = valueSerialization.serialize(entry.getValue(), context.appendMap(key));
-				sb.append(String.format(SIMPLE_TAG_FORMAT, context.getPrefix(), key, value, context.getPrefix(), key));
+				sb.append(String.format(SIMPLE_TAG_FORMAT, getPrefixWithComments(context, comments), key, value, context.getPrefix(), key));
 			}
 
 			String name = serialization.getName();
-			return String.format(SIMPLE_TAG_FORMAT, context.getPrefix(), name, sb, context.getPrefix(), name);
+			return String.format(SIMPLE_TAG_FORMAT, getPrefixWithComments(context, comments), name, sb, context.getPrefix(), name);
 		}
 		if (serialization.isWriteEmpty()) {
-			return String.format(EMPTY_TAG_FORMAT, context.getPrefix(), serialization.getName());
+			return String.format(EMPTY_TAG_FORMAT, getPrefixWithComments(context, comments), serialization.getName());
 		}
 		return StringUtils.EMPTY;
 	}

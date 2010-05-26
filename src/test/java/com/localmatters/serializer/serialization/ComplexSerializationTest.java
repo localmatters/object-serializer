@@ -21,6 +21,7 @@ public class ComplexSerializationTest extends TestCase {
 	private ComplexSerialization serialization;
 	private List<Serialization> attributes;
 	private List<Serialization> elements;
+	private List<String> comments;
 	private Writer serializer;
 	private Object object;
 	private SerializationContext ctx;
@@ -32,10 +33,12 @@ public class ComplexSerializationTest extends TestCase {
 	protected void setUp() throws Exception {
 		attributes = new ArrayList<Serialization>();
 		elements = new ArrayList<Serialization>();
+		comments = new ArrayList<String>();
 		serialization = new ComplexSerialization();
 		serialization.setName("listing");
 		serialization.setAttributes(attributes);
 		serialization.setElements(elements);
+		serialization.setComments(comments);
 		serializer = createMock(Writer.class);
 		object = new Object();
 		ctx = new SerializationContext(serializer, new HashMap<String, Object>(), null, false);
@@ -45,7 +48,7 @@ public class ComplexSerializationTest extends TestCase {
 	 * Tests the serialization
 	 */
 	public void testHandle() throws Exception {
-		expect(serializer.writeComplex(serialization, attributes, elements, object, ctx.appendSegment("listing"))).andReturn("<listing/>");
+		expect(serializer.writeComplex(serialization, comments, attributes, elements, object, ctx.appendSegment("listing"))).andReturn("<listing/>");
 		replay(serializer);
 		String result = serialization.serialize(object, ctx);
 		verify(serializer);

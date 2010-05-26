@@ -20,6 +20,7 @@ import static com.localmatters.serializer.config.SerializationElementHandler.MIS
 import static com.localmatters.serializer.config.SerializationElementHandler.MISSING_ID;
 import static com.localmatters.serializer.config.SerializationElementHandler.MISSING_NAME_OR_PARENT_FORMAT;
 import static com.localmatters.serializer.config.SerializationElementHandler.TYPE_ATTRIBUTE;
+import static com.localmatters.serializer.config.SerializationElementHandler.TYPE_COMMENT;
 import static com.localmatters.serializer.config.SerializationElementHandler.TYPE_COMPLEX;
 import static com.localmatters.serializer.config.SerializationElementHandler.TYPE_LIST;
 import static com.localmatters.serializer.config.SerializationElementHandler.TYPE_MAP;
@@ -322,6 +323,8 @@ public class SerializationElementHandlerTest extends TestCase {
 	 * Tests the <code>handleList</code> method when the element has no child
 	 */
 	public void testHandleListWhenNoChild() {
+		IteratorSerialization serialization = new IteratorSerialization();
+		expect(factory.create(IteratorSerialization.class)).andReturn(serialization);
 		expect(element.elements()).andReturn(null);
 		expect(element.getPath()).andReturn(PATH);
 		replay(factory, element);
@@ -341,8 +344,11 @@ public class SerializationElementHandlerTest extends TestCase {
 		IteratorSerialization serialization = new IteratorSerialization();
 		ValueSerialization elementConfig = new ValueSerialization();
 		Element child = createMock(Element.class);
+		Element comment = createMock(Element.class);
 
-		expect(element.elements()).andReturn(CollectionUtils.asList(child));
+		expect(factory.create(IteratorSerialization.class)).andReturn(serialization);
+		expect(element.elements()).andReturn(CollectionUtils.asList(child, comment));
+		expect(child.getName()).andReturn(TYPE_VALUE);
 		expect(child.attributeValue(ATTRIBUTE_ID)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
@@ -352,16 +358,19 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(child.attributes()).andReturn(CollectionUtils.asList("amount"));
 		expect(child.getName()).andReturn(TYPE_VALUE);
 		expect(factory.create(ValueSerialization.class)).andReturn(elementConfig);
-		expect(factory.create(IteratorSerialization.class)).andReturn(serialization);
+		expect(comment.getName()).andReturn(TYPE_COMMENT);
+		expect(comment.getStringValue()).andReturn("Hello World");
 
-		replay(factory, element, child);
+		replay(factory, element, child, comment);
 		Serialization result = handler.handleList(element, attributes);
-		verify(factory, element, child);
+		verify(factory, element, child, comment);
 
 		assertSame(serialization, result);
 		assertSame(elementConfig, serialization.getElement());
 		assertEquals("amount", elementConfig.getName());
 		assertTrue(elementConfig.isWriteEmpty());
+		assertEquals(1, CollectionUtils.sizeOf(serialization.getComments()));
+		assertEquals("Hello World", serialization.getComments().get(0));
 	}
 
 	/**
@@ -374,7 +383,9 @@ public class SerializationElementHandlerTest extends TestCase {
 
 		expect(element.attributeValue(ATTRIBUTE_NAME)).andReturn("orders");
 		expect(element.getName()).andReturn(TYPE_LIST);
+		expect(factory.create(IteratorSerialization.class)).andReturn(serialization);
 		expect(element.elements()).andReturn(CollectionUtils.asList(child));
+		expect(child.getName()).andReturn(TYPE_VALUE);
 		expect(child.attributeValue(ATTRIBUTE_ID)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
@@ -384,7 +395,6 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(child.attributes()).andReturn(CollectionUtils.asList("amount"));
 		expect(child.getName()).andReturn(TYPE_VALUE);
 		expect(factory.create(ValueSerialization.class)).andReturn(elementConfig);
-		expect(factory.create(IteratorSerialization.class)).andReturn(serialization);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn("false");
 		expect(element.attributes()).andReturn(CollectionUtils.asList("orders", "false"));
 
@@ -404,6 +414,8 @@ public class SerializationElementHandlerTest extends TestCase {
 	 * Tests the <code>handleMap</code> method when the element has no child
 	 */
 	public void testHandleMapWhenNoChild() {
+		MapSerialization serialization = new MapSerialization();
+		expect(factory.create(MapSerialization.class)).andReturn(serialization);
 		expect(element.elements()).andReturn(null);
 		expect(element.getPath()).andReturn(PATH);
 		replay(factory, element);
@@ -424,8 +436,11 @@ public class SerializationElementHandlerTest extends TestCase {
 		ValueSerialization keyConfig = new ValueSerialization();
 		ValueSerialization valueConfig = new ValueSerialization();
 		Element child = createMock(Element.class);
+		Element comment = createMock(Element.class);
 
-		expect(element.elements()).andReturn(CollectionUtils.asList(child));
+		expect(factory.create(MapSerialization.class)).andReturn(serialization);
+		expect(element.elements()).andReturn(CollectionUtils.asList(child, comment));
+		expect(child.getName()).andReturn(TYPE_VALUE);
 		expect(child.attributeValue(ATTRIBUTE_ID)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
@@ -437,11 +452,12 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(factory.create(ValueSerialization.class)).andReturn(valueConfig);
 		expect(factory.create(ValueSerialization.class)).andReturn(keyConfig);
 		expect(element.attributeValue(ATTRIBUTE_KEY)).andReturn(null);
-		expect(factory.create(MapSerialization.class)).andReturn(serialization);
+		expect(comment.getName()).andReturn(TYPE_COMMENT);
+		expect(comment.getStringValue()).andReturn("Hello World");
 
-		replay(factory, element, child);
+		replay(factory, element, child, comment);
 		Serialization result = handler.handleMap(element, attributes);
-		verify(factory, element, child);
+		verify(factory, element, child, comment);
 
 		assertSame(serialization, result);
 		assertSame(keyConfig, serialization.getKey());
@@ -450,6 +466,9 @@ public class SerializationElementHandlerTest extends TestCase {
 		assertSame(valueConfig, serialization.getValue());
 		assertEquals("amount", valueConfig.getName());
 		assertTrue(valueConfig.isWriteEmpty());
+		assertEquals(1, CollectionUtils.sizeOf(serialization.getComments()));
+		assertEquals("Hello World", serialization.getComments().get(0));
+
 	}
 
 	/**
@@ -463,6 +482,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		Element child = createMock(Element.class);
 
 		expect(element.elements()).andReturn(CollectionUtils.asList(child));
+		expect(child.getName()).andReturn(TYPE_VALUE);
 		expect(child.attributeValue(ATTRIBUTE_ID)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
@@ -506,6 +526,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(element.attributeValue(ATTRIBUTE_NAME)).andReturn("addresses");
 		expect(element.getName()).andReturn(TYPE_MAP);
 		expect(element.elements()).andReturn(CollectionUtils.asList(child));
+		expect(child.getName()).andReturn(TYPE_VALUE);
 		expect(child.attributeValue(ATTRIBUTE_ID)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
@@ -607,8 +628,10 @@ public class SerializationElementHandlerTest extends TestCase {
 		ValueSerialization subElementConfig = new ValueSerialization();
 		Element attribute = createMock(Element.class);
 		Element subElement = createMock(Element.class);
+		Element comment = createMock(Element.class);
 
-		expect(element.elements()).andReturn(CollectionUtils.asList(attribute, subElement));
+		expect(element.elements()).andReturn(CollectionUtils.asList(attribute, comment, subElement));
+		expect(attribute.getName()).andReturn(TYPE_ATTRIBUTE);
 		expect(attribute.attributeValue(ATTRIBUTE_ID)).andReturn(null);
 		expect(attribute.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(attribute.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
@@ -620,7 +643,9 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(attribute.attributes()).andReturn(CollectionUtils.asList("amount"));
 		expect(element.getName()).andReturn(TYPE_COMPLEX);
 		expect(factory.create(AttributeSerialization.class)).andReturn(attributeConfig);
-		expect(attribute.getName()).andReturn(TYPE_ATTRIBUTE);
+		expect(comment.getName()).andReturn(TYPE_COMMENT);
+		expect(comment.getStringValue()).andReturn("Hello World");
+		expect(subElement.getName()).andReturn(TYPE_VALUE);
 		expect(subElement.attributeValue(ATTRIBUTE_ID)).andReturn(null);
 		expect(subElement.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(subElement.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
@@ -629,19 +654,20 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(subElement.getName()).andReturn(TYPE_VALUE);
 		expect(subElement.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
 		expect(subElement.attributes()).andReturn(CollectionUtils.asList("order"));
-		expect(subElement.getName()).andReturn(TYPE_VALUE);
 		expect(factory.create(ValueSerialization.class)).andReturn(subElementConfig);
 		expect(factory.create(ComplexSerialization.class)).andReturn(serialization);
 		
-		replay(factory, element, attribute, subElement);
+		replay(factory, element, attribute, comment, subElement);
 		Serialization result = handler.handleComplex(element, attributes);
-		verify(factory, element, attribute, subElement);
+		verify(factory, element, attribute, comment, subElement);
 
 		assertSame(serialization, result);
 		assertEquals(1, CollectionUtils.sizeOf(serialization.getAttributes()));
 		assertSame(attributeConfig, serialization.getAttributes().get(0));
 		assertEquals(1, CollectionUtils.sizeOf(serialization.getElements()));
 		assertSame(subElementConfig, serialization.getElements().get(0));
+		assertEquals(1, CollectionUtils.sizeOf(serialization.getComments()));
+		assertEquals("Hello World", serialization.getComments().get(0));
 	}
 	
 	/**

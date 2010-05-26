@@ -1,51 +1,35 @@
 package com.localmatters.serializer.serialization;
 
-import org.apache.commons.lang.StringUtils;
-
-import com.localmatters.serializer.SerializationContext;
-import com.localmatters.serializer.SerializationException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Class handling the serialization of a comment if the serialization is pretty
+ * Abstract class defining a serialization that can have comments
  */
-public class CommentSerialization implements Serialization {
-	private String comment;
+public abstract class CommentSerialization extends AbstractSerialization {
+	private List<String> comments;
 
 	/**
-	 * @see com.localmatters.serializer.serialization.Serialization#serialize(java.lang.Object, com.localmatters.serializer.SerializationContext)
+	 * @return The comments on this serialization
 	 */
-	public String serialize(Object obj, SerializationContext context) throws SerializationException {
-		if (context.isPretty()) {
-			return context.getWriter().writeComment(this, getComment(), context);
+	public List<String> getComments() {
+		if (comments == null) {
+			setComments(new ArrayList<String>());
 		}
-		return StringUtils.EMPTY;
+		return comments;
 	}
 
 	/**
-	 * @return The comment
+	 * @param comment The comment on this serialization to add
 	 */
-	public String getComment() {
-		return comment;
+	public void addComment(String comment) {
+		getComments().add(comment);
 	}
 
 	/**
-	 * @param comment The comment
+	 * @param comments The comments on this serialization
 	 */
-	public void setComment(String comment) {
-		this.comment = comment;
-	}
-
-	/**
-	 * @see com.localmatters.serializer.serialization.Serialization#getName()
-	 */
-	public String getName() {
-		return null;
-	}
-
-	/**
-	 * @see com.localmatters.serializer.serialization.Serialization#isWriteEmpty()
-	 */
-	public boolean isWriteEmpty() {
-		return false;
+	public void setComments(List<String> comments) {
+		this.comments = comments;
 	}
 }

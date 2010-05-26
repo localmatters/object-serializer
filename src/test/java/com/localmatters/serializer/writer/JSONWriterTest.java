@@ -16,14 +16,12 @@ import junit.framework.TestCase;
 import org.apache.commons.lang.StringUtils;
 
 import com.localmatters.serializer.SerializationContext;
-import com.localmatters.serializer.serialization.CommentSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
 import com.localmatters.serializer.serialization.IteratorSerialization;
 import com.localmatters.serializer.serialization.MapSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
 import com.localmatters.serializer.test.DummyObject;
-import com.localmatters.serializer.writer.JSONWriter;
 import com.localmatters.util.CollectionUtils;
 
 /**
@@ -54,17 +52,6 @@ public class JSONWriterTest extends TestCase {
 		String result = writer.writeRoot(serialization, root, ctx);
 		verify(serialization);
 		assertEquals("{\"listing\":{}}", result);
-	}
-	
-	/**
-	 * Tests serializing a comment
-	 */
-	public void testComment() {
-		CommentSerialization serialization = createMock(CommentSerialization.class);
-		replay(serialization);
-		String result = writer.writeComment(serialization, null, ctx);
-		verify(serialization);
-		assertEquals(StringUtils.EMPTY, result);
 	}
 
 	/**
@@ -144,7 +131,7 @@ public class JSONWriterTest extends TestCase {
 		Serialization serialization = createMock(ComplexSerialization.class);
 		expect(serialization.isWriteEmpty()).andReturn(false);
 		replay(serialization);
-		String result = writer.writeComplex(serialization, null, null, null, ctx);
+		String result = writer.writeComplex(serialization, null, null, null, null, ctx);
 		verify(serialization);
 		assertEquals(StringUtils.EMPTY, result);
 	}
@@ -156,7 +143,7 @@ public class JSONWriterTest extends TestCase {
 		Serialization serialization = createMock(ComplexSerialization.class);
 		expect(serialization.isWriteEmpty()).andReturn(true);
 		replay(serialization);
-		String result = writer.writeComplex(serialization, null, null, null, ctx);
+		String result = writer.writeComplex(serialization, null, null, null, null, ctx);
 		verify(serialization);
 		assertEquals("null", result);
 	}
@@ -167,7 +154,7 @@ public class JSONWriterTest extends TestCase {
 	public void testComplexWhenNoProperty() throws Exception {
 		Serialization serialization = createMock(ComplexSerialization.class);
 		replay(serialization);
-		String result = writer.writeComplex(serialization, null, null, new Object(), ctx);
+		String result = writer.writeComplex(serialization, null, null, null, new Object(), ctx);
 		verify(serialization);
 		assertEquals("{}", result);
 	}
@@ -185,7 +172,7 @@ public class JSONWriterTest extends TestCase {
 		expect(elementSerialization.serialize(listing, ctx.appendSegment("listing"))).andReturn("");
 		
 		replay(serialization, attributeSerialization, elementSerialization);
-		String result = writer.writeComplex(serialization, 
+		String result = writer.writeComplex(serialization, null, 
 				CollectionUtils.asList(attributeSerialization), 
 				CollectionUtils.asList(elementSerialization), 
 				listing, ctx.appendSegment("listing"));
@@ -210,7 +197,7 @@ public class JSONWriterTest extends TestCase {
 		expect(elementSerialization.serialize(listing, ctx.appendSegment("listing"))).andReturn("\"LocalMatters\"");
 		
 		replay(serialization, attributeSerialization, elementSerialization);
-		String result = writer.writeComplex(serialization, 
+		String result = writer.writeComplex(serialization, null, 
 				CollectionUtils.asList(attributeSerialization), 
 				CollectionUtils.asList(elementSerialization), 
 				listing, ctx.appendSegment("listing"));
@@ -237,7 +224,7 @@ public class JSONWriterTest extends TestCase {
 		Serialization serialization = createMock(IteratorSerialization.class);
 		expect(serialization.isWriteEmpty()).andReturn(false);
 		replay(serialization);
-		String result = writer.writeIterator(serialization, null, Collections.EMPTY_LIST.iterator(), ctx);
+		String result = writer.writeIterator(serialization, null, null, Collections.EMPTY_LIST.iterator(), ctx);
 		verify(serialization);
 		assertEquals(StringUtils.EMPTY, result);
 	}
@@ -249,7 +236,7 @@ public class JSONWriterTest extends TestCase {
 		Serialization serialization = createMock(IteratorSerialization.class);
 		expect(serialization.isWriteEmpty()).andReturn(true);
 		replay(serialization);
-		String result = writer.writeIterator(serialization, null, Collections.EMPTY_LIST.iterator(), ctx);
+		String result = writer.writeIterator(serialization, null, null, Collections.EMPTY_LIST.iterator(), ctx);
 		verify(serialization);
 		assertEquals("[]", result);
 	}
@@ -265,7 +252,7 @@ public class JSONWriterTest extends TestCase {
 		expect(elementSerialization.serialize("", ctx.appendSegment("sports[0]"))).andReturn("");
 		
 		replay(serialization, elementSerialization);
-		String result = writer.writeIterator(serialization, elementSerialization, elements, ctx.appendSegment("sports"));
+		String result = writer.writeIterator(serialization, null, elementSerialization, elements, ctx.appendSegment("sports"));
 		verify(serialization, elementSerialization);
 		assertEquals("[]", result);
 	}
@@ -282,7 +269,7 @@ public class JSONWriterTest extends TestCase {
 		expect(elementSerialization.serialize("hockey", ctx.appendSegment("sports[1]"))).andReturn("\"hockey\"");
 		
 		replay(serialization, elementSerialization);
-		String result = writer.writeIterator(serialization, elementSerialization, elements, ctx.appendSegment("sports"));
+		String result = writer.writeIterator(serialization, null, elementSerialization, elements, ctx.appendSegment("sports"));
 		verify(serialization, elementSerialization);
 		assertEquals("[\"baseball\",\"hockey\"]", result);
 	}
@@ -295,7 +282,7 @@ public class JSONWriterTest extends TestCase {
 		Serialization serialization = createMock(MapSerialization.class);
 		expect(serialization.isWriteEmpty()).andReturn(false);
 		replay(serialization);
-		String result = writer.writeMap(serialization, null, null, null, ctx);
+		String result = writer.writeMap(serialization, null, null, null, null, ctx);
 		verify(serialization);
 		assertEquals(StringUtils.EMPTY, result);
 	}
@@ -307,7 +294,7 @@ public class JSONWriterTest extends TestCase {
 		Serialization serialization = createMock(MapSerialization.class);
 		expect(serialization.isWriteEmpty()).andReturn(true);
 		replay(serialization);
-		String result = writer.writeMap(serialization, null, null, null, ctx);
+		String result = writer.writeMap(serialization, null, null, null, null, ctx);
 		verify(serialization);
 		assertEquals("{}", result);
 	}
@@ -329,7 +316,7 @@ public class JSONWriterTest extends TestCase {
 		expect(valueSerialization.serialize("photography", ctx.appendSegment("leisures{\"hobby\"}"))).andReturn("\"photography\"");
 		
 		replay(serialization, keySerialization, valueSerialization);
-		String result = writer.writeMap(serialization, keySerialization, valueSerialization, map, ctx.appendSegment("leisures"));
+		String result = writer.writeMap(serialization, null, keySerialization, valueSerialization, map, ctx.appendSegment("leisures"));
 		verify(serialization, keySerialization, valueSerialization);
 		assertEquals("{\"sport\":\"baskeball\",\"hobby\":\"photography\"}", result);
 	}

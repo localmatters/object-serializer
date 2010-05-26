@@ -16,7 +16,6 @@ import junit.framework.TestCase;
 import org.apache.commons.lang.StringUtils;
 
 import com.localmatters.serializer.SerializationContext;
-import com.localmatters.serializer.serialization.CommentSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
 import com.localmatters.serializer.serialization.IteratorSerialization;
 import com.localmatters.serializer.serialization.MapSerialization;
@@ -52,41 +51,6 @@ public class XMLWriterTest extends TestCase {
 		String result = writer.writeRoot(serialization, root, ctx);
 		verify(serialization);
 		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><listing/>", result);
-	}
-	
-	/**
-	 * Tests serializing a null comment that should not be written
-	 */
-	public void testCommentWhenNullAndNotWrite() {
-		CommentSerialization serialization = createMock(CommentSerialization.class);
-		expect(serialization.isWriteEmpty()).andReturn(false);
-		replay(serialization);
-		String result = writer.writeComment(serialization, null, ctx);
-		verify(serialization);
-		assertEquals(StringUtils.EMPTY, result);
-	}
-	
-	/**
-	 * Tests serializing a null comment that should be written
-	 */
-	public void testCommentWhenNullAndWrite() {
-		CommentSerialization serialization = createMock(CommentSerialization.class);
-		expect(serialization.isWriteEmpty()).andReturn(true);
-		replay(serialization);
-		String result = writer.writeComment(serialization, null, ctx);
-		verify(serialization);
-		assertEquals("\n<!--  -->", result);
-	}
-	
-	/**
-	 * Tests serializing a comment
-	 */
-	public void testComment() {
-		CommentSerialization serialization = createMock(CommentSerialization.class);
-		replay(serialization);
-		String result = writer.writeComment(serialization, "Hello -- World", ctx);
-		verify(serialization);
-		assertEquals("\n<!-- Hello ** World -->", result);
 	}
 	
 	/**
@@ -161,7 +125,7 @@ public class XMLWriterTest extends TestCase {
 		expect(serialization.getName()).andReturn("listing");
 		expect(serialization.isWriteEmpty()).andReturn(false);
 		replay(serialization);
-		String result = writer.writeComplex(serialization, null, null, null, ctx.appendSegment("listing"));
+		String result = writer.writeComplex(serialization, null, null, null, null, ctx.appendSegment("listing"));
 		verify(serialization);
 		assertEquals(StringUtils.EMPTY, result);
 	}
@@ -174,7 +138,7 @@ public class XMLWriterTest extends TestCase {
 		expect(serialization.getName()).andReturn("listing");
 		expect(serialization.isWriteEmpty()).andReturn(true);
 		replay(serialization);
-		String result = writer.writeComplex(serialization, null, null, null, ctx.appendSegment("listing"));
+		String result = writer.writeComplex(serialization, null, null, null, null, ctx.appendSegment("listing"));
 		verify(serialization);
 		assertEquals("<listing/>", result);
 	}
@@ -186,7 +150,7 @@ public class XMLWriterTest extends TestCase {
 		Serialization serialization = createMock(ComplexSerialization.class);
 		expect(serialization.getName()).andReturn("listing");
 		replay(serialization);
-		String result = writer.writeComplex(serialization, null, null, new Object(), ctx.appendSegment("listing"));
+		String result = writer.writeComplex(serialization, null, null, null, new Object(), ctx.appendSegment("listing"));
 		verify(serialization);
 		assertEquals("<listing/>", result);
 	}
@@ -205,7 +169,7 @@ public class XMLWriterTest extends TestCase {
 		expect(elementSerialization.serialize(listing, ctx.appendSegment("listing"))).andReturn("");
 		
 		replay(serialization, attributeSerialization, elementSerialization);
-		String result = writer.writeComplex(serialization, 
+		String result = writer.writeComplex(serialization, null, 
 				CollectionUtils.asList(attributeSerialization), 
 				CollectionUtils.asList(elementSerialization), 
 				listing, ctx.appendSegment("listing"));
@@ -229,7 +193,7 @@ public class XMLWriterTest extends TestCase {
 		expect(elementSerialization.serialize(listing, ctx.appendSegment("listing"))).andReturn("<name>LocalMatters</name>");
 		
 		replay(serialization, attributeSerialization, elementSerialization);
-		String result = writer.writeComplex(serialization, 
+		String result = writer.writeComplex(serialization, null, 
 				CollectionUtils.asList(attributeSerialization), 
 				CollectionUtils.asList(elementSerialization), 
 				listing, ctx.appendSegment("listing"));
@@ -252,7 +216,7 @@ public class XMLWriterTest extends TestCase {
 		expect(elementSerialization.serialize(listing, ctx.appendSegment("listing"))).andReturn("");
 		
 		replay(serialization, attributeSerialization, elementSerialization);
-		String result = writer.writeComplex(serialization, 
+		String result = writer.writeComplex(serialization, null, 
 				CollectionUtils.asList(attributeSerialization), 
 				CollectionUtils.asList(elementSerialization), 
 				listing, ctx.appendSegment("listing"));
@@ -276,7 +240,7 @@ public class XMLWriterTest extends TestCase {
 		expect(elementSerialization.serialize(listing, ctx.appendSegment("listing"))).andReturn("<name>LocalMatters</name>");
 		
 		replay(serialization, attributeSerialization, elementSerialization);
-		String result = writer.writeComplex(serialization, 
+		String result = writer.writeComplex(serialization, null, 
 				CollectionUtils.asList(attributeSerialization), 
 				CollectionUtils.asList(elementSerialization), 
 				listing, ctx.appendSegment("listing"));
@@ -328,7 +292,7 @@ public class XMLWriterTest extends TestCase {
 		Serialization serialization = createMock(IteratorSerialization.class);
 		expect(serialization.isWriteEmpty()).andReturn(false);
 		replay(serialization);
-		String result = writer.writeIterator(serialization, null, Collections.EMPTY_LIST.iterator(), ctx);
+		String result = writer.writeIterator(serialization, null, null, Collections.EMPTY_LIST.iterator(), ctx);
 		verify(serialization);
 		assertEquals(StringUtils.EMPTY, result);
 	}
@@ -346,7 +310,7 @@ public class XMLWriterTest extends TestCase {
 		expect(serialization.getName()).andReturn("sports");
 		
 		replay(serialization, elementSerialization);
-		String result = writer.writeIterator(serialization, elementSerialization, elements, ctx.appendSegment("sports"));
+		String result = writer.writeIterator(serialization, null, elementSerialization, elements, ctx.appendSegment("sports"));
 		verify(serialization, elementSerialization);
 		assertEquals("<sports/>", result);
 	}
@@ -364,7 +328,7 @@ public class XMLWriterTest extends TestCase {
 		expect(serialization.getName()).andReturn("sports");
 		
 		replay(serialization, elementSerialization);
-		String result = writer.writeIterator(serialization, elementSerialization, elements, ctx.appendSegment("sports"));
+		String result = writer.writeIterator(serialization, null, elementSerialization, elements, ctx.appendSegment("sports"));
 		verify(serialization, elementSerialization);
 		assertEquals("<sports><sport>baseball</sport><sport>hockey</sport></sports>", result);
 	}
@@ -376,7 +340,7 @@ public class XMLWriterTest extends TestCase {
 		Serialization serialization = createMock(MapSerialization.class);
 		expect(serialization.isWriteEmpty()).andReturn(false);
 		replay(serialization);
-		String result = writer.writeMap(serialization, null, null, null, ctx);
+		String result = writer.writeMap(serialization, null, null, null, null, ctx);
 		verify(serialization);
 		assertEquals(StringUtils.EMPTY, result);
 	}
@@ -389,7 +353,7 @@ public class XMLWriterTest extends TestCase {
 		expect(serialization.isWriteEmpty()).andReturn(true);
 		expect(serialization.getName()).andReturn("leisure");
 		replay(serialization);
-		String result = writer.writeMap(serialization, null, null, null, ctx);
+		String result = writer.writeMap(serialization, null, null, null, null, ctx);
 		verify(serialization);
 		assertEquals("<leisure/>", result);
 	}
@@ -412,7 +376,7 @@ public class XMLWriterTest extends TestCase {
 		expect(serialization.getName()).andReturn("leisure");
 		
 		replay(serialization, keySerialization, valueSerialization);
-		String result = writer.writeMap(serialization, keySerialization, valueSerialization, map, ctx.appendSegment("leisures"));
+		String result = writer.writeMap(serialization, null, keySerialization, valueSerialization, map, ctx.appendSegment("leisures"));
 		verify(serialization, keySerialization, valueSerialization);
 		assertEquals("<leisure><sport>baskeball</sport><hobby>photography</hobby></leisure>", result);
 	}

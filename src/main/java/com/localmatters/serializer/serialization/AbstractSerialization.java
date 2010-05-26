@@ -1,5 +1,6 @@
 package com.localmatters.serializer.serialization;
 
+
 /**
  * Abstract class defining the common properties and functionalities of a 
  * serialization.

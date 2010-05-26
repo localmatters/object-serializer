@@ -12,7 +12,7 @@ import com.localmatters.serializer.SerializationException;
  * This class handles the serialization of an object that can be iterated over;
  * i.e. an Iterable, an Array or, even, a Map (through its Set of Map.Entry).
  */
-public class IteratorSerialization extends AbstractSerialization {
+public class IteratorSerialization extends CommentSerialization {
 	protected static final Iterator<?> EMTPY_ITERATOR = Collections.EMPTY_LIST.iterator();
 	private Serialization element;
 
@@ -37,7 +37,7 @@ public class IteratorSerialization extends AbstractSerialization {
 			throw new IteratorExpectedException(context.appendSegment(getName()));
 		}
 		
-		return context.getWriter().writeIterator(this, getElement(), itr, context.appendSegment(getName()));
+		return context.getWriter().writeIterator(this, getComments(), getElement(), itr, context.appendSegment(getName()));
 	}
 
 	/**

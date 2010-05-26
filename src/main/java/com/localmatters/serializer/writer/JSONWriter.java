@@ -37,14 +37,6 @@ public class JSONWriter implements Writer {
 	}
 
 	/**
-	 * @see com.localmatters.serializer.writer.Writer#writeComment(com.localmatters.serializer.serialization.Serialization, java.lang.String, com.localmatters.serializer.SerializationContext)
-	 */
-	public String writeComment(Serialization serialization, String comment, SerializationContext context) {
-		// not supported at the moment
-		return StringUtils.EMPTY;
-	}
-
-	/**
 	 * @see com.localmatters.serializer.writer.Writer#writeValue(com.localmatters.serializer.serialization.Serialization, java.lang.Object, java.lang.String)
 	 */
 	public String writeValue(Serialization serialization, Object value, SerializationContext context) {
@@ -68,9 +60,9 @@ public class JSONWriter implements Writer {
 	}
 	
 	/**
-	 * @see com.localmatters.serializer.writer.Writer#writeComplex(com.localmatters.serializer.serialization.Serialization, java.util.Collection, java.util.Collection, java.lang.Object, com.localmatters.serializer.SerializationContext)
+	 * @see com.localmatters.serializer.writer.Writer#writeComplex(com.localmatters.serializer.serialization.Serialization, java.util.Collection, java.util.Collection, java.util.Collection, java.lang.Object, com.localmatters.serializer.SerializationContext)
 	 */
-	public String writeComplex(Serialization serialization, Collection<Serialization> attributeSerializations, Collection<Serialization> elementSerializations, Object object, SerializationContext context) throws SerializationException {
+	public String writeComplex(Serialization serialization, Collection<String> comments, Collection<Serialization> attributeSerializations, Collection<Serialization> elementSerializations, Object object, SerializationContext context) throws SerializationException {
 		if (object == null) {
 			if (serialization.isWriteEmpty()) {
 				return NULL;
@@ -110,9 +102,9 @@ public class JSONWriter implements Writer {
 	}
 	
 	/**
-	 * @see com.localmatters.serializer.writer.Writer#writeIterator(com.localmatters.serializer.serialization.Serialization, com.localmatters.serializer.serialization.Serialization, java.util.Iterator, com.localmatters.serializer.SerializationContext)
+	 * @see com.localmatters.serializer.writer.Writer#writeIterator(com.localmatters.serializer.serialization.Serialization, java.util.Collection, com.localmatters.serializer.serialization.Serialization, java.util.Iterator, com.localmatters.serializer.SerializationContext)
 	 */
-	public String writeIterator(Serialization serialization, Serialization elementSerialization, Iterator<?> index, SerializationContext context) throws SerializationException {
+	public String writeIterator(Serialization serialization, Collection<String> comments, Serialization elementSerialization, Iterator<?> index, SerializationContext context) throws SerializationException {
 		if (index.hasNext()) {
 			StringBuilder sb = new StringBuilder();
 			int i = 0;
@@ -129,9 +121,9 @@ public class JSONWriter implements Writer {
 	}
 
 	/**
-	 * @see com.localmatters.serializer.writer.Writer#writeMap(com.localmatters.serializer.serialization.Serialization, com.localmatters.serializer.serialization.Serialization, com.localmatters.serializer.serialization.Serialization, java.util.Map, com.localmatters.serializer.SerializationContext)
+	 * @see com.localmatters.serializer.writer.Writer#writeMap(com.localmatters.serializer.serialization.Serialization, java.util.Collection, com.localmatters.serializer.serialization.Serialization, com.localmatters.serializer.serialization.Serialization, java.util.Map, com.localmatters.serializer.SerializationContext)
 	 */
-	public String writeMap(Serialization serialization, Serialization keySerialization, Serialization valueSerialization, Map<?,?> map, SerializationContext context) throws SerializationException {
+	public String writeMap(Serialization serialization, Collection<String> comments, Serialization keySerialization, Serialization valueSerialization, Map<?,?> map, SerializationContext context) throws SerializationException {
 		if (CollectionUtils.isNotEmpty(map)) {
 			StringBuilder sb = new StringBuilder();
 			for (Map.Entry<?, ?> entry : map.entrySet()) {

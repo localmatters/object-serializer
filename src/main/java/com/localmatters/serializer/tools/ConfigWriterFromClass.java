@@ -73,6 +73,7 @@ public class ConfigWriterFromClass {
 		stack.push(klass);
 		
 		ComplexSerialization complex = SerializationUtils.createComplex("complex");
+		complex.addComment("Configuration for the class [" + klass.getName() + "]");
 
 		// loops over the getter
 		for (Method getter : ReflectionUtils.getGetters(klass)) {
@@ -102,6 +103,8 @@ public class ConfigWriterFromClass {
 					else {
 						ComplexSerialization list = SerializationUtils.createComplex("list");
 						complex.addElement(list);
+						list.addComment("Configured the complex map returned by [" + getter.getName() + "] as a list.");
+						list.addComment("You can change this to a <map> by setting its [key] attribute");
 						list.addAttribute(SerializationUtils.createConstantAttribute("name", field));
 						list.addAttribute(SerializationUtils.createConstantAttribute("property", field));
 						

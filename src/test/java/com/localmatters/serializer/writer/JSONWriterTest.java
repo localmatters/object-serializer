@@ -114,6 +114,17 @@ public class JSONWriterTest extends TestCase {
 	}
 	
 	/**
+	 * Tests serializing a boolean
+	 */
+	public void testValueWhenBoolean() {
+		ValueSerialization serialization = createMock(ValueSerialization.class);
+		replay(serialization);
+		String result = writer.writeValue(serialization, true, ctx);
+		verify(serialization);
+		assertEquals("true", result);
+	}
+	
+	/**
 	 * Tests serializing a value
 	 */
 	public void testValue() {

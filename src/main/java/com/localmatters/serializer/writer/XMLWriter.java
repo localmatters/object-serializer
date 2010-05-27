@@ -16,6 +16,7 @@ import com.localmatters.util.StringUtils;
  * This class defines a serialization writer that outputs XML.
  */
 public class XMLWriter implements Writer {
+	private static final String INDENTATION = "    ";
 	private static final String ROOT_FORMAT = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>%s";
 	private static final String EMPTY_TAG_FORMAT = "%s<%s/>";
 	private static final String SIMPLE_TAG_FORMAT = "%s<%s>%s%s</%s>";
@@ -23,7 +24,6 @@ public class XMLWriter implements Writer {
 	private static final String COMPLETE_TAG_FORMAT = "%s<%s%s>%s%s</%s>";
 	private static final String EMPTY_ATTRIBUTE_FORMAT = " %s=\"\"";
 	private static final String ATTRIBUTE_FORMAT = " %s=\"%s\"";
-	private static final String COMMENT_FORMAT = "%s<!-- %s -->";
 
 	/**
 	 * @see com.localmatters.serializer.writer.Writer#writeRoot(com.localmatters.serializer.serialization.Serialization, java.lang.Object, com.localmatters.serializer.SerializationContext)
@@ -41,14 +41,14 @@ public class XMLWriter implements Writer {
 			String str = String.valueOf(value);
 			if (StringUtils.isNotBlank(str)) {
 				if (StringUtils.isNotBlank(name)) {
-					return String.format(SIMPLE_TAG_FORMAT, context.getPrefix(), name, StringEscapeUtils.escapeXml(str), context.getPrefix(), name);
+					return String.format(SIMPLE_TAG_FORMAT, getPrefix(context), name, StringEscapeUtils.escapeXml(str), getPrefix(context), name);
 				} else {
 					return StringEscapeUtils.escapeXml(str);
 				}
 			}
 		}
 		if (serialization.isWriteEmpty() && StringUtils.isNotBlank(name)) {
-			return String.format(EMPTY_TAG_FORMAT, context.getPrefix(), name);
+			return String.format(EMPTY_TAG_FORMAT, getPrefix(context), name);
 		}
 		return StringUtils.EMPTY;
 	}
@@ -59,18 +59,20 @@ public class XMLWriter implements Writer {
 	 * @param comments The comments to write 
 	 * @return The string describing the comment
 	 */
-	private String getPrefixWithComments(SerializationContext context, Collection<String> comments) {
+	protected String writePrefixWithComments(SerializationContext context, Collection<String> comments) {
 		if (context.isPretty()) {
+			String prefix = getPrefix(context);
 			StringBuilder sb = new StringBuilder();
 			if (CollectionUtils.isNotEmpty(comments)) {
-				sb.append("\n");
+				sb.append("\n").append(prefix).append("<!-- ");
+				String sep = ""; 
 				for (String comment : comments) {
-					if (StringUtils.isNotBlank(comment)) {
-						sb.append(String.format(COMMENT_FORMAT, context.getPrefix(), comment));
-					}
+					StringUtils.addValue(sb, comment.replaceAll("--", "**"), sep);
+					sep = prefix + "     ";
 				}
+				sb.append(" -->");
 			}
-			sb.append(context.getPrefix());
+			sb.append(prefix);
 			return sb.toString();
 		}
 		return StringUtils.EMPTY;
@@ -97,19 +99,19 @@ public class XMLWriter implements Writer {
 			}
 			
 			if ((attributes.length() == 0) && (elements.length() == 0)) {
-				return String.format(EMPTY_TAG_FORMAT, getPrefixWithComments(context, comments), name);
+				return String.format(EMPTY_TAG_FORMAT, writePrefixWithComments(context, comments), name);
 			}
 			if (attributes.length() == 0) {
-				return String.format(SIMPLE_TAG_FORMAT, getPrefixWithComments(context, comments), name, elements, context.getPrefix(), name);
+				return String.format(SIMPLE_TAG_FORMAT, writePrefixWithComments(context, comments), name, elements, getPrefix(context), name);
 			}
 			if (elements.length() == 0) {
-				return String.format(ATTRIBUTE_ONLY_TAG_FORMAT, getPrefixWithComments(context, comments), name, attributes, name);
+				return String.format(ATTRIBUTE_ONLY_TAG_FORMAT, writePrefixWithComments(context, comments), name, attributes, name);
 			}
-			return String.format(COMPLETE_TAG_FORMAT, getPrefixWithComments(context, comments), name, attributes, elements, context.getPrefix(), name);
+			return String.format(COMPLETE_TAG_FORMAT, writePrefixWithComments(context, comments), name, attributes, elements, getPrefix(context), name);
 			
 		}
 		if (serialization.isWriteEmpty()) {
-			return String.format(EMPTY_TAG_FORMAT, getPrefixWithComments(context, comments), name);
+			return String.format(EMPTY_TAG_FORMAT, writePrefixWithComments(context, comments), name);
 		}
 		return StringUtils.EMPTY;
 	}
@@ -140,11 +142,11 @@ public class XMLWriter implements Writer {
 			}
 			if (sb.length() > 0) {
 				String name = serialization.getName();
-				return String.format(SIMPLE_TAG_FORMAT, getPrefixWithComments(context, comments), name, sb, context.getPrefix(), name);
+				return String.format(SIMPLE_TAG_FORMAT, writePrefixWithComments(context, comments), name, sb, getPrefix(context), name);
 			}
 		} 
 		if (serialization.isWriteEmpty()) {
-			return String.format(EMPTY_TAG_FORMAT, getPrefixWithComments(context, comments), serialization.getName());
+			return String.format(EMPTY_TAG_FORMAT, writePrefixWithComments(context, comments), serialization.getName());
 		}
 		return StringUtils.EMPTY;
 	}
@@ -158,16 +160,29 @@ public class XMLWriter implements Writer {
 			for (Map.Entry<?, ?> entry : map.entrySet()) {
 				String key = keySerialization.serialize(entry.getKey(), context.appendMap());
 				String value = valueSerialization.serialize(entry.getValue(), context.appendMap(key));
-				sb.append(String.format(SIMPLE_TAG_FORMAT, getPrefixWithComments(context, comments), key, value, context.getPrefix(), key));
+				sb.append(String.format(SIMPLE_TAG_FORMAT, writePrefixWithComments(context, comments), key, value, getPrefix(context), key));
 			}
 
 			String name = serialization.getName();
-			return String.format(SIMPLE_TAG_FORMAT, getPrefixWithComments(context, comments), name, sb, context.getPrefix(), name);
+			return String.format(SIMPLE_TAG_FORMAT, writePrefixWithComments(context, comments), name, sb, getPrefix(context), name);
 		}
 		if (serialization.isWriteEmpty()) {
-			return String.format(EMPTY_TAG_FORMAT, getPrefixWithComments(context, comments), serialization.getName());
+			return String.format(EMPTY_TAG_FORMAT, writePrefixWithComments(context, comments), serialization.getName());
 		}
 		return StringUtils.EMPTY;
+	}
+
+	protected String getPrefix(SerializationContext context) {
+		String prefix = "";
+		int deepness = context.getDeepness();
+		if (context.isPretty() && (deepness > 0)) {
+			prefix = "\n";
+			for (int i=1; i<deepness; i++) {
+				prefix += INDENTATION;
+			}
+		}
+		return prefix;
+		
 	}
 	
 	

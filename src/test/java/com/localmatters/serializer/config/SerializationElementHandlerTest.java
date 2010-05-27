@@ -338,6 +338,41 @@ public class SerializationElementHandlerTest extends TestCase {
 	}
 
 	/**
+	 * Tests the <code>handleList</code> method when it has too many non comment
+	 * children
+	 */
+	public void testHandleListWhenTooManyNonCommentChildren() {
+		IteratorSerialization serialization = new IteratorSerialization();
+		ValueSerialization elementConfig = new ValueSerialization();
+		Element child1 = createMock(Element.class);
+		Element child2 = createMock(Element.class);
+
+		expect(factory.create(IteratorSerialization.class)).andReturn(serialization);
+		expect(element.elements()).andReturn(CollectionUtils.asList(child1, child2));
+		expect(child1.getName()).andReturn(TYPE_VALUE);
+		expect(child1.attributeValue(ATTRIBUTE_ID)).andReturn(null);
+		expect(child1.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
+		expect(child1.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
+		expect(child1.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
+		expect(child1.attributeValue(ATTRIBUTE_NAME)).andReturn("amount");
+		expect(child1.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
+		expect(child1.attributes()).andReturn(CollectionUtils.asList("amount"));
+		expect(child1.getName()).andReturn(TYPE_VALUE);
+		expect(factory.create(ValueSerialization.class)).andReturn(elementConfig);
+		expect(child2.getName()).andReturn(TYPE_VALUE);
+		expect(element.getPath()).andReturn(PATH);
+
+		replay(factory, element, child1, child2);
+		try {
+			handler.handleList(element, attributes);
+			fail("ConfigurationException expected");
+		} catch (ConfigurationException e) {
+			assertEquals(String.format(INVALID_LIST_FORMAT, PATH), e.getMessage());
+		}
+		verify(factory, element, child1, child2);
+	}
+
+	/**
 	 * Tests the <code>handleList</code> method
 	 */
 	public void testHandleList() {
@@ -429,6 +464,41 @@ public class SerializationElementHandlerTest extends TestCase {
 	}
 
 	/**
+	 * Tests the <code>handleMap</code> method when it has too many non comment
+	 * children
+	 */
+	public void testHandleMapWhenTooManyNonCommentChildren() {
+		MapSerialization serialization = new MapSerialization();
+		ValueSerialization valueConfig = new ValueSerialization();
+		Element child1 = createMock(Element.class);
+		Element child2 = createMock(Element.class);
+
+		expect(factory.create(MapSerialization.class)).andReturn(serialization);
+		expect(element.elements()).andReturn(CollectionUtils.asList(child1, child2));
+		expect(child1.getName()).andReturn(TYPE_VALUE);
+		expect(child1.attributeValue(ATTRIBUTE_ID)).andReturn(null);
+		expect(child1.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
+		expect(child1.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
+		expect(child1.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
+		expect(child1.attributeValue(ATTRIBUTE_NAME)).andReturn("amount");
+		expect(child1.getName()).andReturn(TYPE_VALUE);
+		expect(child1.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
+		expect(child1.attributes()).andReturn(CollectionUtils.asList("amount"));
+		expect(factory.create(ValueSerialization.class)).andReturn(valueConfig);
+		expect(child2.getName()).andReturn(TYPE_VALUE);
+		expect(element.getPath()).andReturn(PATH);
+
+		replay(factory, element, child1, child2);
+		try {
+			handler.handleMap(element, attributes);
+			fail("ConfigurationException expected");
+		} catch (ConfigurationException e) {
+			assertEquals(String.format(INVALID_MAP_FORMAT, PATH), e.getMessage());
+		}
+		verify(factory, element, child1, child2);
+	}
+
+	/**
 	 * Tests the <code>handleMap</code> method when the key attribute is not set
 	 */
 	public void testHandleMapWhenNoKey() {
@@ -470,7 +540,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		assertEquals("Hello World", serialization.getComments().get(0));
 
 	}
-
+	
 	/**
 	 * Tests the <code>handleMap</code> method
 	 */
@@ -481,6 +551,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		ValueSerialization valueConfig = new ValueSerialization();
 		Element child = createMock(Element.class);
 
+		expect(factory.create(MapSerialization.class)).andReturn(serialization);
 		expect(element.elements()).andReturn(CollectionUtils.asList(child));
 		expect(child.getName()).andReturn(TYPE_VALUE);
 		expect(child.attributeValue(ATTRIBUTE_ID)).andReturn(null);
@@ -495,7 +566,6 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(factory.create(ValueSerialization.class)).andReturn(keyConfig);
 		expect(element.attributeValue(ATTRIBUTE_KEY)).andReturn("listing.id");
 		expect(factory.create(PropertySerialization.class)).andReturn(propertyConfig);
-		expect(factory.create(MapSerialization.class)).andReturn(serialization);
 
 		replay(factory, element, child);
 		Serialization result = handler.handleMap(element, attributes);

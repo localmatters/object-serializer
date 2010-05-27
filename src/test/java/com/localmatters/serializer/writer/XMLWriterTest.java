@@ -54,6 +54,30 @@ public class XMLWriterTest extends TestCase {
 	}
 	
 	/**
+	 * Tests writing the prefix with comment when the context is not pretty
+	 */
+	public void testWritePrefixWithCommentWhenNotPretty() {
+		assertEquals(StringUtils.EMPTY, writer.writePrefixWithComments(ctx, CollectionUtils.asList("Hello -- World", "What's up?")));
+	}
+	
+	/**
+	 * Tests writing the prefix with comment when the context is pretty, but
+	 * has no comments
+	 */
+	public void testWritePrefixWithoutCommentButPretty() {
+		ctx = new SerializationContext(writer, null, null, true).appendSegment("results").appendSegment("listings");
+		assertEquals("\n    ", writer.writePrefixWithComments(ctx, null));
+	}
+	
+	/**
+	 * Tests writing the prefix with comment when the context is not pretty
+	 */
+	public void testWritePrefixWithComment() {
+		ctx = new SerializationContext(writer, null, null, true).appendSegment("results").appendSegment("listings");
+		assertEquals("\n\n    <!-- Hello ** World\n         What's up? -->\n    ", writer.writePrefixWithComments(ctx, CollectionUtils.asList("Hello -- World", "", "What's up?")));
+	}
+	
+	/**
 	 * Tests serializing a null value that should not be written
 	 */
 	public void testValueWhenNullAndNotWrite() {

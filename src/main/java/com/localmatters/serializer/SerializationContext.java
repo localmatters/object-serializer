@@ -10,11 +10,10 @@ import com.localmatters.serializer.writer.Writer;
 /**
  * Provides the current context for the serialization. While serializing, each
  * level in the serialization will get its own context. However, the only 
- * difference between all the context of a given serialization should be the 
- * path as the other elements should be the same (instance equality).
+ * difference between contexts of a given serialization should be the path and
+ * the prefix. All the other elements should be the same (instance equality).
  */
 public class SerializationContext {
-	private static final String INDENTATION = "   ";
 	private static final String SEPARATOR = ".";
 	private static final String MAP = "{}";
 	private static final String INDEX_FORMAT = "[%d]";
@@ -24,7 +23,6 @@ public class SerializationContext {
 	private PropertyResolver propertyResolver;
 	private Map<String, Object> beans;
 	private boolean pretty = false;
-	private String prefix = "";
 
 	/**
 	 * Default constructor
@@ -52,13 +50,13 @@ public class SerializationContext {
 		setPropertyResolver(propertyResolver);
 		setPath(path);
 		setPretty(pretty);
-		if (isPretty() && StringUtils.isNotBlank(path)) {
-			int count = StringUtils.countMatches(path, SEPARATOR);
-			prefix = "\n";
-			for (int i=0; i<count; i++) {
-				prefix += INDENTATION;
-			}
-		}
+	}
+
+	/**
+	 * @return The deepness of this context
+	 */
+	public int getDeepness() {
+		return StringUtils.countMatches(getPath(), SEPARATOR) + 1;
 	}
 	
 	/**
@@ -239,12 +237,5 @@ public class SerializationContext {
 	 */
 	private void setPretty(boolean pretty) {
 		this.pretty = pretty;
-	}
-
-	/**
-	 * @return The prefix to format the output
-	 */
-	public String getPrefix() {
-		return prefix;
 	}
 }

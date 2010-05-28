@@ -122,7 +122,6 @@ public abstract class ReflectionUtils {
 	 * <code>Map&lt;Double, String&gt;</code>. Returns null otherwise
 	 * @param type The type
 	 * @return The list of the return type arguments or null
-	 */
 	public static Class<?>[] getGenericClassesForType(Type type) {
 		if (type instanceof ParameterizedType){
 	        ParameterizedType paramType = (ParameterizedType) type;
@@ -143,6 +142,23 @@ public abstract class ReflectionUtils {
 	    }
 		if (type instanceof Class<?>) {
 			return getGenericClassesForType(((Class<?>) type).getGenericSuperclass());
+		}
+	    return null;
+	}
+	 */
+
+	/**
+	 * Returns the return the type arguments of the given type.
+	 * @param type The type
+	 * @return The list of the return type arguments or null
+	 */
+	public static Type[] getTypeArgumentsForType(Type type) {
+		if (type instanceof ParameterizedType){
+	        ParameterizedType paramType = (ParameterizedType) type;
+	        return paramType.getActualTypeArguments();
+	    }
+		if (type instanceof Class<?>) {
+			return getTypeArgumentsForType(((Class<?>) type).getGenericSuperclass());
 		}
 	    return null;
 	}

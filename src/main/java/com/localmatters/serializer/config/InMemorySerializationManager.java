@@ -32,7 +32,7 @@ public class InMemorySerializationManager extends AbstractRefreshableContent imp
 		Reader reader = new InputStreamReader(getResource().getInputStream(), getEncoding());
 		SAXReader saxReader = new SAXReader();
 		SerializationElementHandler handler = new SerializationElementHandler(getObjectFactory());
-		saxReader.addHandler("/serializations", handler);
+		saxReader.addHandler("/" + SerializationElementHandler.TYPE_ROOT, handler);
 		try {
 			saxReader.read(reader);
 		} catch (DocumentException e) {

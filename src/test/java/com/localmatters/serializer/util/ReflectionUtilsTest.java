@@ -4,19 +4,24 @@
 package com.localmatters.serializer.util;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
-
-import org.apache.commons.collections.CollectionUtils;
+import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import com.localmatters.serializer.test.DummyEnum;
 import com.localmatters.serializer.test.DummyObject;
 import com.localmatters.serializer.test.DummyObject.Address;
 import com.localmatters.serializer.test.DummyObject.Orders;
+import com.localmatters.serializer.test.domain.ObjectWithGenerics;
+import com.localmatters.serializer.test.domain.ParameterizedObject;
 
 /**
  * Tests the <code>ReflectionUtils</code>
@@ -172,35 +177,84 @@ public class ReflectionUtilsTest extends TestCase {
 	}
 	
 	/**
-	 * Test getting the generic classes for a type
+	 * Test getting the type arguments for a type
 	 * @throws Exception When the test fails
 	 */
-	public void testGetGenericClassesForType() throws Exception {
-		Method method = DummyObject.class.getMethod("getName", (Class<?>[]) null);
-		Class<?>[] classes = ReflectionUtils.getGenericClassesForType(method.getGenericReturnType());
-		assertNull(classes);
+	public void testGetTypeArgumentsForType() throws Exception {
+		assertNull(ReflectionUtils.getTypeArgumentsForType(String.class));
+		assertNull(ReflectionUtils.getTypeArgumentsForType(List.class));
+		assertNull(ReflectionUtils.getTypeArgumentsForType(Map.class));
+
+		Type[] types = ReflectionUtils.getTypeArgumentsForType(ParameterizedObject.class);
+		assertNotNull(types);
+		assertEquals(1, types.length);
+		assertSame(String.class, types[0]);
 		
-		method = DummyObject.class.getMethod("getOrdersAsList", (Class<?>[]) null);
-		classes = ReflectionUtils.getGenericClassesForType(method.getGenericReturnType());
-		assertNotNull(classes);
-		assertEquals(1, classes.length);
-		assertSame(String.class, classes[0]);
+		Class<?> cl = ObjectWithGenerics.class;
 
-		method = DummyObject.class.getMethod("getOrders", (Class<?>[]) null);
-		classes = ReflectionUtils.getGenericClassesForType(method.getGenericReturnType());
-		assertNotNull(classes);
-		assertEquals(1, classes.length);
-		assertSame(String.class, classes[0]);
+		Method method = cl.getMethod("getList", (Class<?>[]) null);
+		types = ReflectionUtils.getTypeArgumentsForType(method.getGenericReturnType());
+		assertNull(types);
 
-		method = DummyObject.class.getMethod("getAddresses", (Class<?>[]) null);
-		classes = ReflectionUtils.getGenericClassesForType(method.getGenericReturnType());
-		assertNotNull(classes);
-		assertEquals(2, classes.length);
-		assertSame(String.class, classes[0]);
-		assertSame(Address.class, classes[1]);
+		method = cl.getMethod("getListOfString", (Class<?>[]) null);
+		types = ReflectionUtils.getTypeArgumentsForType(method.getGenericReturnType());
+		assertNotNull(types);
+		assertEquals(1, types.length);
+		assertSame(String.class, types[0]);
 
-		classes = ReflectionUtils.getGenericClassesForType((new HashMap<String, Double>()).getClass());
-		assertNull(classes);
+		method = cl.getMethod("getListOfListOfString", (Class<?>[]) null);
+		types = ReflectionUtils.getTypeArgumentsForType(method.getGenericReturnType());
+		assertNotNull(types);
+		assertEquals(1, types.length);
+		assertTrue(types[0] instanceof ParameterizedType);
+		ParameterizedType type = (ParameterizedType) types[0];
+		assertSame(List.class, type.getRawType());
+		types = ReflectionUtils.getTypeArgumentsForType(type);
+		assertNotNull(types);
+		assertEquals(1, types.length);
+		assertSame(String.class, types[0]);
+
+		method = cl.getMethod("getListOfParameterizedObject", (Class<?>[]) null);
+		types = ReflectionUtils.getTypeArgumentsForType(method.getGenericReturnType());
+		assertNotNull(types);
+		assertEquals(1, types.length);
+		assertTrue(types[0] instanceof Class<?>);
+		Class<?> klass = (Class<?>) types[0];
+		types = ReflectionUtils.getTypeArgumentsForType(klass);
+		assertNotNull(types);
+		assertEquals(1, types.length);
+		assertSame(String.class, types[0]);
+
+		method = cl.getMethod("getListOfMapOfStringAndList", (Class<?>[]) null);
+		types = ReflectionUtils.getTypeArgumentsForType(method.getGenericReturnType());
+		assertNotNull(types);
+		assertEquals(1, types.length);
+		assertTrue(types[0] instanceof ParameterizedType);
+		type = (ParameterizedType) types[0];
+		assertSame(Map.class, type.getRawType());
+		types = ReflectionUtils.getTypeArgumentsForType(type);
+		assertNotNull(types);
+		assertEquals(2, types.length);
+		assertSame(String.class, types[0]);
+		assertSame(List.class, types[1]);
+
+		method = cl.getMethod("getMap", (Class<?>[]) null);
+		types = ReflectionUtils.getTypeArgumentsForType(method.getGenericReturnType());
+		assertNotNull(types);
+		assertEquals(2, types.length);
+		assertFalse(types[0] instanceof Class<?>);
+		assertFalse(types[0] instanceof ParameterizedType);
+		assertFalse(types[1] instanceof Class<?>);
+		assertFalse(types[1] instanceof ParameterizedType);
+
+		method = cl.getMethod("getMapOfStringAndDouble", (Class<?>[]) null);
+		types = ReflectionUtils.getTypeArgumentsForType(method.getGenericReturnType());
+		assertNotNull(types);
+		assertEquals(2, types.length);
+		assertTrue(types[0] instanceof Class<?>);
+		assertSame(String.class, types[0]);
+		assertTrue(types[1] instanceof Class<?>);
+		assertSame(Double.class, types[1]);
 	}
 	
 	/**
@@ -208,9 +262,10 @@ public class ReflectionUtilsTest extends TestCase {
 	 */
 	public void testGetGetters() {
 		Collection<Method> getters = ReflectionUtils.getGetters(DummyObject.class);
-		assertEquals(6, CollectionUtils.size(getters));
+		assertEquals(7, CollectionUtils.size(getters));
 		Iterator<Method> itr = getters.iterator();
 		assertEquals("getAddresses", itr.next().getName());
+		assertEquals("getAddressesRaw", itr.next().getName());
 		assertEquals("getId", itr.next().getName());
 		assertEquals("getName", itr.next().getName());
 		assertEquals("getOrders", itr.next().getName());

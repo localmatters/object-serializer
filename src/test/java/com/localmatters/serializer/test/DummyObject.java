@@ -71,6 +71,14 @@ public class DummyObject {
 	}
 
 	/**
+	 * @return The addresses
+	 */
+	@SuppressWarnings("unchecked")
+	public Map getAddressesRaw() {
+		return addresses;
+	}
+
+	/**
 	 * @param addresses The addresses to set
 	 */
 	public void setAddresses(Map<String, Address> addresses) {

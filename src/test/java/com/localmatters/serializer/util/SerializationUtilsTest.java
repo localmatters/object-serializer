@@ -9,6 +9,7 @@ import com.localmatters.serializer.serialization.AttributeSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
 import com.localmatters.serializer.serialization.ConstantSerialization;
 import com.localmatters.serializer.serialization.PropertySerialization;
+import com.localmatters.serializer.serialization.ReferenceSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.util.CollectionUtils;
 
@@ -64,6 +65,31 @@ public class SerializationUtilsTest extends TestCase {
 		assertEquals("name", complex.getName());
 		assertTrue(CollectionUtils.isEmpty(complex.getAttributes()));
 		assertTrue(CollectionUtils.isEmpty(complex.getElements()));
+	}
+
+	/**
+	 * Tests creating a new complex serialization with attribute
+	 */
+	public void testCreateComplexWithAttributes() {
+		Serialization attr1 = SerializationUtils.createAttribute("attr1");
+		Serialization attr2 = SerializationUtils.createAttribute("attr2");
+		ComplexSerialization complex = SerializationUtils.createComplex("name", attr1, attr2);
+		assertEquals("name", complex.getName());
+		assertEquals(2, CollectionUtils.sizeOf(complex.getAttributes()));
+		assertSame(attr1, complex.getAttributes().get(0));
+		assertSame(attr2, complex.getAttributes().get(1));
+		assertTrue(CollectionUtils.isEmpty(complex.getElements()));
+	}
+
+	/**
+	 * Tests creating a new reference serialization
+	 */
+	public void testCreateReference() {
+		Serialization referenced = SerializationUtils.createComplex("name");
+		ReferenceSerialization reference = SerializationUtils.createReference(referenced);
+		assertSame(referenced, reference.getReferenced());
+		assertEquals(referenced.getName(), reference.getName());
+		assertEquals(referenced.isWriteEmpty(), reference.isWriteEmpty());
 	}
 	
 	

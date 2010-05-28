@@ -1,4 +1,4 @@
-package com.localmatters.serializer.test;
+package com.localmatters.serializer.test.domain;
 
 /**
  * A dummy Enumeration

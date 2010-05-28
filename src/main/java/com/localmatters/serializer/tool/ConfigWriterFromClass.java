@@ -38,7 +38,7 @@ import com.localmatters.util.StringUtils;
  */
 public class ConfigWriterFromClass {
 	private static final Pattern COLLECTION_PATTERN = Pattern.compile("^(?:paM|tsiL|xednI|teS|yarrA|noitcelloC)(.*)");
-	private static final Pattern PLURAL_PATTERN = Pattern.compile("^(?:([^s]*[A-Z])s|s)(?:(e[iaou]|[^se])|e)(.*)");
+	private static final Pattern PLURAL_PATTERN = Pattern.compile("^(?:([^s]*[A-Z])s|s)(?:(e[iaou]|[a-df-rt-z])|e)(.*)");
 	private Class<?> rootClass;
 	private ComplexSerialization root;
 	private Map<Class<?>, ReferenceSerialization> references;
@@ -117,11 +117,24 @@ public class ConfigWriterFromClass {
 			return value;
 		}
 
-		// then checks if this class is a map
+		// handles simple class
+		if (ReflectionUtils.isSimple(klass)) {
+			return handleSingle(name, klass, attributes);
+		}
+		
+		// handles map
 		if (Map.class.isAssignableFrom(klass)) {
 			return handleMap(name, klass, ReflectionUtils.getTypeArgumentsForType(type), attributes);
 		}
 		
+		// handles iterable
+		if (Iterable.class.isAssignableFrom(klass)) {
+			return handleIterator(name, klass, ReflectionUtils.getTypeArgumentsForType(type), attributes);
+		}
+		// handles array
+		if (klass.isArray()) {
+			return handleIterator(name, klass, ReflectionUtils.getTypeArgumentsForType(type), attributes);
+		}
 		
 		return handleReference(name, klass, attributes);
 		
@@ -179,15 +192,17 @@ public class ConfigWriterFromClass {
 	 */
 	protected Serialization handleMap(String name, Class<?> klass, Type[] types, Serialization...attributes) {
 		ComplexSerialization map = null;
-		String singleName = getSingular(name, "value");
+		String singleName = getSingular(name, "entry");
 
 		if ((types != null) && (types.length == 2)) {
 			
 			// simple map
 			if ((types[0] instanceof Class<?>) && ReflectionUtils.isSimple((Class<?>) types[0])) {
 				map = SerializationUtils.createComplex(TYPE_MAP, attributes);
-				map.addElement(handleType(singleName, types[1], 
-						SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, singleName)));
+				map.addComment("map of [" + types[0] + "] and [" + types[1] + "]");
+				Serialization element = handleType(singleName, types[1], 
+						SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, singleName));
+				map.addElement(element);
 			} 
 			// complex map => list
 			else {
@@ -200,8 +215,8 @@ public class ConfigWriterFromClass {
 				element.addElement(handleType("key", types[0],
 						SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, "key"),
 						SerializationUtils.createConstantAttribute(ATTRIBUTE_PROPERTY, "key")));
-				element.addElement(handleType(singleName, types[1],
-						SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, singleName),
+				element.addElement(handleType("value", types[1],
+						SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, "value"),
 						SerializationUtils.createConstantAttribute(ATTRIBUTE_PROPERTY, "value")));
 			}
 		}
@@ -218,12 +233,54 @@ public class ConfigWriterFromClass {
 		return map;
 	}
 	
+	/**
+	 * Handles an iterator
+	 * @param name The name of this element
+	 * @param klass The class
+	 * @param types The types of the arguments of this class
+	 * @param attributes The attributes to add to the serialization
+	 * @return The corresponding serialization
+	 */
+	protected Serialization handleIterator(String name, Class<?> klass, Type[] types, Serialization...attributes) {
+		ComplexSerialization list = null;
+		String singleName = getSingular(name, "element");
+
+		if ((types != null) && (types.length == 1)) {
+			list = SerializationUtils.createComplex(TYPE_LIST, attributes);
+			list.addComment("List of [" + types[0] + "]");
+			list.addElement(handleType(singleName, types[0],
+					SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, singleName)));
+		}
+		
+		// list of unknown type
+		else {
+			list = SerializationUtils.createComplex(TYPE_LIST, attributes);
+			list.addComment("Unable to identify the types for the [" + name + "] list!");
+			list.addComment("The configuration of its entries must be writtent manually.");
+			list.addElement(SerializationUtils.createComplex(TYPE_VALUE,
+					SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, singleName)));
+		}
+		
+		return list;
+	}
+	
+	/**
+	 * Handles a single class
+	 * @param name The name of this element
+	 * @param klass The class
+	 * @param attributes The attributes to add to the serialization
+	 * @return The corresponding serialization
+	 */
+	protected Serialization handleSingle(String name, Class<?> klass, Serialization...attributes) {
+		return SerializationUtils.createComplex(TYPE_VALUE, attributes);
+	}
 	
 	
 	/**
 	 * Handles the given class
 	 * @param name The name of this element
 	 * @param klass The class
+	 * @param attributes The attributes to add to the serialization
 	 * @return The corresponding serialization
 	 */
 	protected Serialization handleClass(String name, Class<?> klass, Serialization...attributes) {
@@ -233,16 +290,9 @@ public class ConfigWriterFromClass {
 		// loops over the getter
 		for (Method getter : ReflectionUtils.getGetters(klass)) {
 			String field = ReflectionUtils.getGetterFieldName(getter);
-			if (ReflectionUtils.isSimple(getter.getReturnType())) {
-				complex.addElement(SerializationUtils.createComplex(TYPE_VALUE, 
+			complex.addElement(handleType(field, getter.getGenericReturnType(),
 						SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, field),
 						SerializationUtils.createConstantAttribute(ATTRIBUTE_PROPERTY, field)));
-			} else if (Map.class.isAssignableFrom(getter.getReturnType())) {
-				complex.addElement(handleType(field, getter.getGenericReturnType(),
-						SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, field),
-						SerializationUtils.createConstantAttribute(ATTRIBUTE_PROPERTY, field)));
-			}
-			
 		}
 		
 		return complex;
@@ -338,7 +388,7 @@ public class ConfigWriterFromClass {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-		System.out.println(getConfiguration("com.localmatters.serializer.test.DummyObject"));
+		System.out.println(getConfiguration("com.localmatters.serializer.test.domain.ObjectWithGenerics"));
 	}
 	
 }

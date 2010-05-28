@@ -1,4 +1,4 @@
-package com.localmatters.serializer.test;
+package com.localmatters.serializer.test.domain;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +52,7 @@ public class DummyObject {
 	/**
 	 * @return The orders
 	 */
-	public List<String> getOrdersAsList() {
+	public List<String> getOrdersList() {
 		return orders;
 	}
 	

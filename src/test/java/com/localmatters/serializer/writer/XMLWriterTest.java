@@ -21,7 +21,7 @@ import com.localmatters.serializer.serialization.IteratorSerialization;
 import com.localmatters.serializer.serialization.MapSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
-import com.localmatters.serializer.test.DummyObject;
+import com.localmatters.serializer.test.domain.DummyObject;
 import com.localmatters.util.CollectionUtils;
 
 /**

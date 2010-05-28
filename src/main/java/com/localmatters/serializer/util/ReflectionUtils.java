@@ -116,38 +116,6 @@ public abstract class ReflectionUtils {
 	}
 
 	/**
-	 * Returns the return class arguments for the given type if its is or is
-	 * parent is generic. By example, this method will return the classes
-	 * <code>Double</code> and <code>String</code> for the type
-	 * <code>Map&lt;Double, String&gt;</code>. Returns null otherwise
-	 * @param type The type
-	 * @return The list of the return type arguments or null
-	public static Class<?>[] getGenericClassesForType(Type type) {
-		if (type instanceof ParameterizedType){
-	        ParameterizedType paramType = (ParameterizedType) type;
-	        Type[] args = paramType.getActualTypeArguments();
-	        Class<?>[] classes = new Class<?>[args.length];
-	        for (int i=0; i<args.length; i++) {
-	        	Type arg = args[i];
-	        	if (arg instanceof Class<?>) {
-	        		classes[i] = (Class<?>) arg;
-	        	} else {
-	        		// this implies that the generic classes of this type cannot
-	        		// be resolved
-	        		return null;
-	        	}
-	        }
-
-	        return classes;
-	    }
-		if (type instanceof Class<?>) {
-			return getGenericClassesForType(((Class<?>) type).getGenericSuperclass());
-		}
-	    return null;
-	}
-	 */
-
-	/**
 	 * Returns the return the type arguments of the given type.
 	 * @param type The type
 	 * @return The list of the return type arguments or null
@@ -158,6 +126,10 @@ public abstract class ReflectionUtils {
 	        return paramType.getActualTypeArguments();
 	    }
 		if (type instanceof Class<?>) {
+			Class<?> klass = (Class<?>) type;
+			if (klass.isArray()) {
+				return new Type[]{klass.getComponentType()};
+			}
 			return getTypeArgumentsForType(((Class<?>) type).getGenericSuperclass());
 		}
 	    return null;

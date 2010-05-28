@@ -63,10 +63,8 @@ public abstract class SerializationUtils {
 	public static ComplexSerialization createComplex(String name, Serialization...attributes) {
 		ComplexSerialization serialization = new ComplexSerialization();
 		serialization.setName(name);
-		if (attributes != null) {
-			for (Serialization attribute : attributes) {
-				serialization.addAttribute(attribute);
-			}
+		for (Serialization attribute : attributes) {
+			serialization.addAttribute(attribute);
 		}
 		return serialization;
 	}

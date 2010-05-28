@@ -1,6 +1,6 @@
 package com.localmatters.serializer.tool;
 
-import com.localmatters.serializer.test.DummyObject;
+import com.localmatters.serializer.test.domain.DummyObject;
 
 import junit.framework.TestCase;
 
@@ -33,6 +33,7 @@ public class ConfigWriterFromClassTest extends TestCase {
 		assertEquals("valueEntry", writer.getSingular("valuesEntry", "default"));
 
 		assertEquals("default", writer.getSingular("address", "default"));
+		assertEquals("default", writer.getSingular("As", "default"));
 		assertEquals("address", writer.getSingular("addresses", "default"));
 		assertEquals("address", writer.getSingular("addressList", "default"));
 		assertEquals("address", writer.getSingular("addressesList", "default"));

@@ -16,12 +16,12 @@ import junit.framework.TestCase;
 
 import org.apache.commons.collections.CollectionUtils;
 
-import com.localmatters.serializer.test.DummyEnum;
-import com.localmatters.serializer.test.DummyObject;
-import com.localmatters.serializer.test.DummyObject.Address;
-import com.localmatters.serializer.test.DummyObject.Orders;
+import com.localmatters.serializer.test.domain.DummyEnum;
+import com.localmatters.serializer.test.domain.DummyObject;
 import com.localmatters.serializer.test.domain.ObjectWithGenerics;
 import com.localmatters.serializer.test.domain.ParameterizedObject;
+import com.localmatters.serializer.test.domain.DummyObject.Address;
+import com.localmatters.serializer.test.domain.DummyObject.Orders;
 
 /**
  * Tests the <code>ReflectionUtils</code>
@@ -255,6 +255,13 @@ public class ReflectionUtilsTest extends TestCase {
 		assertSame(String.class, types[0]);
 		assertTrue(types[1] instanceof Class<?>);
 		assertSame(Double.class, types[1]);
+
+		method = cl.getMethod("getArray", (Class<?>[]) null);
+		types = ReflectionUtils.getTypeArgumentsForType(method.getGenericReturnType());
+		assertNotNull(types);
+		assertEquals(1, types.length);
+		assertTrue(types[0] instanceof Class<?>);
+		assertSame(String.class, types[0]);
 	}
 	
 	/**
@@ -269,8 +276,8 @@ public class ReflectionUtilsTest extends TestCase {
 		assertEquals("getId", itr.next().getName());
 		assertEquals("getName", itr.next().getName());
 		assertEquals("getOrders", itr.next().getName());
-		assertEquals("getOrdersAsList", itr.next().getName());
 		assertEquals("getOrdersByAddresses", itr.next().getName());
+		assertEquals("getOrdersList", itr.next().getName());
 		assertFalse(itr.hasNext());
 		
 		getters = ReflectionUtils.getGetters(Address.class);

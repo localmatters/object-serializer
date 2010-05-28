@@ -19,6 +19,7 @@ public class ObjectWithGenerics {
 	private List<Map<String, List>> listOfMapOfStringAndList;
 	private Map<?, ?> map;
 	private Map<String, Double> mapOfStringAndDouble;
+	private String[] array;
 
 	/**
 	 * @return The list
@@ -109,5 +110,17 @@ public class ObjectWithGenerics {
 	public void setListOfParameterizedObject(
 			List<ParameterizedObject> listOfParameterizedObject) {
 		this.listOfParameterizedObject = listOfParameterizedObject;
+	}
+	/**
+	 * @return The array
+	 */
+	public String[] getArray() {
+		return array;
+	}
+	/**
+	 * @param array The array to set
+	 */
+	public void setArray(String[] array) {
+		this.array = array;
 	}
 }

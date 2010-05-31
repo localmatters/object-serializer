@@ -5,12 +5,10 @@ import junit.framework.TestCase;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 
-import com.localmatters.serializer.config.ConfigurationException;
-import com.localmatters.serializer.config.InMemorySerializationManager;
-import com.localmatters.serializer.config.SerializationElementHandler;
 import com.localmatters.serializer.serialization.AttributeSerialization;
 import com.localmatters.serializer.serialization.BeanSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
+import com.localmatters.serializer.serialization.NameSerialization;
 import com.localmatters.serializer.serialization.PropertySerialization;
 import com.localmatters.serializer.serialization.ReferenceSerialization;
 import com.localmatters.serializer.serialization.Serialization;
@@ -86,48 +84,55 @@ public class InMemoryHandlerManagerTest extends TestCase {
 
 		Serialization listing = manager.getSerialization("listingConfig");
 		assertNotNull(listing);
-		assertEquals("listing", listing.getName());
-		assertTrue(listing.isWriteEmpty());
-		assertTrue(listing instanceof BeanSerialization);
+		assertTrue(listing instanceof NameSerialization);
+		
+		// listing name
+		NameSerialization name = (NameSerialization) listing;
+		assertEquals("listing", name.getName());
+		assertFalse(name.isWriteEmpty());
+		assertTrue(name.getDelegate() instanceof BeanSerialization);
 		
 		// listing bean
-		BeanSerialization bean = (BeanSerialization) listing;
-		Serialization delegate = bean.getDelegate();
-		assertNotNull(delegate);
-		assertEquals("listing", delegate.getName());
-		assertTrue(delegate.isWriteEmpty());
-		assertTrue(delegate instanceof PropertySerialization);
+		BeanSerialization bean = (BeanSerialization) name.getDelegate();
+		assertEquals("results", bean.getBean());
+		assertFalse(bean.isWriteEmpty());
+		assertTrue(bean.getDelegate() instanceof PropertySerialization);
 		
 		// listing property
-		PropertySerialization property = (PropertySerialization) delegate;
+		PropertySerialization property = (PropertySerialization) bean.getDelegate();
 		assertEquals("listings[0]", property.getProperty());
-		delegate = property.getDelegate();
-		assertNotNull(delegate);
-		assertEquals("listing", delegate.getName());
-		assertTrue(delegate.isWriteEmpty());
-		assertTrue(delegate instanceof ComplexSerialization);
+		assertFalse(property.isWriteEmpty());
+		assertTrue(property.getDelegate() instanceof ComplexSerialization);
 		
 		// complex
-		ComplexSerialization complex = (ComplexSerialization) delegate;
+		ComplexSerialization complex = (ComplexSerialization) property.getDelegate();
 		assertEquals(1, CollectionUtils.sizeOf(complex.getAttributes()));
 		assertEquals(1, CollectionUtils.sizeOf(complex.getElements()));
-		assertTrue(complex.getAttributes().get(0) instanceof PropertySerialization);
-		assertTrue(complex.getElements().get(0) instanceof ReferenceSerialization);
+		assertTrue(CollectionUtils.isEmpty(complex.getComments()));
+		assertTrue(complex.getAttributes().get(0) instanceof NameSerialization);
+		assertTrue(complex.getElements().get(0) instanceof NameSerialization);
+		
+		// attribute name
+		name = (NameSerialization) complex.getAttributes().get(0);
+		assertEquals("name", name.getName());
+		assertFalse(name.isWriteEmpty());
+		assertTrue(name.getDelegate() instanceof PropertySerialization);
 		
 		// attribute property
-		property = (PropertySerialization) complex.getAttributes().iterator().next();
+		property = (PropertySerialization) name.getDelegate();
 		assertEquals("businessName", property.getProperty());
-		delegate = property.getDelegate();
-		assertNotNull(delegate);
-		assertEquals("name", delegate.getName());
-		assertFalse(delegate.isWriteEmpty());
-		assertTrue(delegate instanceof AttributeSerialization);
-		
-		// address reference
-		ReferenceSerialization reference = (ReferenceSerialization) complex.getElements().iterator().next();
-		assertNotNull(reference);
-		assertEquals("listingAddress", reference.getName());
-		assertTrue(reference.isWriteEmpty());
+		assertFalse(property.isWriteEmpty());
+		assertTrue(property.getDelegate() instanceof AttributeSerialization);
+
+		// element name
+		name = (NameSerialization) complex.getElements().get(0);
+		assertEquals("listingAddress", name.getName());
+		assertFalse(name.isWriteEmpty());
+		assertTrue(name.getDelegate() instanceof ReferenceSerialization);
+
+		// element reference
+		ReferenceSerialization reference = (ReferenceSerialization) name.getDelegate();
+		assertFalse(reference.isWriteEmpty());
 
 		Serialization address = manager.getSerialization("addressConfig");
 		assertNotNull(address);

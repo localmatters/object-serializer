@@ -19,6 +19,7 @@ import com.localmatters.serializer.serialization.ComplexSerialization;
 import com.localmatters.serializer.serialization.ConstantSerialization;
 import com.localmatters.serializer.serialization.IteratorSerialization;
 import com.localmatters.serializer.serialization.MapSerialization;
+import com.localmatters.serializer.serialization.NameSerialization;
 import com.localmatters.serializer.serialization.PropertySerialization;
 import com.localmatters.serializer.serialization.ReferenceSerialization;
 import com.localmatters.serializer.serialization.Serialization;
@@ -52,10 +53,10 @@ public class SerializationElementHandler implements ElementHandler {
 	protected static final String MISSING_ID = "All elements directly under the root must have a non-blank id!";
 	protected static final String INVALID_TYPE_FORMAT = "Invalid element <%s> at [%s]!";
 	protected static final String MISSING_ATTRIBUTE_FORMAT = "Missing or invalid attribute %s on [%s]!";
-	protected static final String MISSING_NAME_OR_PARENT_FORMAT = "Complex element at [%s] requires either the name or the parrent attribute!";
 	protected static final String INVALID_ATTRIBUTE_ELEMENT_FORMAT = "Unexpected <attribute> at [%s]. Attributes are only valid directly under <complex> elements!";
-	protected static final String INVALID_LIST_FORMAT = "The list at [%s] is invalid. Only a single sub-element is expected!";
-	protected static final String INVALID_MAP_FORMAT = "The map at [%s] is invalid. Only a single sub-element is expected!";
+	protected static final String INVALID_LIST_FORMAT = "The list at [%s] is invalid. One and only one non-comment sub-element is expected!";
+	protected static final String INVALID_MAP_FORMAT = "The map at [%s] is invalid. Zero or one non-comment sub-element is expected!";
+	protected static final String NAME_NOT_ALLOWED_FORMAT = "Name attribute are not allowed for the map sub-element at [%s]!";
 	protected static final String INVALID_ID_FORMAT = "Unable to find any element with the id(s): %s!";
 	protected static final String INVALID_ATTRIBUTES_FORMAT = "Invalid attributes %s on element <%s> at [%s]";
 	protected static final String INVALID_LOOP_REFERENCES = "The configuration defines a loop of parents; which is not allowed!";
@@ -143,9 +144,6 @@ public class SerializationElementHandler implements ElementHandler {
 					ComplexSerialization serialization = extension.getKey();
 					serialization.setAttributes(CollectionUtils.mergeAsList(parent.getAttributes(), serialization.getAttributes()));
 					serialization.setElements(CollectionUtils.mergeAsList(parent.getElements(), serialization.getElements()));
-					if (StringUtils.isBlank(serialization.getName())) {
-						serialization.setName(parent.getName());
-					}
 					if (serialization.getWriteEmpty() == null) {
 						serialization.setWriteEmpty(parent.isWriteEmpty());
 					}
@@ -174,14 +172,14 @@ public class SerializationElementHandler implements ElementHandler {
 				throw new ConfigurationException(DUPLICATE_ID_FORMAT, id);
 			}
 			attributes.put(ATTRIBUTE_ID, id);
-			Serialization serialization = handleConstant(element, attributes);
+			Serialization serialization = handleName(element, attributes);
 			serializations.put(id, serialization);
 			return serialization;
 		} 
 		if (required) {
 			throw new ConfigurationException(MISSING_ID);
 		}
-		return handleConstant(element, attributes);
+		return handleName(element, attributes);
 	}
 
 	/**
@@ -191,6 +189,25 @@ public class SerializationElementHandler implements ElementHandler {
 	 */
 	protected Serialization handleId(Element element) {
 		return handleId(element, new HashMap<String, String>(), false);
+	}
+
+	/**
+	 * Handles the optional name attribute
+	 * @param element The element
+	 * @param attributes The map of attributes consumed for this element
+	 * @return The serialization for this element
+	 */
+	protected Serialization handleName(Element element, Map<String, String> attributes) {
+		String name = element.attributeValue(ATTRIBUTE_NAME);
+		if (StringUtils.isNotBlank(name)) {
+			attributes.put(ATTRIBUTE_NAME, name);
+			Serialization delegate = handleConstant(element, attributes);
+			NameSerialization serialization = getObjectFactory().create(NameSerialization.class);
+			serialization.setName(name);
+			serialization.setDelegate(delegate);
+			return serialization;
+		} 
+		return handleConstant(element, attributes);
 	}
 
 	/**
@@ -260,7 +277,6 @@ public class SerializationElementHandler implements ElementHandler {
 	@SuppressWarnings("unchecked")
 	protected Serialization handleType(Element element, Map<String, String> attributes) {
 		AbstractSerialization serialization = null;
-		String name = element.attributeValue(ATTRIBUTE_NAME);
 		String type = element.getName();
 
 		if (TYPE_REFERENCE.equalsIgnoreCase(type)) {
@@ -269,33 +285,20 @@ public class SerializationElementHandler implements ElementHandler {
 			String parent = element.attributeValue(ATTRIBUTE_PARENT);
 			if (StringUtils.isNotBlank(parent)) {
 				attributes.put(ATTRIBUTE_PARENT, parent);
-			} else if (StringUtils.isBlank(name)) {
-				throw new ConfigurationException(MISSING_NAME_OR_PARENT_FORMAT, element.getPath());
 			}
 			serialization = handleComplex(element, attributes);
+		} else if (TYPE_ATTRIBUTE.equalsIgnoreCase(type)) {
+			serialization = handleAttribute(element, attributes);
+		} else if (TYPE_VALUE.equalsIgnoreCase(type)) {
+			serialization = handleValue(element, attributes);
+		} else if (TYPE_LIST.equalsIgnoreCase(type)) {
+			serialization = handleList(element, attributes);
+		} else if (TYPE_MAP.equalsIgnoreCase(type)) {
+			serialization = handleMap(element, attributes);
 		} else {
-			// the name is required for every type except the reference, comment
-			// or complex with parent that will inherit it if it is not set
-			if (StringUtils.isBlank(name)) {
-				throw new ConfigurationException(MISSING_ATTRIBUTE_FORMAT, ATTRIBUTE_NAME, element.getPath());
-			}
-			if (TYPE_ATTRIBUTE.equalsIgnoreCase(type)) {
-				serialization = handleAttribute(element, attributes);
-			} else if (TYPE_VALUE.equalsIgnoreCase(type)) {
-				serialization = handleValue(element, attributes);
-			} else if (TYPE_LIST.equalsIgnoreCase(type)) {
-				serialization = handleList(element, attributes);
-			} else if (TYPE_MAP.equalsIgnoreCase(type)) {
-				serialization = handleMap(element, attributes);
-			} else {
-				throw new ConfigurationException(INVALID_TYPE_FORMAT, type, element.getPath());
-			}
+			throw new ConfigurationException(INVALID_TYPE_FORMAT, type, element.getPath());
 		}
 		
-		if (StringUtils.isNotBlank(name)) {
-			attributes.put(ATTRIBUTE_NAME, name);
-			serialization.setName(name);
-		}
 		String displayEmpty = element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY);
 		if (StringUtils.isNotBlank(displayEmpty)) {
 			attributes.put(ATTRIBUTE_DISPLAY_EMPTY, displayEmpty);
@@ -325,34 +328,33 @@ public class SerializationElementHandler implements ElementHandler {
 	 */
 	@SuppressWarnings("unchecked")
 	protected ComplexSerialization handleComplex(Element element, Map<String, String> attributes) {
-		ComplexSerialization serialization = getObjectFactory().create(ComplexSerialization.class);
+		ComplexSerialization ser = getObjectFactory().create(ComplexSerialization.class);
 
 		List<Element> children = element.elements();
 		if (CollectionUtils.isNotEmpty(children)) {
 			for (Element child : children) {
 				String type = child.getName();
 				if (TYPE_COMMENT.equalsIgnoreCase(type)) {
-					serialization.addComment(child.getStringValue());
+					ser.addComment(child.getStringValue());
 				} else {
 					Serialization childSerialization = handleId(child);
 					if (TYPE_ATTRIBUTE.equalsIgnoreCase(type)) {
-						serialization.addAttribute(childSerialization);
+						ser.addAttribute(childSerialization);
 					} else {
-						serialization.addElement(childSerialization);
-				}
+						ser.addElement(childSerialization);
+					}
 				}
 			}
 		}
 		
-		
 		if (attributes.containsKey(ATTRIBUTE_ID)) {
-			getComplexWithIds().put(attributes.get(ATTRIBUTE_ID), serialization);
+			getComplexWithIds().put(attributes.get(ATTRIBUTE_ID), ser);
 		}
 		if (attributes.containsKey(ATTRIBUTE_PARENT)) {
-			getExtensions().put(serialization, attributes.get(ATTRIBUTE_PARENT));
+			getExtensions().put(ser, attributes.get(ATTRIBUTE_PARENT));
 		}
 		
-		return serialization;
+		return ser;
 	}
 
 	/**
@@ -450,6 +452,9 @@ public class SerializationElementHandler implements ElementHandler {
 				} else if (foundElement) {
 					throw new ConfigurationException(INVALID_MAP_FORMAT, element.getPath());
 				} else {
+					if (StringUtils.isNotBlank(child.attributeValue(ATTRIBUTE_NAME))) {
+						throw new ConfigurationException(NAME_NOT_ALLOWED_FORMAT, element.getPath());
+					}
 					foundElement = true;
 					Serialization elem = handleId(children.get(0));
 					serialization.setValue(elem);
@@ -458,20 +463,15 @@ public class SerializationElementHandler implements ElementHandler {
 		}
 
 		if (!foundElement) {
-			throw new ConfigurationException(INVALID_MAP_FORMAT, element.getPath());
+			serialization.setValue(getObjectFactory().create(ValueSerialization.class));
 		}
 
-		Serialization key = getObjectFactory().create(ValueSerialization.class);
-		String property = element.attributeValue(ATTRIBUTE_KEY);
-		if (StringUtils.isNotBlank(property)) {
-			attributes.put(ATTRIBUTE_KEY, property);
-			PropertySerialization propertyConfig = getObjectFactory().create(PropertySerialization.class);
-			propertyConfig.setProperty(property);
-			propertyConfig.setDelegate(key);
-			key = propertyConfig;
+		String key = element.attributeValue(ATTRIBUTE_KEY);
+		if (StringUtils.isNotBlank(key)) {
+			serialization.setKey(key);
+			attributes.put(ATTRIBUTE_KEY, key);
 		}
-
-		serialization.setKey(key);
+		
 		return serialization;
 	}
 

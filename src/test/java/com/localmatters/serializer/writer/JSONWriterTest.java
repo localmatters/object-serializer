@@ -5,8 +5,9 @@ import static org.easymock.classextension.EasyMock.createMock;
 import static org.easymock.classextension.EasyMock.replay;
 import static org.easymock.classextension.EasyMock.verify;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -16,12 +17,13 @@ import junit.framework.TestCase;
 import org.apache.commons.lang.StringUtils;
 
 import com.localmatters.serializer.SerializationContext;
+import com.localmatters.serializer.resolver.PropertyResolver;
 import com.localmatters.serializer.serialization.ComplexSerialization;
 import com.localmatters.serializer.serialization.IteratorSerialization;
 import com.localmatters.serializer.serialization.MapSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
-import com.localmatters.serializer.test.domain.DummyObject;
+import com.localmatters.serializer.util.SerializationUtils;
 import com.localmatters.util.CollectionUtils;
 
 /**
@@ -30,6 +32,7 @@ import com.localmatters.util.CollectionUtils;
 public class JSONWriterTest extends TestCase {
 	private JSONWriter writer;
 	private SerializationContext ctx;
+	private OutputStream os;
 
 	/**
 	 * @see junit.framework.TestCase#setUp()
@@ -37,298 +40,334 @@ public class JSONWriterTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		writer = new JSONWriter();
-		ctx = new SerializationContext(writer, new HashMap<String, Object>(), null, false);
+		os = new ByteArrayOutputStream();
+		ctx = new SerializationContext(writer, null, os);
 	}
 	
+	/**
+	 * Tests getting the prefix when the writer is not formatting
+	 */
+	public void testGettingPrefixWhenNotFormatting() {
+		ctx.nextLevel("results").nextLevel("listings").nextLevel("address");
+		assertEquals(StringUtils.EMPTY, writer.getPrefix(ctx));
+		assertEquals("results.listings.address", ctx.getPath());
+	}
+	
+	/**
+	 * Tests getting the prefix when the writer is formatting
+	 */
+	public void testGettingPrefix() {
+		ctx.setFormatting(true);
+		ctx.nextLevel("results").nextLevel("listings").nextLevel("address");
+		assertEquals("\n         ", writer.getPrefix(ctx));
+		assertEquals("results.listings.address", ctx.getPath());
+	}
+
+	/**
+	 * Tests the root serialization with formatting
+	 */
+	public void testRootWithFormatting() throws Exception {
+		ctx.setFormatting(true);
+		Serialization ser = SerializationUtils.createValue("listing");
+		String root = "12345 Hotel";
+		writer.writeRoot(ser, root, ctx);
+		assertEquals("{\n   \"listing\": \"12345 Hotel\"\n}", os.toString());
+		assertEquals(StringUtils.EMPTY, ctx.getPath());
+	}
+
 	/**
 	 * Tests the root serialization
 	 */
 	public void testRoot() throws Exception {
-		Serialization serialization = createMock(Serialization.class);
-		Object root = new Object();
-		expect(serialization.getName()).andReturn("listing");
-		expect(serialization.serialize(root, ctx)).andReturn("{}");
-		replay(serialization);
-		String result = writer.writeRoot(serialization, root, ctx);
-		verify(serialization);
-		assertEquals("{\"listing\":{}}", result);
+		Serialization ser = SerializationUtils.createValue("listing");
+		String root = "12345 Hotel";
+		writer.writeRoot(ser, root, ctx);
+		assertEquals("{\"listing\": \"12345 Hotel\"}", os.toString());
+		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
 
 	/**
 	 * Tests serializing a null value that should not be written
 	 */
-	public void testValueWhenNullAndNotWrite() {
-		ValueSerialization serialization = createMock(ValueSerialization.class);
-		expect(serialization.isWriteEmpty()).andReturn(false);
-		replay(serialization);
-		String result = writer.writeValue(serialization, null, ctx);
-		verify(serialization);
-		assertEquals(StringUtils.EMPTY, result);
+	public void testValueWhenNullAndNotWrite() throws Exception {
+		ValueSerialization ser = createMock(ValueSerialization.class);
+		expect(ser.isWriteEmpty()).andReturn(false);
+		replay(ser);
+		writer.writeValue(ser, "name", null, ctx);
+		verify(ser);
+		assertEquals(StringUtils.EMPTY, os.toString());
+		assertEquals(StringUtils.EMPTY, ctx.getPath());
+	}
+	
+	/**
+	 * Tests serializing a null value that should be written, but its name is
+	 * null
+	 */
+	public void testValueWhenNullAndWriteButNameNull() throws Exception {
+		ctx.setFormatting(true);
+		ValueSerialization ser = createMock(ValueSerialization.class);
+		expect(ser.isWriteEmpty()).andReturn(true);
+		replay(ser);
+		writer.writeValue(ser, null, null, ctx);
+		verify(ser);
+		assertEquals("\n   null", os.toString());
+		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
 	
 	/**
 	 * Tests serializing a null value that should be written
 	 */
-	public void testValueWhenNullAndWrite() {
-		ValueSerialization serialization = createMock(ValueSerialization.class);
-		expect(serialization.isWriteEmpty()).andReturn(true);
-		replay(serialization);
-		String result = writer.writeValue(serialization, null, ctx);
-		verify(serialization);
-		assertEquals("null", result);
-	}
-	
-	/**
-	 * Tests serializing an empty value that should not be written
-	 */
-	public void testValueWhenEmptyAndNotWrite() {
-		ValueSerialization serialization = createMock(ValueSerialization.class);
-		expect(serialization.isWriteEmpty()).andReturn(false);
-		replay(serialization);
-		String result = writer.writeValue(serialization, StringUtils.EMPTY, ctx);
-		verify(serialization);
-		assertEquals(StringUtils.EMPTY, result);
-	}
-	
-	/**
-	 * Tests serializing an empty value that should be written
-	 */
-	public void testValueWhenEmptyAndWrite() {
-		ValueSerialization serialization = createMock(ValueSerialization.class);
-		expect(serialization.isWriteEmpty()).andReturn(true);
-		replay(serialization);
-		String result = writer.writeValue(serialization, StringUtils.EMPTY, ctx);
-		verify(serialization);
-		assertEquals("\"\"", result);
+	public void testValueWhenNullAndWrite() throws Exception {
+		ValueSerialization ser = createMock(ValueSerialization.class);
+		expect(ser.isWriteEmpty()).andReturn(true);
+		replay(ser);
+		writer.writeValue(ser, "name", null, ctx);
+		verify(ser);
+		assertEquals("\"name\": null", os.toString());
+		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
 	
 	/**
 	 * Tests serializing a number
 	 */
-	public void testValueWhenNumber() {
-		ValueSerialization serialization = createMock(ValueSerialization.class);
-		replay(serialization);
-		String result = writer.writeValue(serialization, 123456, ctx);
-		verify(serialization);
-		assertEquals("123456", result);
+	public void testValueWhenNumber() throws Exception {
+		ctx.setFormatting(true);
+		ctx.nextLevel("listing");
+		ValueSerialization ser = createMock(ValueSerialization.class);
+		replay(ser);
+		writer.writeValue(ser, "id", 123456, ctx);
+		verify(ser);
+		assertEquals("\n      \"id\": 123456", os.toString());
+		assertEquals("listing", ctx.getPath());
 	}
 	
 	/**
 	 * Tests serializing a boolean
 	 */
-	public void testValueWhenBoolean() {
-		ValueSerialization serialization = createMock(ValueSerialization.class);
-		replay(serialization);
-		String result = writer.writeValue(serialization, true, ctx);
-		verify(serialization);
-		assertEquals("true", result);
+	public void testValueWhenBoolean() throws Exception {
+		ValueSerialization ser = createMock(ValueSerialization.class);
+		replay(ser);
+		writer.writeValue(ser, "sold", true, ctx);
+		verify(ser);
+		assertEquals("\"sold\": true", os.toString());
+		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
 	
 	/**
 	 * Tests serializing a value
 	 */
-	public void testValue() {
-		ValueSerialization serialization = createMock(ValueSerialization.class);
-		replay(serialization);
-		String result = writer.writeValue(serialization, "hotel & café", ctx);
-		verify(serialization);
-		assertEquals("\"hotel &amp; caf&#233;\"", result);
+	public void testValueAndNameNull() throws Exception {
+		ValueSerialization ser = createMock(ValueSerialization.class);
+		replay(ser);
+		writer.writeValue(ser, null, "hotel & café", ctx);
+		verify(ser);
+		assertEquals("\"hotel &amp; caf&#233;\"", os.toString());
+		assertEquals(StringUtils.EMPTY, ctx.getPath());
+	}
+	
+	/**
+	 * Tests serializing an attribute
+	 */
+	public void testAttribute() throws Exception {
+		ctx.setFormatting(true);
+		ctx.nextLevel("listing");
+		Serialization ser = createMock(Serialization.class);
+		ValueSerialization delegate = createMock(ValueSerialization.class);
+		replay(ser, delegate);
+		writer.writeAttribute(ser, "name", "hotel & café", ctx);
+		verify(ser, delegate);
+		assertEquals("\n      \"name\": \"hotel &amp; caf&#233;\"", os.toString());
+		assertEquals("listing", ctx.getPath());
 	}
 
 	/**
 	 * Tests serializing a null object that should not be written
 	 */
 	public void testComplexWhenNullAndNotWrite() throws Exception {
-		Serialization serialization = createMock(ComplexSerialization.class);
-		expect(serialization.isWriteEmpty()).andReturn(false);
-		replay(serialization);
-		String result = writer.writeComplex(serialization, null, null, null, null, ctx);
-		verify(serialization);
-		assertEquals(StringUtils.EMPTY, result);
+		Serialization ser = createMock(ComplexSerialization.class);
+		expect(ser.isWriteEmpty()).andReturn(false);
+		replay(ser);
+		writer.writeComplex(ser, "listing", null, null, null, null, ctx);
+		verify(ser);
+		assertEquals(StringUtils.EMPTY, os.toString());
+		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
-
+	
 	/**
 	 * Tests serializing a null object that should be written
 	 */
 	public void testComplexWhenNullAndWrite() throws Exception {
-		Serialization serialization = createMock(ComplexSerialization.class);
-		expect(serialization.isWriteEmpty()).andReturn(true);
-		replay(serialization);
-		String result = writer.writeComplex(serialization, null, null, null, null, ctx);
-		verify(serialization);
-		assertEquals("null", result);
+		ctx.setFormatting(true);
+		ctx.nextLevel("results");
+		Serialization ser = createMock(ComplexSerialization.class);
+		expect(ser.isWriteEmpty()).andReturn(true);
+		replay(ser);
+		writer.writeComplex(ser, "listing", null, null, null, CollectionUtils.asList("just a listing"), ctx);
+		verify(ser);
+		assertEquals("\n      \"listing\": {}", os.toString());
+		assertEquals("results", ctx.getPath());
 	}
 	
 	/**
-	 * Tests serializing a object without properties
+	 * Tests serializing an object without properties
 	 */
 	public void testComplexWhenNoProperty() throws Exception {
-		Serialization serialization = createMock(ComplexSerialization.class);
-		replay(serialization);
-		String result = writer.writeComplex(serialization, null, null, null, new Object(), ctx);
-		verify(serialization);
-		assertEquals("{}", result);
+		Serialization ser = createMock(ComplexSerialization.class);
+		replay(ser);
+		writer.writeComplex(ser, "listing", new Object(), null, null, null, ctx);
+		verify(ser);
+		assertEquals("\"listing\": {}", os.toString());
+		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
 	
 	/**
-	 * Tests serializing a object for which all its properties are null
+	 * Tests serializing a object with formatting
 	 */
-	public void testComplexWithOnlyNullProperties() throws Exception {
-		Serialization serialization = createMock(ComplexSerialization.class);
-		Serialization attributeSerialization = createMock(Serialization.class);
-		Serialization elementSerialization = createMock(Serialization.class);
-		DummyObject listing = new DummyObject();
+	public void testComplexWhenFormatting() throws Exception {
+		ctx.setFormatting(true);
+		ctx.nextLevel("results");
+		Serialization ser = createMock(ComplexSerialization.class);
+		Serialization attribute = SerializationUtils.createConstantAttribute("id", "ABCD1234");
+		Serialization element = SerializationUtils.createConstantValue("name", "John Hotel");
+		Object object = new Object();
 		
-		expect(attributeSerialization.serialize(listing, ctx.appendSegment("listing"))).andReturn("");
-		expect(elementSerialization.serialize(listing, ctx.appendSegment("listing"))).andReturn("");
-		
-		replay(serialization, attributeSerialization, elementSerialization);
-		String result = writer.writeComplex(serialization, null, 
-				CollectionUtils.asList(attributeSerialization), 
-				CollectionUtils.asList(elementSerialization), 
-				listing, ctx.appendSegment("listing"));
-		verify(serialization, attributeSerialization, elementSerialization);
-		assertEquals("{}", result);
+		replay(ser);
+		writer.writeComplex(ser, "listing", object, CollectionUtils.asList(attribute), CollectionUtils.asList(element), null, ctx);
+		verify(ser);
+
+		assertEquals("\n      \"listing\": {\n         \"id\": \"ABCD1234\", \n         \"name\": \"John Hotel\"\n      }", os.toString());
+		assertEquals("results", ctx.getPath());
 	}
 	
 	/**
-	 * Tests serializing a object
+	 * Tests serializing a object that has only sub-element
 	 */
-	public void testObject() throws Exception {
-		Serialization serialization = createMock(ComplexSerialization.class);
-		Serialization attributeSerialization = createMock(Serialization.class);
-		Serialization elementSerialization = createMock(Serialization.class);
-		DummyObject listing = new DummyObject();
-		listing.setId("123456");
-		listing.setName("LocalMatters");
+	public void testComplex() throws Exception {
+		ctx.nextLevel("results");
+		Serialization ser = createMock(ComplexSerialization.class);
+		Serialization attribute = SerializationUtils.createConstantAttribute("id", "ABCD1234");
+		Serialization element = SerializationUtils.createConstantValue("name", "John Hotel");
+		Object object = new Object();
 		
-		expect(attributeSerialization.getName()).andReturn("id");
-		expect(attributeSerialization.serialize(listing, ctx.appendSegment("listing"))).andReturn("\"123456\"");
-		expect(elementSerialization.getName()).andReturn("name");
-		expect(elementSerialization.serialize(listing, ctx.appendSegment("listing"))).andReturn("\"LocalMatters\"");
+		replay(ser);
+		writer.writeComplex(ser, "listing", object, CollectionUtils.asList(attribute), CollectionUtils.asList(element), null, ctx);
+		verify(ser);
+
+		assertEquals("\"listing\": {\"id\": \"ABCD1234\", \"name\": \"John Hotel\"}", os.toString());
+		assertEquals("results", ctx.getPath());
+	}
+
+	/**
+	 * Tests serializing an empty iterator that should not be written
+	 */
+	public void testIteratorWhenEmptyAndNotWrite() throws Exception {
+		ctx.nextLevel("listing");
+		Serialization ser = createMock(IteratorSerialization.class);
+		expect(ser.isWriteEmpty()).andReturn(false);
+		replay(ser);
+		writer.writeIterator(ser, "orders", Collections.EMPTY_LIST.iterator(), "order", null, null, ctx);
+		verify(ser);
+		assertEquals(StringUtils.EMPTY, os.toString());
+		assertEquals("listing", ctx.getPath());
+	}
+
+	/**
+	 * Tests serializing an empty iterator that should be written
+	 */
+	public void testIteratorWhenEmptyAndWrite() throws Exception {
+		Serialization ser = createMock(IteratorSerialization.class);
+		expect(ser.isWriteEmpty()).andReturn(true);
+		replay(ser);
+		writer.writeIterator(ser,"orders", Collections.EMPTY_LIST.iterator(), "order", null, null, ctx);
+		verify(ser);
+		assertEquals("\"orders\": []", os.toString());
+		assertEquals(StringUtils.EMPTY, ctx.getPath());
+	}
+
+	/**
+	 * Tests serializing a iterator
+	 */
+	public void testIterator() throws Exception {
+		ctx.setFormatting(true);
+		ctx.nextLevel("results");
+		Serialization ser = createMock(IteratorSerialization.class);
+		Iterator<String> itr = CollectionUtils.asList("baseball", "hockey").iterator();
+		Serialization element = new ValueSerialization();
 		
-		replay(serialization, attributeSerialization, elementSerialization);
-		String result = writer.writeComplex(serialization, null, 
-				CollectionUtils.asList(attributeSerialization), 
-				CollectionUtils.asList(elementSerialization), 
-				listing, ctx.appendSegment("listing"));
-		verify(serialization, attributeSerialization, elementSerialization);
-		assertEquals("{\"id\":\"123456\",\"name\":\"LocalMatters\"}", result);
+		replay(ser);
+		writer.writeIterator(ser, "sports", itr, "sport", element, null, ctx);
+		verify(ser);
+		assertEquals("\n      \"sports\": [\n         \"baseball\", \n         \"hockey\"\n      ]", os.toString());
+		assertEquals("results", ctx.getPath());
 	}
 	
-	/**
-	 * Tests serializing an attribute
-	 */
-	public void testAttribute() {
-		Serialization serialization = createMock(Serialization.class);
-		ValueSerialization delegateSerialization = createMock(ValueSerialization.class);
-		replay(serialization, delegateSerialization);
-		String result = writer.writeAttribute(serialization, "hotel & café", ctx);
-		verify(serialization, delegateSerialization);
-		assertEquals("\"hotel &amp; caf&#233;\"", result);
-	}
-
-	/**
-	 * Tests serializing an empty list that should not be written
-	 */
-	public void testListWhenEmptyAndNotWrite() throws Exception {
-		Serialization serialization = createMock(IteratorSerialization.class);
-		expect(serialization.isWriteEmpty()).andReturn(false);
-		replay(serialization);
-		String result = writer.writeIterator(serialization, null, null, Collections.EMPTY_LIST.iterator(), ctx);
-		verify(serialization);
-		assertEquals(StringUtils.EMPTY, result);
-	}
-
-	/**
-	 * Tests serializing an empty list that should  be written
-	 */
-	public void testListWhenEmptyAndWrite() throws Exception {
-		Serialization serialization = createMock(IteratorSerialization.class);
-		expect(serialization.isWriteEmpty()).andReturn(true);
-		replay(serialization);
-		String result = writer.writeIterator(serialization, null, null, Collections.EMPTY_LIST.iterator(), ctx);
-		verify(serialization);
-		assertEquals("[]", result);
-	}
-
-	/**
-	 * Tests serializing a list that contains only null elements
-	 */
-	public void testListWhenContainsOnlyNullElements() throws Exception {
-		Serialization serialization = createMock(IteratorSerialization.class);
-		Serialization elementSerialization = createMock(Serialization.class);
-		Iterator<String> elements = CollectionUtils.asList("").iterator();
-		
-		expect(elementSerialization.serialize("", ctx.appendSegment("sports[0]"))).andReturn("");
-		
-		replay(serialization, elementSerialization);
-		String result = writer.writeIterator(serialization, null, elementSerialization, elements, ctx.appendSegment("sports"));
-		verify(serialization, elementSerialization);
-		assertEquals("[]", result);
-	}
-
-	/**
-	 * Tests serializing a list
-	 */
-	public void testList() throws Exception {
-		Serialization serialization = createMock(IteratorSerialization.class);
-		Serialization elementSerialization = createMock(Serialization.class);
-		Iterator<String> elements = CollectionUtils.asList("baseball", "hockey").iterator();
-		
-		expect(elementSerialization.serialize("baseball", ctx.appendSegment("sports[0]"))).andReturn("\"baseball\"");
-		expect(elementSerialization.serialize("hockey", ctx.appendSegment("sports[1]"))).andReturn("\"hockey\"");
-		
-		replay(serialization, elementSerialization);
-		String result = writer.writeIterator(serialization, null, elementSerialization, elements, ctx.appendSegment("sports"));
-		verify(serialization, elementSerialization);
-		assertEquals("[\"baseball\",\"hockey\"]", result);
-	}
-
-
 	/**
 	 * Tests serializing an empty map that should not be written
 	 */
 	public void testMapWhenEmptyAndNotWrite() throws Exception {
-		Serialization serialization = createMock(MapSerialization.class);
-		expect(serialization.isWriteEmpty()).andReturn(false);
-		replay(serialization);
-		String result = writer.writeMap(serialization, null, null, null, null, ctx);
-		verify(serialization);
-		assertEquals(StringUtils.EMPTY, result);
+		ctx.nextLevel("results");
+		Serialization ser = createMock(MapSerialization.class);
+		expect(ser.isWriteEmpty()).andReturn(false);
+		replay(ser);
+		writer.writeMap(ser, "addresses", null, null, null, null, ctx);
+		verify(ser);
+		assertEquals(StringUtils.EMPTY, os.toString());
+		assertEquals("results", ctx.getPath());
 	}
 
 	/**
 	 * Tests serializing an empty map that should be written
 	 */
 	public void testMapWhenEmptyAndWrite() throws Exception {
-		Serialization serialization = createMock(MapSerialization.class);
-		expect(serialization.isWriteEmpty()).andReturn(true);
-		replay(serialization);
-		String result = writer.writeMap(serialization, null, null, null, null, ctx);
-		verify(serialization);
-		assertEquals("{}", result);
+		ctx.setFormatting(true);
+		ctx.nextLevel("results");
+		Serialization ser = createMock(MapSerialization.class);
+		expect(ser.isWriteEmpty()).andReturn(true);
+		replay(ser);
+		writer.writeMap(ser, "addresses", null, null, null, null, ctx);
+		verify(ser);
+		assertEquals("\n      \"addresses\": {}", os.toString());
+		assertEquals("results", ctx.getPath());
+	}
+
+	/**
+	 * Tests serializing a map when formatting
+	 */
+	public void testMapWhenFormatting() throws Exception {
+		ctx.setFormatting(true);
+		Serialization ser = createMock(MapSerialization.class);
+		Serialization value = new ValueSerialization();
+		Map<String, String> map = new LinkedHashMap<String, String>();
+		map.put("sport", "baskeball");
+		map.put("hobby", "photography");
+		
+		replay(ser);
+		writer.writeMap(ser, "leisures", map, null, value, null, ctx);
+		verify(ser);
+		assertEquals("\n   \"leisures\": {\n      \"sport\": \"baskeball\", \n      \"hobby\": \"photography\"\n   }", os.toString());
+		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
 
 	/**
 	 * Tests serializing a map
 	 */
 	public void testMap() throws Exception {
-		Serialization serialization = createMock(MapSerialization.class);
-		Serialization keySerialization = createMock(Serialization.class);
-		Serialization valueSerialization = createMock(Serialization.class);
+		PropertyResolver resolver = createMock(PropertyResolver.class);
+		ctx = new SerializationContext(writer, resolver, os);
+		
+		Serialization ser = createMock(MapSerialization.class);
+		Serialization value = new ValueSerialization();
 		Map<String, String> map = new LinkedHashMap<String, String>();
 		map.put("sport", "baskeball");
 		map.put("hobby", "photography");
 		
-		expect(keySerialization.serialize("sport", ctx.appendSegment("leisures{}"))).andReturn("\"sport\"");
-		expect(valueSerialization.serialize("baskeball", ctx.appendSegment("leisures{\"sport\"}"))).andReturn("\"baskeball\"");
-		expect(keySerialization.serialize("hobby", ctx.appendSegment("leisures{}"))).andReturn("\"hobby\"");
-		expect(valueSerialization.serialize("photography", ctx.appendSegment("leisures{\"hobby\"}"))).andReturn("\"photography\"");
+		expect(resolver.resolve("sport", "keyProperty")).andReturn("s");
+		expect(resolver.resolve("hobby", "keyProperty")).andReturn("h");
 		
-		replay(serialization, keySerialization, valueSerialization);
-		String result = writer.writeMap(serialization, null, keySerialization, valueSerialization, map, ctx.appendSegment("leisures"));
-		verify(serialization, keySerialization, valueSerialization);
-		assertEquals("{\"sport\":\"baskeball\",\"hobby\":\"photography\"}", result);
+		replay(ser, resolver);
+		writer.writeMap(ser, "leisures", map, "keyProperty", value, null, ctx);
+		verify(ser, resolver);
+		assertEquals("\"leisures\": {\"s\": \"baskeball\", \"h\": \"photography\"}", os.toString());
+		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
 }

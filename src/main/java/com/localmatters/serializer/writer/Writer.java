@@ -17,89 +17,95 @@ public interface Writer {
 
 	/**
 	 * Writes the root
-	 * @param serialization The root serialization
+	 * @param ser The root serialization
 	 * @param root The root object (if any)
-	 * @param context The serialization context
-	 * @return The resulting string
+	 * @param ctx The serialization context
 	 * @throws SerializationException When the serialization fails
 	 */
-	public String writeRoot(Serialization serialization, 
+	public void writeRoot(Serialization ser, 
 			Object root, 
-			SerializationContext context) throws SerializationException;
+			SerializationContext ctx) throws SerializationException;
 
 	/**
 	 * Writes the given value
-	 * @param serialization The value serialization
+	 * @param ser The value serialization
+	 * @param name The name under which to serialize the value
 	 * @param value The value to serialize
-	 * @param context The serialization context
-	 * @return The resulting string
+	 * @param ctx The serialization ctx
 	 * @throws SerializationException When the serialization fails
 	 */
-	public String writeValue(Serialization serialization, 
+	public void writeValue(Serialization ser, 
+			String name,
 			Object value, 
-			SerializationContext context) throws SerializationException;
+			SerializationContext ctx) throws SerializationException;
 
 	/**
 	 * Writes a complex element
-	 * @param serialization The complex serialization
-	 * @param comments The comments to write
-	 * @param attributeHandlers The attributes serialization handlers
-	 * @param elementHandlers The (sub-)elements serialization handlers
+	 * @param ser The complex serialization
+	 * @param name The name under which to serialize the complex element
 	 * @param complex The input object
-	 * @param context The serialization context
-	 * @return The resulting string
+	 * @param attributes The attributes serialization
+	 * @param elements The (sub-)elements serialization
+	 * @param comments The comments to write
+	 * @param ctx The serialization context
 	 * @throws SerializationException When the serialization fails
 	 */
-	public String writeComplex(Serialization serialization, 
-			Collection<String> comments, 
-			Collection<Serialization> attributeHandlers, 
-			Collection<Serialization> elementHandlers, 
+	public void writeComplex(Serialization ser, 
+			String name,
 			Object complex, 
-			SerializationContext context) throws SerializationException;
+			Collection<Serialization> attributes, 
+			Collection<Serialization> elements, 
+			Collection<String> comments, 
+			SerializationContext ctx) throws SerializationException;
 
 	/**
 	 * Writes an attribute
-	 * @param handler The attribute serialization
+	 * @param ser The attribute serialization
+	 * @param name The name under which to serialize the attribute
 	 * @param attribute The attribute to serialize
-	 * @param context The serialization context
-	 * @return The resulting string
+	 * @param ctx The serialization context
 	 * @throws SerializationException When the serialization fails
 	 */
-	public String writeAttribute(Serialization handler, 
+	public void writeAttribute(Serialization ser, 
+			String name,
 			Object attribute, 
-			SerializationContext context) throws SerializationException;
+			SerializationContext ctx) throws SerializationException;
 	
 	/**
 	 * Writes an iterator
-	 * @param serialization The iterator serialization
+	 * @param ser The iterator serialization
+	 * @param name The name under which to serialize the iterator
+	 * @param itr The iterator to serialize
+	 * @param elementName The name under which each element should be serialized
+	 * @param element The elements serialization
 	 * @param comments The comments to write
-	 * @param elementHandler The elements serialization handler
-	 * @param iterator The iterator to serialize
-	 * @param context The serialization context
-	 * @return The resulting string
+	 * @param ctx The serialization context
 	 * @throws SerializationException When the serialization fails
 	 */
-	public String writeIterator(Serialization serialization, 
+	public void writeIterator(Serialization ser, 
+			String name,
+			Iterator<?> itr, 
+			String elementName,
+			Serialization element, 
 			Collection<String> comments, 
-			Serialization elementHandler, 
-			Iterator<?> iterator, 
-			SerializationContext context) throws SerializationException;
+			SerializationContext ctx) throws SerializationException;
 	
 	/**
 	 * Writes a map
-	 * @param serialization The map serialization
-	 * @param comments The comments to write
-	 * @param keyHandler The keys serialization handler
-	 * @param valuesHandler The values serialization handler
+	 * @param ser The map serialization
+	 * @param name The name under which to serialize the map
 	 * @param map The map to serialize
-	 * @param context The serialization context
-	 * @return The resulting string
+	 * @param key The property to resolve the key
+	 * @param value The values serialization
+	 * @param comments The comments to write
+	 * @param ctx The serialization context
 	 * @throws SerializationException When the serialization fails
 	 */
-	public String writeMap(Serialization serialization, 
-			Collection<String> comments, 
-			Serialization keyHandler, 
-			Serialization valueHandler, 
+	public void writeMap(Serialization ser, 
+			String name,
 			Map<?,?> map, 
-			SerializationContext context) throws SerializationException;
+			String key,
+			Serialization value, 
+			Collection<String> comments, 
+			SerializationContext ctx) throws SerializationException;
 }

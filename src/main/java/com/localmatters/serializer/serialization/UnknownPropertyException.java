@@ -12,8 +12,8 @@ public class UnknownPropertyException extends SerializationException {
 	private static final String MESSAGE_FORMAT = "%s is not a valid/accessible property for the object at %s";
 
 	/**
-	 * Constructor with the specification of the the property, the context and
-	 * the cause exception
+	 * Constructor with the specification of the property, context and cause 
+	 * exception
 	 * @param property The property that could not be resolved
 	 * @param context The serialization context
 	 * @param cause The cause for this exception

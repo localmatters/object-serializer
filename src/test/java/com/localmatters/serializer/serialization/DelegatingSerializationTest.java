@@ -24,15 +24,6 @@ public class DelegatingSerializationTest extends TestCase {
 	}
 	
 	/**
-	 * Tests getting the name
-	 */
-	public void testGetName() throws Exception {
-		assertNull(serialization.getName());
-		delegate.setName("aValueSerializationName");
-		assertEquals("aValueSerializationName", serialization.getName());
-	}
-	
-	/**
 	 * Tests getting the write empty
 	 */
 	public void testIsWriteEmpty() throws Exception {

@@ -10,11 +10,11 @@ import com.localmatters.serializer.SerializationException;
 public class AttributeSerialization extends ValueSerialization {
 
 	/**
-	 * @see com.localmatters.serializer.serialization.Serialization#serialize(java.lang.Object, com.localmatters.serializer.SerializationContext)
+	 * @see com.localmatters.serializer.serialization.ValueSerialization#serialize(com.localmatters.serializer.serialization.Serialization, java.lang.String, java.lang.Object, com.localmatters.serializer.SerializationContext)
 	 */
 	@Override
-	public String serialize(Object obj, SerializationContext context) throws SerializationException {
-		return context.getWriter().writeAttribute(this, obj, context.appendSegment(getName()));
+	public void serialize(Serialization ser, String name, Object obj, SerializationContext ctx) throws SerializationException {
+		ctx.getWriter().writeAttribute(ser, name, obj, ctx);
 	}
 
 }

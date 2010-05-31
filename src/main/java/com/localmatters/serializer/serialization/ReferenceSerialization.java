@@ -2,7 +2,6 @@ package com.localmatters.serializer.serialization;
 
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.SerializationException;
-import com.localmatters.util.StringUtils;
 
 /**
  * A special serialization that can be used to implement a reference to another
@@ -15,24 +14,10 @@ public class ReferenceSerialization extends AbstractSerialization {
 	private Serialization referenced;
 
 	/**
-	 * @see com.localmatters.serializer.serialization.Serialization#serialize(java.lang.Object, com.localmatters.serializer.SerializationContext)
+	 * @see com.localmatters.serializer.serialization.Serialization#serialize(com.localmatters.serializer.serialization.Serialization, java.lang.String, java.lang.Object, com.localmatters.serializer.SerializationContext)
 	 */
-	public String serialize(Object object, SerializationContext context) throws SerializationException {
-		return getReferenced().serialize(object, context);
-	}
-	
-	/**
-	 * @see com.localmatters.serializer.serialization.Serialization#getName()
-	 */
-	@Override
-	public String getName() {
-		String name = super.getName();
-		if (StringUtils.isBlank(name)) {
-			if (getReferenced() != null) {
-				return getReferenced().getName();
-			}
-		}
-		return name;
+	public void serialize(Serialization ser, String name, Object object, SerializationContext ctx) throws SerializationException {
+		getReferenced().serialize(ser, name, object, ctx);
 	}
 	
 	/**

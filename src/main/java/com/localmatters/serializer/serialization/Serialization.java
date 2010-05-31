@@ -16,17 +16,13 @@ public interface Serialization {
 	
 	/**
 	 * Serializes the given object
+	 * @param ser The serialization context
+	 * @param name The name under which to serialize the object
 	 * @param obj The object to serialize
-	 * @param context The serialization context
-	 * @return The resulting string
+	 * @param ctx The serialization context
 	 * @throws SerializationException When the serialization fails
 	 */
-	public String serialize(Object obj, SerializationContext context) throws SerializationException;
-
-	/**
-	 * @return The name under which the object will be serialized
-	 */
-	public String getName();
+	public void serialize(Serialization ser, String name, Object obj, SerializationContext ctx) throws SerializationException;
 	
 	/**
 	 * @return Whether a null or empty object should be written

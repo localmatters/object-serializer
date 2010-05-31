@@ -14,15 +14,14 @@ public class BeanSerialization extends DelegatingSerialization {
 	private String bean;
 
 	/**
-	 * @see com.localmatters.serializer.serialization.Serialization#serialize(java.lang.Object, com.localmatters.serializer.SerializationContext)
+	 * @see com.localmatters.serializer.serialization.Serialization#serialize(com.localmatters.serializer.serialization.Serialization, java.lang.String, java.lang.Object, com.localmatters.serializer.SerializationContext)
 	 */
-	public String serialize(Object object, SerializationContext context) throws SerializationException {
-		Object beanObject = context.getBean(getBean());
+	public void serialize(Serialization ser, String name, Object object, SerializationContext ctx) throws SerializationException {
+		Object beanObject = ctx.getBean(getBean());
 		if (beanObject == null) {
 			throw new UnknownBeanException(getBean());	
 		}
-
-		return getDelegate().serialize(beanObject, context);
+		getDelegate().serialize(ser, name, beanObject, ctx);
 	}
 
 	/**

@@ -32,11 +32,13 @@ import com.localmatters.serializer.util.ReflectionUtils;
 import com.localmatters.serializer.util.SerializationUtils;
 import com.localmatters.serializer.writer.XMLWriter;
 import com.localmatters.util.StringUtils;
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 
 /**
  * A tools to write a default serialization configuration for a class
  */
 public class ConfigWriterFromClass {
+	private static final String INDEXED_AND_MAP_REMOVE_PATTERN = "^([^\\[\\{]+)(?:\\[|\\{).*$";
 	private static final Pattern COLLECTION_PATTERN = Pattern.compile("^(?:paM|tsiL|xednI|teS|yarrA|noitcelloC)(.*)");
 	private static final Pattern PLURAL_PATTERN = Pattern.compile("^(?:([^s]*[A-Z])s|s)(?:(e[iaou]|[a-df-rt-z])|e)(.*)");
 	private Class<?> rootClass;
@@ -375,13 +377,15 @@ public class ConfigWriterFromClass {
 		Class<?> klass = ConfigWriterFromClass.class.getClassLoader().loadClass(className);
 		XMLWriter writer = new XMLWriter();
 		BeanUtilsPropertyResolver beanUtils = new BeanUtilsPropertyResolver();
-		beanUtils.setIndexedMappedRemoverPattern(Pattern.compile("^([^\\[\\{]+)(?:\\[|\\{).*$"));
+		beanUtils.setIndexedMappedRemoverPattern(Pattern.compile(INDEXED_AND_MAP_REMOVE_PATTERN));
 		ComplexPropertyResolver resolver = new ComplexPropertyResolver();
 		resolver.setToken(".");
 		resolver.setDelegate(beanUtils);
-		SerializationContext context = new SerializationContext(writer, null, resolver, true);
+		SerializationContext ctx = new SerializationContext(writer, resolver, new ByteOutputStream());
+		ctx.setFormatting(true);
 		Serialization serialization = getSerialization(klass);
-		return writer.writeRoot(serialization, klass, context);
+		writer.writeRoot(serialization, klass, ctx);
+		return ctx.getOutputStream().toString();
 	}
 	
 	/**

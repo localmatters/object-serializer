@@ -14,12 +14,13 @@ import com.localmatters.serializer.SerializationException;
  */
 public class IteratorSerialization extends CommentSerialization {
 	protected static final Iterator<?> EMTPY_ITERATOR = Collections.EMPTY_LIST.iterator();
+	private String elementName;
 	private Serialization element;
 
 	/**
-	 * @see com.localmatters.serializer.serialization.Serialization#serialize(java.lang.Object, com.localmatters.serializer.SerializationContext)
+	 * @see com.localmatters.serializer.serialization.Serialization#serialize(com.localmatters.serializer.serialization.Serialization, java.lang.String, java.lang.Object, com.localmatters.serializer.SerializationContext)
 	 */
-	public String serialize(Object obj, SerializationContext context) throws SerializationException {
+	public void serialize(Serialization ser, String name, Object obj, SerializationContext ctx) throws SerializationException {
 		Iterator<?> itr = null;
 		
 		// get an iterator over the array, iterable or map's entries
@@ -34,10 +35,24 @@ public class IteratorSerialization extends CommentSerialization {
 		} else {
 			// if the object is not an array or an iterable, there is a
 			// configuration problem
-			throw new IteratorExpectedException(context.appendSegment(getName()));
+			throw new IteratorExpectedException(ctx.nextLevel(name));
 		}
 		
-		return context.getWriter().writeIterator(this, getComments(), getElement(), itr, context.appendSegment(getName()));
+		ctx.getWriter().writeIterator(ser, name, itr, getElementName(), getElement(), getComments(), ctx);
+	}
+
+	/**
+	 * @return The name under which each element should be serialized
+	 */
+	protected String getElementName() {
+		return elementName;
+	}
+
+	/**
+	 * @param elementName The name under which each element should be serialized
+	 */
+	protected void setElementName(String elementName) {
+		this.elementName = elementName;
 	}
 
 	/**

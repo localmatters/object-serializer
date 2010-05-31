@@ -8,13 +8,6 @@ package com.localmatters.serializer.serialization;
  */
 public abstract class DelegatingSerialization implements Serialization {
 	private Serialization delegate;
-
-	/**
-	 * @see com.localmatters.serializer.serialization.Serialization#getName()
-	 */
-	public String getName() {
-		return getDelegate().getName();
-	}
 	
 	/**
 	 * @see com.localmatters.serializer.serialization.Serialization#isWriteEmpty()

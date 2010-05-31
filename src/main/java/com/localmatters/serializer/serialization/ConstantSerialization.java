@@ -10,10 +10,10 @@ public class ConstantSerialization extends DelegatingSerialization {
 	private Object constant;
 
 	/**
-	 * @see com.localmatters.serializer.serialization.Serialization#serialize(java.lang.Object, com.localmatters.serializer.SerializationContext)
+	 * @see com.localmatters.serializer.serialization.Serialization#serialize(com.localmatters.serializer.serialization.Serialization, java.lang.String, java.lang.Object, com.localmatters.serializer.SerializationContext)
 	 */
-	public String serialize(Object obj, SerializationContext context) throws SerializationException {
-		return getDelegate().serialize(getConstant(), context);
+	public void serialize(Serialization ser, String name, Object obj, SerializationContext ctx) throws SerializationException {
+		getDelegate().serialize(ser, name, getConstant(), ctx);
 	}
 
 	/**

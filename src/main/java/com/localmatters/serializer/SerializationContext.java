@@ -1,169 +1,90 @@
 package com.localmatters.serializer;
 
+import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
+import java.util.Stack;
 
 import com.localmatters.serializer.resolver.PropertyResolver;
 import com.localmatters.serializer.writer.Writer;
+import com.localmatters.util.CollectionUtils;
 
 /**
- * Provides the current context for the serialization. While serializing, each
- * level in the serialization will get its own context. However, the only 
- * difference between contexts of a given serialization should be the path and
- * the prefix. All the other elements should be the same (instance equality).
+ * Provides the current context for the serialization.
  */
 public class SerializationContext {
 	private static final String SEPARATOR = ".";
-	private static final String MAP = "{}";
-	private static final String INDEX_FORMAT = "[%d]";
-	private static final String MAP_FORMAT = "{%s}";
-	private String path;
+	private Stack<String> levels;
 	private Writer writer;
-	private PropertyResolver propertyResolver;
+	private PropertyResolver resolver;
+	private OutputStream outputStream;
 	private Map<String, Object> beans;
-	private boolean pretty = false;
+	private boolean formatting = false;
 
 	/**
-	 * Default constructor
+	 * Constructor with the specification of the writer, the property resolver,
+	 * the outputStream and the map of beans
 	 * @param writer The writer
+	 * @param resolver The resolver to resolve the property of an object
+	 * @param os The outputStream where to write
 	 * @param beans The map of beans available to the serialization
-	 * @param propertyResolver The resolver to resolve the property of an object
-	 * @param pretty Whether the output should be formatted and with comments
 	 */
-	public SerializationContext(Writer writer, Map<String, Object> beans, PropertyResolver propertyResolver, boolean pretty) {
-		this(writer, beans, propertyResolver, pretty, StringUtils.EMPTY);
+	public SerializationContext(Writer writer, PropertyResolver resolver, OutputStream os, Map<String, Object> beans) {
+		setWriter(writer);
+		setPropertyResolver(resolver);
+		setOutputStream(os);
+		setBeans(beans);
+		levels = new Stack<String>();
 	}
 
 	/**
-	 * Constructor with the specification of the start path, serializer, beans
-	 * map and property resolver
-	 * @param serializer The serializer
-	 * @param beans The map of beans available to the serialization
-	 * @param propertyResolver The resolver to resolve the property of an object
-	 * @param pretty Whether the output should be formatted and with comments
-	 * @param path The path to this level
+	 * Constructor with the specification of the writer, the property resolver
+	 * and the outputStream
+	 * @param writer The writer
+	 * @param resolver The resolver to resolve the property of an object
+	 * @param os The outputStream where to write
 	 */
-	protected SerializationContext(Writer serializer, Map<String, Object> beans, PropertyResolver propertyResolver, boolean pretty, String path) {
-		setWriter(serializer);
-		setBeans(beans);
-		setPropertyResolver(propertyResolver);
-		setPath(path);
-		setPretty(pretty);
+	public SerializationContext(Writer writer, PropertyResolver resolver, OutputStream os) {
+		this(writer, resolver, os, new HashMap<String, Object>());
 	}
 
 	/**
 	 * @return The deepness of this context
 	 */
 	public int getDeepness() {
-		return StringUtils.countMatches(getPath(), SEPARATOR) + 1;
+		return CollectionUtils.sizeOf(levels);
 	}
 	
 	/**
-	 * Appends the given extension
-	 * @param extension The extension to append
-	 * @return The new path describing the path resulting from this path + the
-	 * extension
+	 * Navigates to the next level
+	 * @param level The next level 
+	 * @return The serialization context for this level
 	 */
-	private SerializationContext append(String extension) {
-		return new SerializationContext(getWriter(), getBeans(), getPropertyResolver(), isPretty(), getPath() + extension);
-	}
-	
-	/**
-	 * Returns the path resulting from adding the given segment to this path.
-	 * Note that this will not modify this instance.
-	 * @param segment The segment to append 
-	 * @return The Path instance with the new segment
-	 */
-	public SerializationContext appendSegment(String segment) {
-		if (StringUtils.isNotBlank(getPath())) {
-			return append(SEPARATOR + segment);
+	public SerializationContext nextLevel(String level) {
+		if (levels.isEmpty()) {
+			levels.push(level);
+		} else {
+			levels.push(SEPARATOR + level);
 		}
-		return new SerializationContext(getWriter(), getBeans(), getPropertyResolver(), isPretty(), segment);
+		return this;
 	}
 	
 	/**
-	 * Returns the path resulting from adding the given index (of a list) to 
-	 * this path. Note that this will not modify this instance.
-	 * @param index The index to append 
-	 * @return The Path instance with the new index
+	 * Descents to the previous level
 	 */
-	public SerializationContext appendIndex(int index) {
-		return append(String.format(INDEX_FORMAT, index));
-	}
-	
-	/**
-	 * Returns the path resulting from adding the given index (of a list), 
-	 * followed by the given segment to this path. Note that this will not 
-	 * modify this instance.
-	 * @param index The index to append 
-	 * @param segment The segment to append
-	 * @return The Path instance with the new index and segment
-	 */
-	public SerializationContext appendIndexAndSegment(int index, String segment) {
-		return append(String.format(INDEX_FORMAT, index) + SEPARATOR + segment);
-	}
-	
-	/**
-	 * Returns the path resulting from adding the map definition to this path. 
-	 * Note that this will not modify this instance.
-	 * @return The Path instance with the map definition
-	 */
-	public SerializationContext appendMap() {
-		return append(MAP);
-	}
-	
-	/**
-	 * Returns the path resulting from adding the given map key to this path. 
-	 * Note that this will not modify this instance.
-	 * @param key The map key to append 
-	 * @return The Path instance with the new map key
-	 */
-	public SerializationContext appendMap(String key) {
-		return append(String.format(MAP_FORMAT, key));
+	public void previousLevel() {
+		levels.pop();
 	}
 	
 	/**
 	 * @return The path
 	 */
 	public String getPath() {
-		return path;
-	}
-
-	/**
-	 * @param path The path to set
-	 */
-	private void setPath(String path) {
-		this.path = path;
-	}
-
-	/**
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof SerializationContext) {
-			SerializationContext ctx = (SerializationContext) obj;
-			
-			// Note that with want the instance equality here for the serializer
-			// and, mostly, for the beans as both context should reference the
-			// same objects to be equal (and this is the way they are expected
-			// tp be built.
-			return getPath().equals(ctx.getPath()) && 
-				(getWriter() == ctx.getWriter()) &&
-				(getBeans() == ctx.getBeans()) &&
-				(getPropertyResolver() == ctx.getPropertyResolver());
+		StringBuilder sb = new StringBuilder();
+		for (String level : levels) {
+			sb.append(level);
 		}
-		return super.equals(obj);
-	}
-	
-	/**
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		// see the equals method to see why this is intended
-		return (getPath() + getWriter() + getBeans() + getPropertyResolver()).hashCode();
+		return sb.toString();
 	}
 	
 	/**
@@ -189,13 +110,6 @@ public class SerializationContext {
 	}
 	
 	/**
-	 * @return The map of beans available to the serialization
-	 */
-	private Map<String, Object> getBeans() {
-		return beans;
-	}
-	
-	/**
 	 * Returns the bean exposed under the specified name
 	 * @param name The name of the bean to retrieve
 	 * @return The corresponding bean or null
@@ -215,27 +129,41 @@ public class SerializationContext {
 	 * @return The resolver to resolve the property of an object
 	 */
 	public PropertyResolver getPropertyResolver() {
-		return propertyResolver;
+		return resolver;
 	}
 
 	/**
-	 * @param propertyResolver The resolver to resolve the property of an object
+	 * @param resolver The resolver to resolve the property of an object
 	 */
-	public void setPropertyResolver(PropertyResolver propertyResolver) {
-		this.propertyResolver = propertyResolver;
+	public void setPropertyResolver(PropertyResolver resolver) {
+		this.resolver = resolver;
 	}
 
 	/**
-	 * @return Whether the output should be formatted and with comments
+	 * @return The outputStream where to write
 	 */
-	public boolean isPretty() {
-		return pretty;
+	public OutputStream getOutputStream() {
+		return outputStream;
 	}
 
 	/**
-	 * @param pretty Whether the output should be formatted and with comments
+	 * @param os The outputStream where to write
 	 */
-	private void setPretty(boolean pretty) {
-		this.pretty = pretty;
+	public void setOutputStream(OutputStream os) {
+		this.outputStream = os;
+	}
+
+	/**
+	 * @return Whether the output should be formatted or not
+	 */
+	public boolean isFormatting() {
+		return formatting;
+	}
+
+	/**
+	 * @param formatting Whether the output should be formatted or not
+	 */
+	public void setFormatting(boolean formatting) {
+		this.formatting = formatting;
 	}
 }

@@ -9,7 +9,6 @@ import static org.easymock.EasyMock.same;
 import static org.easymock.EasyMock.verify;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -18,19 +17,17 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import com.localmatters.serializer.SerializationContext;
-import com.localmatters.serializer.serialization.IteratorExpectedException;
-import com.localmatters.serializer.serialization.IteratorSerialization;
-import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.writer.Writer;
 
 /**
  * Tests the <code>IteratorSerialization</code>
  */
 public class IteratorSerializationTest extends TestCase {
-	private IteratorSerialization serialization;
+	private IteratorSerialization ser;
+	private Serialization parentSer;
 	private Serialization element;
 	private List<String> comments;
-	private Writer serializer;
+	private Writer writer;
 	private SerializationContext ctx;
 	
 	/**
@@ -39,37 +36,37 @@ public class IteratorSerializationTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		element = createMock(Serialization.class);
+		parentSer = createMock(Serialization.class);
 		comments = new ArrayList<String>();
-		serialization = new IteratorSerialization();
-		serialization.setName("orders");
-		serialization.setElement(element);
-		serialization.setComments(comments);
-		serializer = createMock(Writer.class);
-		ctx = new SerializationContext(serializer, new HashMap<String, Object>(), null, false);
+		ser = new IteratorSerialization();
+		ser.setElementName("order");
+		ser.setElement(element);
+		ser.setComments(comments);
+		writer = createMock(Writer.class);
+		ctx = new SerializationContext(writer, null, null);
 	}
 
 	/**
 	 * Tests the serialization when the object is not an index
 	 */
 	public void testHandleWhenNotIndex() throws Exception {
-		replay(serializer, element);
+		replay(writer, element, parentSer);
 		try {
-			serialization.serialize(new Object(), ctx);
+			ser.serialize(parentSer, "orders", new Object(), ctx);
 			fail("IndexExpectedException expected");
 		} catch (IteratorExpectedException e) {
 		}
-		verify(serializer, element);
+		verify(writer, element, parentSer);
 	}
 
 	/**
 	 * Tests the serialization when the object is null
 	 */
 	public void testHandleWhenNull() throws Exception {
-		expect(serializer.writeIterator(serialization, comments, element, IteratorSerialization.EMTPY_ITERATOR, ctx.appendSegment("orders"))).andReturn("<orders/>");
-		replay(serializer, element);
-		String result = serialization.serialize(null, ctx);
-		verify(serializer, element);
-		assertEquals("<orders/>", result);
+		writer.writeIterator(parentSer, "orders", IteratorSerialization.EMTPY_ITERATOR, "order", element, comments, ctx);
+		replay(writer, element, parentSer);
+		ser.serialize(parentSer, "orders", null, ctx);
+		verify(writer, element, parentSer);
 	}
 
 	/**
@@ -82,11 +79,10 @@ public class IteratorSerializationTest extends TestCase {
 		Iterator<Map.Entry<String, String>> iterator = createMock(Iterator.class);
 		expect(map.entrySet()).andReturn(entrySet);
 		expect(entrySet.iterator()).andReturn(iterator);
-		expect(serializer.writeIterator(serialization, comments, element, iterator, ctx.appendSegment("orders"))).andReturn("<orders><entry><key/><value/></entry></orders>");
-		replay(serializer, element, map, entrySet, iterator);
-		String result = serialization.serialize(map, ctx);
-		verify(serializer, element, map, entrySet, iterator);
-		assertEquals("<orders><entry><key/><value/></entry></orders>", result);
+		writer.writeIterator(parentSer, "orders", iterator, "order", element, comments, ctx);
+		replay(writer, element, map, entrySet, iterator);
+		ser.serialize(parentSer, "orders", map, ctx);
+		verify(writer, element, map, entrySet, iterator);
 	}
 
 	/**
@@ -97,11 +93,10 @@ public class IteratorSerializationTest extends TestCase {
 		Iterable<String> iterable = createMock(Iterable.class);
 		Iterator<String> iterator = createMock(Iterator.class);
 		expect(iterable.iterator()).andReturn(iterator);
-		expect(serializer.writeIterator(serialization, comments, element, iterator, ctx.appendSegment("orders"))).andReturn("<orders><order/></orders>");
-		replay(serializer, element, iterable, iterator);
-		String result = serialization.serialize(iterable, ctx);
-		verify(serializer, element, iterable, iterator);
-		assertEquals("<orders><order/></orders>", result);
+		writer.writeIterator(parentSer, "orders", iterator, "order", element, comments, ctx);
+		replay(writer, element, iterable, iterator);
+		ser.serialize(parentSer, "orders", iterable, ctx);
+		verify(writer, element, iterable, iterator);
 	}
 
 	/**
@@ -109,10 +104,9 @@ public class IteratorSerializationTest extends TestCase {
 	 */
 	public void testHandleArray() throws Exception {
 		String[] array = new String[]{"one", "two", "three"};
-		expect(serializer.writeIterator(same(serialization), same(comments), same(element), isA(Iterator.class), eq(ctx.appendSegment("orders")))).andReturn("<orders><order/></orders>");
-		replay(serializer, element);
-		String result = serialization.serialize(array, ctx);
-		verify(serializer, element);
-		assertEquals("<orders><order/></orders>", result);
+		writer.writeIterator(same(parentSer), eq("orders"), isA(Iterator.class), eq("order"), same(element), same(comments), same(ctx));
+		replay(writer, element, parentSer);
+		ser.serialize(parentSer, "orders", array, ctx);
+		verify(writer, element, parentSer);
 	}
 }

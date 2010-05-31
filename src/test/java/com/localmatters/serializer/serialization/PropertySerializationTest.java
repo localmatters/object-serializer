@@ -1,30 +1,25 @@
 package com.localmatters.serializer.serialization;
 
-import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
-
-import java.util.HashMap;
-
 import junit.framework.TestCase;
 
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.resolver.InvalidPropertyException;
 import com.localmatters.serializer.resolver.PropertyResolver;
-import com.localmatters.serializer.serialization.PropertySerialization;
-import com.localmatters.serializer.serialization.Serialization;
-import com.localmatters.serializer.serialization.UnknownPropertyException;
 import com.localmatters.serializer.writer.Writer;
 
 /**
  * Tests the <code>PropertySerialization</code>
  */
 public class PropertySerializationTest extends TestCase {
-	private PropertySerialization serialization;
+	private PropertySerialization ser;
+	private Serialization parentSer;
 	private Serialization delegate;
 	private PropertyResolver resolver;
-	private Writer serializer;
+	private Writer writer;
 	private Object object;
 	private SerializationContext ctx;
 	
@@ -34,39 +29,51 @@ public class PropertySerializationTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		delegate = createMock(Serialization.class); 
+		parentSer = createMock(Serialization.class);
 		resolver = createMock(PropertyResolver.class);
-		serialization = new PropertySerialization();
-		serialization.setDelegate(delegate);
-		serializer = createMock(Writer.class);
+		ser = new PropertySerialization();
+		ser.setDelegate(delegate);
+		writer = createMock(Writer.class);
 		object = new Object();
-		ctx = new SerializationContext(serializer, new HashMap<String, Object>(), resolver, false);
+		ctx = new SerializationContext(writer, resolver, null);
 	}
 
 	/**
 	 * Tests the serialization when the property is invalid
 	 */
 	public void testHandleInvalidProperty() throws Exception {
-		serialization.setProperty("name");
+		ser.setProperty("name");
 		expect(resolver.resolve(object, "name")).andThrow(new InvalidPropertyException("name", "Object"));
-		replay(delegate, resolver, serializer);
+		replay(delegate, resolver, writer, parentSer);
 		try {
-			serialization.serialize(object, ctx);
+			ser.serialize(parentSer, null, object, ctx);
 			fail("UnknownPropertyException expected");
 		} catch (UnknownPropertyException e) {
 		}
-		verify(delegate, resolver, serializer);
+		verify(delegate, resolver, writer, parentSer);
+	}
+	
+	/**
+	 * Tests the serialization when the name is null
+	 */
+	public void testHandleWhenTheNameIsNull() throws Exception {
+		ser.setProperty("name");
+		expect(resolver.resolve(object, "name")).andReturn("John Doe");
+		delegate.serialize(parentSer, "name", "John Doe", ctx);
+		replay(delegate, resolver, writer, parentSer);
+		ser.serialize(parentSer, null, object, ctx);
+		verify(delegate, resolver, writer, parentSer);
 	}
 	
 	/**
 	 * Tests the serialization
 	 */
 	public void testHandle() throws Exception {
-		serialization.setProperty("name");
+		ser.setProperty("name");
 		expect(resolver.resolve(object, "name")).andReturn("John Doe");
-		expect(delegate.serialize("John Doe", ctx)).andReturn("<name>John Doe</name>");
-		replay(delegate, resolver, serializer);
-		String result = serialization.serialize(object, ctx);
-		verify(delegate, resolver, serializer);
-		assertEquals("<name>John Doe</name>", result);
+		delegate.serialize(parentSer, "firstlastname", "John Doe", ctx);
+		replay(delegate, resolver, writer, parentSer);
+		ser.serialize(parentSer, "firstlastname", object, ctx);
+		verify(delegate, resolver, writer, parentSer);
 	}
 }

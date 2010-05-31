@@ -3,24 +3,18 @@ package com.localmatters.serializer.serialization;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import junit.framework.TestCase;
 
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.writer.Writer;
 
 /**
- * Tests the <code>ComplexSerialization</code>
+ * Tests the <code>NameSerialization</code>
  */
-public class ComplexSerializationTest extends TestCase {
-	private ComplexSerialization ser;
+public class NameSerializationTest extends TestCase {
+	private NameSerialization ser;
 	private Serialization parentSer;
-	private List<Serialization> attributes;
-	private List<Serialization> elements;
-	private List<String> comments;
+	private Serialization delegate;
 	private Writer writer;
 	private Object object;
 	private SerializationContext ctx;
@@ -30,26 +24,23 @@ public class ComplexSerializationTest extends TestCase {
 	 */
 	@Override
 	protected void setUp() throws Exception {
+		delegate = createMock(Serialization.class); 
 		parentSer = createMock(Serialization.class);
-		attributes = new ArrayList<Serialization>();
-		elements = new ArrayList<Serialization>();
-		comments = new ArrayList<String>();
-		ser = new ComplexSerialization();
-		ser.setAttributes(attributes);
-		ser.setElements(elements);
-		ser.setComments(comments);
+		ser = new NameSerialization();
+		ser.setName("newName");
+		ser.setDelegate(delegate);
 		writer = createMock(Writer.class);
 		object = new Object();
 		ctx = new SerializationContext(writer, null, null);
 	}
-	
+
 	/**
 	 * Tests the serialization
 	 */
 	public void testHandle() throws Exception {
-		writer.writeComplex(parentSer, "listing", object, attributes, elements, comments, ctx);
-		replay(writer);
-		ser.serialize(parentSer, "listing", object, ctx);
-		verify(writer);
+		delegate.serialize(parentSer, "newName", object, ctx);
+		replay(delegate, writer);
+		ser.serialize(parentSer, "name", object, ctx);
+		verify(delegate, writer);
 	}
 }

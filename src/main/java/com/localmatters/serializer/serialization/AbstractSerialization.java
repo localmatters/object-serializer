@@ -1,34 +1,18 @@
 package com.localmatters.serializer.serialization;
 
-
 /**
  * Abstract class defining the common properties and functionalities of a 
  * serialization.
  */
 public abstract class AbstractSerialization implements Serialization {
-	private String name;
 	private Boolean writeEmpty;
-
-	/**
-	 * @see com.localmatters.serializer.serialization.Serialization#getName()
-	 */
-	public String getName() {
-		return name;
-	}
-	
-	/**
-	 * @param name The name under which the object will be serialized
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
 	
 	/**
 	 * @see com.localmatters.serializer.serialization.Serialization#isWriteEmpty()
 	 */
 	public boolean isWriteEmpty() {
 		if (writeEmpty == null) {
-			return true;
+			return false;
 		}
 		return writeEmpty;
 	}

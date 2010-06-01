@@ -40,7 +40,7 @@
              This can change to a <map> by setting its [key] attribute to the
              property of the key object that identifies it. -->
         <list property="map">
-            <complex>
+            <complex name="entry">
 
                 <!-- Unable to resolve the class for the element [key]!
                      Its configuration must be writtent manually. -->
@@ -73,7 +73,7 @@
              This can change to a <map> by setting its [key] attribute to the
              property of the key object that identifies it. -->
         <list property="ordersByAddresses">
-            <complex>
+            <complex name="ordersByAddress">
                 <ref property="key" target="Address"/>
                 <list property="value"/>
             </complex>

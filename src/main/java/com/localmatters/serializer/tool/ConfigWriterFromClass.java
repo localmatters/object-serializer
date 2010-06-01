@@ -237,7 +237,7 @@ public class ConfigWriterFromClass {
 				map.addComment("Configured the complex map returned by [" + name + "] as a list.");
 				map.addComment("This can change to a <map> by setting its [key] attribute to the");
 				map.addComment("property of the key object that identifies it.");
-				ComplexSerialization element = new ComplexSerialization();
+				ComplexSerialization element = createComplex(createConstantAttribute(ATTRIBUTE_NAME, singleName));
 				element.addElement(handleType("key", types[0], 
 						createConstantAttribute(ATTRIBUTE_PROPERTY, "key")));
 				element.addElement(handleType("value", types[1], 

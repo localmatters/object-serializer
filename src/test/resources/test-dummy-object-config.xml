@@ -20,7 +20,7 @@
              This can change to a <map> by setting its [key] attribute to the
              property of the key object that identifies it. -->
         <list property="ordersByAddresses">
-            <complex>
+            <complex name="ordersByAddress">
                 <ref property="key" target="Address"/>
                 <list property="value"/>
             </complex>

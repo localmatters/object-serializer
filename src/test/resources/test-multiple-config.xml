@@ -90,6 +90,26 @@
         <value property="empty"/>
     </complex>
 
+    <!-- com.localmatters.serializer.test.domain.ChildOfSelfreferencingObject -->
+    <complex id="ChildOfSelfreferencingObject" name="ChildOfSelfreferencingObject">
+        <value property="name"/>
+
+        <!-- Iteration of [class com.localmatters.serializer.test.domain.SelfReferencingObject] -->
+        <list property="others">
+            <ref name="other" target="SelfReferencingObject"/>
+        </list>
+    </complex>
+
+    <!-- com.localmatters.serializer.test.domain.SelfReferencingObject -->
+    <complex id="SelfReferencingObject" name="SelfReferencingObject">
+        <value property="name"/>
+
+        <!-- Iteration of [class com.localmatters.serializer.test.domain.SelfReferencingObject] -->
+        <list property="others">
+            <ref name="other" target="SelfReferencingObject"/>
+        </list>
+    </complex>
+
     <!-- com.localmatters.serializer.test.domain.DummyObject$Address -->
     <complex id="Address" name="Address">
         <value property="city"/>

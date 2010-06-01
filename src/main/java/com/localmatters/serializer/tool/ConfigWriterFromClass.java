@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.SerializationException;
 import com.localmatters.serializer.resolver.BeanUtilsPropertyResolver;
@@ -39,6 +41,7 @@ import com.localmatters.serializer.writer.XMLWriter;
  * A tools to write a default serialization configuration for a class
  */
 public class ConfigWriterFromClass {
+	private static final Logger LOGGER = Logger.getLogger(ConfigWriterFromClass.class);
 	private static final String INDEXED_AND_MAP_REMOVE_PATTERN = "^([^\\[\\{]+)(?:\\[|\\{).*$";
 	private Class<?>[] rootClasses;
 	private ComplexSerialization root;
@@ -103,6 +106,7 @@ public class ConfigWriterFromClass {
 	 * @return The corresponding serialization
 	 */
 	protected Serialization handleType(String name, Type type, Serialization...attributes) {
+		LOGGER.debug("TYPE - name [" + name + "] type [" + type + "]");
 		Class<?> klass = null;
 		
 		// first, resolves the class
@@ -155,9 +159,17 @@ public class ConfigWriterFromClass {
 	 * @return The corresponding serialization
 	 */
 	protected NameSerialization handleReference(String name, Class<?> klass, Serialization...attributes) {
+		LOGGER.debug("REFERENCE - name [" + name + "] class [" + klass + "]");
+		NameSerialization ref = null;
+		if (!references.containsKey(klass)) {
+			references.put(klass, null);
+			ref = handleClass(name, klass, attributes);
+			references.put(klass, ref);
+		}
+		
 		if (references.containsKey(klass)) {
 			String id = getIdForClass(klass);
-			NameSerialization ref = references.get(klass);
+			ref = references.get(klass);
 			
 			// this is the second time this class is encountered, so we add its
 			// configuration to the root and replaces its "in place" 
@@ -184,9 +196,6 @@ public class ConfigWriterFromClass {
 			return createName(TYPE_REFERENCE, reference);
 		}
 		
-		// otherwise, handle the class
-		NameSerialization ref = handleClass(name, klass, attributes);
-		references.put(klass, ref);
 		return ref;
 	}	
 	
@@ -199,6 +208,7 @@ public class ConfigWriterFromClass {
 	 * @return The corresponding serialization
 	 */
 	protected NameSerialization handleMap(String name, Class<?> klass, Type[] types, Serialization...attributes) {
+		LOGGER.debug("MAP - name [" + name + "] class [" + klass + "]");
 		String type = TYPE_MAP;
 		ComplexSerialization map = createComplex(attributes);
 		String singleName = getSingular(name, "entry");
@@ -246,6 +256,7 @@ public class ConfigWriterFromClass {
 	 * @return The corresponding serialization
 	 */
 	protected NameSerialization handleIterator(String name, Class<?> klass, Type[] types, Serialization...attributes) {
+		LOGGER.debug("ITERATOR - name [" + name + "] class [" + klass + "]");
 		ComplexSerialization list = createComplex(attributes);
 		String singleName = getSingular(name, "element");
 
@@ -274,6 +285,7 @@ public class ConfigWriterFromClass {
 	 * @return The corresponding serialization
 	 */
 	protected NameSerialization handleSingle(String name, Class<?> klass, Serialization...attributes) {
+		LOGGER.debug("SINGLE - name [" + name + "] class [" + klass + "]");
 		return createName(TYPE_VALUE, createComplex(attributes));
 	}
 	
@@ -286,6 +298,7 @@ public class ConfigWriterFromClass {
 	 * @return The corresponding serialization
 	 */
 	protected NameSerialization handleClass(String name, Class<?> klass, Serialization...attributes) {
+		LOGGER.debug("CLASS - name [" + name + "] class [" + klass + "]");
 		ComplexSerialization complex = createComplex(attributes);
 		complex.addComment(klass.getName());
 

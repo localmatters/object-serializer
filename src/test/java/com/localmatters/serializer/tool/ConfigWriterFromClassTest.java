@@ -10,6 +10,7 @@ import junit.framework.TestCase;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
+import com.localmatters.serializer.test.domain.ChildOfSelfreferencingObject;
 import com.localmatters.serializer.test.domain.DummyObject;
 import com.localmatters.serializer.test.domain.ObjectWithGenerics;
 
@@ -46,14 +47,12 @@ public class ConfigWriterFromClassTest extends TestCase {
 	}
 
 	/**
-	 * Tests getting the configuration for <code>String</code>
-	 * class
+	 * Tests getting the configuration for multiple classes
 	 */
 	public void testConfigForObjectWithGenericsDummyObjectAndString() throws Exception {
 		Resource resource = new ClassPathResource("test-multiple-config.xml");
-		assertEquals(resourceToString(resource), ConfigWriterFromClass.getConfiguration(ObjectWithGenerics.class, DummyObject.class, String.class));
+		assertEquals(resourceToString(resource), ConfigWriterFromClass.getConfiguration(ObjectWithGenerics.class, DummyObject.class, String.class, ChildOfSelfreferencingObject.class));
 	}
-
 	
 	/**
 	 * Convert the content of the given resouce into a string

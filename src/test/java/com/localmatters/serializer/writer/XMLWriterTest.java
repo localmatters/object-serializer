@@ -1,5 +1,8 @@
 package com.localmatters.serializer.writer;
 
+import static com.localmatters.serializer.util.SerializationUtils.createConstantAttribute;
+import static com.localmatters.serializer.util.SerializationUtils.createConstantValue;
+import static com.localmatters.serializer.util.SerializationUtils.createValue;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.classextension.EasyMock.createMock;
 import static org.easymock.classextension.EasyMock.replay;
@@ -21,7 +24,6 @@ import com.localmatters.serializer.serialization.IteratorSerialization;
 import com.localmatters.serializer.serialization.MapSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
-import com.localmatters.serializer.util.SerializationUtils;
 import com.localmatters.util.CollectionUtils;
 import com.localmatters.util.StringUtils;
 
@@ -92,7 +94,7 @@ public class XMLWriterTest extends TestCase {
 	 */
 	public void testRootWithFormatting() throws Exception {
 		ctx.setFormatting(true);
-		Serialization ser = SerializationUtils.createValue("listing");
+		Serialization ser = createValue("listing");
 		String root = "12345 Hotel";
 		writer.writeRoot(ser, root, ctx);
 		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<listing>12345 Hotel</listing>", os.toString());
@@ -103,7 +105,7 @@ public class XMLWriterTest extends TestCase {
 	 * Tests the root serialization
 	 */
 	public void testRoot() throws Exception {
-		Serialization ser = SerializationUtils.createValue("listing");
+		Serialization ser = createValue("listing");
 		String root = "12345 Hotel";
 		writer.writeRoot(ser, root, ctx);
 		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><listing>12345 Hotel</listing>", os.toString());
@@ -275,8 +277,8 @@ public class XMLWriterTest extends TestCase {
 		ctx.setFormatting(true);
 		ctx.nextLevel("results");
 		Serialization ser = createMock(ComplexSerialization.class);
-		Serialization element1 = SerializationUtils.createConstantValue("id", "ABCD1234");
-		Serialization element2 = SerializationUtils.createConstantValue("name", "John Hotel");
+		Serialization element1 = createConstantValue("id", "ABCD1234");
+		Serialization element2 = createConstantValue("name", "John Hotel");
 		Object object = new Object();
 		
 		replay(ser);
@@ -293,8 +295,8 @@ public class XMLWriterTest extends TestCase {
 	public void testComplexWithOnlyAttributes() throws Exception {
 		ctx.nextLevel("results");
 		Serialization ser = createMock(ComplexSerialization.class);
-		Serialization attribute1 = SerializationUtils.createConstantAttribute("id", "ABCD1234");
-		Serialization attribute2 = SerializationUtils.createConstantAttribute("name", "John Hotel");
+		Serialization attribute1 = createConstantAttribute("id", "ABCD1234");
+		Serialization attribute2 = createConstantAttribute("name", "John Hotel");
 		Object object = new Object();
 		
 		replay(ser);
@@ -311,8 +313,8 @@ public class XMLWriterTest extends TestCase {
 	public void testComplex() throws Exception {
 		ctx.nextLevel("results");
 		Serialization ser = createMock(ComplexSerialization.class);
-		Serialization attribute = SerializationUtils.createConstantAttribute("id", "ABCD1234");
-		Serialization element = SerializationUtils.createConstantValue("name", "John Hotel");
+		Serialization attribute = createConstantAttribute("id", "ABCD1234");
+		Serialization element = createConstantValue("name", "John Hotel");
 		Object object = new Object();
 		
 		replay(ser);

@@ -342,18 +342,21 @@ public class SerializationElementHandlerTest extends TestCase {
 	 * Tests the <code>handleList</code> method when the element has no child
 	 */
 	public void testHandleListWhenNoChild() {
-		IteratorSerialization serialization = new IteratorSerialization();
-		expect(factory.create(IteratorSerialization.class)).andReturn(serialization);
+		IteratorSerialization ser = new IteratorSerialization();
+		ValueSerialization elementSer = new ValueSerialization();
+		
+		expect(factory.create(IteratorSerialization.class)).andReturn(ser);
 		expect(element.elements()).andReturn(null);
-		expect(element.getPath()).andReturn(PATH);
+		expect(factory.create(ValueSerialization.class)).andReturn(elementSer);
+
 		replay(factory, element);
-		try {
-			handler.handleList(element, attributes);
-			fail("ConfigurationException expected");
-		} catch (ConfigurationException e) {
-			assertEquals(String.format(INVALID_LIST_FORMAT, PATH), e.getMessage());
-		}
+		Serialization result = handler.handleList(element, attributes);
 		verify(factory, element);
+
+		assertSame(ser, result);
+		assertSame(elementSer, ser.getElement());
+		assertFalse(elementSer.isWriteEmpty());
+		assertTrue(CollectionUtils.isEmpty(ser.getComments()));
 	}
 
 	/**
@@ -458,6 +461,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		assertTrue(ser.isWriteEmpty());
 		assertSame(elementSer, ser.getElement());
 		assertFalse(elementSer.isWriteEmpty());
+		assertTrue(CollectionUtils.isEmpty(ser.getComments()));
 	}
 	
 	/**
@@ -557,9 +561,9 @@ public class SerializationElementHandlerTest extends TestCase {
 	}
 
 	/**
-	 * Tests the <code>handleType</code> method with a map
+	 * Tests the <code>handleType</code> method with an empty map
 	 */
-	public void testHandleTypeWhenMap() {
+	public void testHandleTypeWhenEmptyMap() {
 		MapSerialization ser = new MapSerialization();
 		ValueSerialization valueSer = new ValueSerialization();
 
@@ -579,6 +583,37 @@ public class SerializationElementHandlerTest extends TestCase {
 		assertTrue(ser.isWriteEmpty());
 		assertNull(ser.getKey());
 		assertSame(valueSer, ser.getValue());
+		assertTrue(CollectionUtils.isEmpty(ser.getComments()));
+	}
+
+	/**
+	 * Tests the <code>handleType</code> method with a map
+	 */
+	public void testHandleTypeWhenMap() {
+		MapSerialization ser = new MapSerialization();
+		ValueSerialization valueSer = new ValueSerialization();
+		Element comment = createMock(Element.class);
+
+		expect(element.getName()).andReturn(TYPE_MAP);
+		expect(factory.create(MapSerialization.class)).andReturn(ser);
+		expect(element.elements()).andReturn(CollectionUtils.asList(comment));
+		expect(comment.getName()).andReturn(TYPE_COMMENT);
+		expect(comment.getStringValue()).andReturn("Hello Map");
+		expect(factory.create(ValueSerialization.class)).andReturn(valueSer);
+		expect(element.attributeValue(ATTRIBUTE_KEY)).andReturn(null);
+		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn("true");
+		expect(element.attributes()).andReturn(CollectionUtils.asList("true"));
+
+		replay(factory, element, comment);
+		Serialization result = handler.handleType(element, attributes);
+		verify(factory, element, comment);
+
+		assertSame(ser, result);
+		assertTrue(ser.isWriteEmpty());
+		assertNull(ser.getKey());
+		assertSame(valueSer, ser.getValue());
+		assertEquals(1, CollectionUtils.sizeOf(ser.getComments()));
+		assertEquals("Hello Map", ser.getComments().get(0));
 	}
 
 	/**

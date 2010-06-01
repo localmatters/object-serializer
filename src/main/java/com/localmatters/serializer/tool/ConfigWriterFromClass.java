@@ -10,6 +10,10 @@ import static com.localmatters.serializer.config.SerializationElementHandler.TYP
 import static com.localmatters.serializer.config.SerializationElementHandler.TYPE_REFERENCE;
 import static com.localmatters.serializer.config.SerializationElementHandler.TYPE_ROOT;
 import static com.localmatters.serializer.config.SerializationElementHandler.TYPE_VALUE;
+import static com.localmatters.serializer.util.SerializationUtils.createComplex;
+import static com.localmatters.serializer.util.SerializationUtils.createConstantAttribute;
+import static com.localmatters.serializer.util.SerializationUtils.createName;
+import static com.localmatters.serializer.util.SerializationUtils.createReference;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -29,7 +33,6 @@ import com.localmatters.serializer.serialization.ComplexSerialization;
 import com.localmatters.serializer.serialization.ReferenceSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.util.ReflectionUtils;
-import com.localmatters.serializer.util.SerializationUtils;
 import com.localmatters.serializer.writer.XMLWriter;
 import com.localmatters.util.StringUtils;
 import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
@@ -64,13 +67,13 @@ public class ConfigWriterFromClass {
 		references = new HashMap<Class<?>, ReferenceSerialization>();
 		references.put(getRootClass(), null);
 		ids = new HashMap<Class<?>, String>();
-		root = SerializationUtils.createComplex(TYPE_ROOT);
+		root = new ComplexSerialization();
 		
 		String name = getRootClass().getSimpleName();
 		root.getElements().add(0, handleClass(name, getRootClass(), 
-				SerializationUtils.createConstantAttribute(ATTRIBUTE_ID, getIdForClass(getRootClass())),
-				SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, name)));
-		return root;
+				createConstantAttribute(ATTRIBUTE_ID, getIdForClass(getRootClass())), 
+				createConstantAttribute(ATTRIBUTE_NAME, name)));
+		return createName(TYPE_ROOT, root);
 	}
 	
 	/**
@@ -113,10 +116,10 @@ public class ConfigWriterFromClass {
 		
 		// unable to resolve the class
 		if (klass == null) {
-			ComplexSerialization value = SerializationUtils.createComplex(TYPE_VALUE, attributes);
+			ComplexSerialization value = createComplex(attributes);
 			value.addComment("Unable to resolve the class for the element [" + name + "]!");
 			value.addComment("Its configuration must be writtent manually.");
-			return value;
+			return createName(TYPE_VALUE, value);
 		}
 
 		// handles simple class
@@ -161,25 +164,25 @@ public class ConfigWriterFromClass {
 				ComplexSerialization referenced = (ComplexSerialization) ref.getReferenced();
 				List<Serialization> referencedAttributes = referenced.getAttributes();
 				referenced.setAttributes(new ArrayList<Serialization>());
-				referenced.addAttribute(SerializationUtils.createConstantAttribute(ATTRIBUTE_ID, id));
-				referenced.addAttribute(SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, name));
+				referenced.addAttribute(createConstantAttribute(ATTRIBUTE_ID, id));
+				referenced.addAttribute(createConstantAttribute(ATTRIBUTE_NAME, name));
 				root.addElement(referenced);
 				
-				referenced = SerializationUtils.createComplex(TYPE_REFERENCE);
-				ref.setReferenced(referenced);
+				referenced = new ComplexSerialization();
+				ref.setReferenced(createName(TYPE_REFERENCE, referenced));
 				referenced.setAttributes(referencedAttributes);
-				referenced.addAttribute(SerializationUtils.createConstantAttribute(ATTRIBUTE_TARGET, id));				
+				referenced.addAttribute(createConstantAttribute(ATTRIBUTE_TARGET, id));				
 				references.put(klass, null);
 			}
 
 			// then creates a new reference to return
-			ComplexSerialization reference = SerializationUtils.createComplex(TYPE_REFERENCE, attributes);
-			reference.addAttribute(SerializationUtils.createConstantAttribute(ATTRIBUTE_TARGET, id));
-			return reference;
+			ComplexSerialization reference = createComplex(attributes);
+			reference.addAttribute(createConstantAttribute(ATTRIBUTE_TARGET, id));
+			return createName(TYPE_REFERENCE, reference);
 		}
 		
 		// otherwise, encapsulate the serialization into a reference
-		ReferenceSerialization ref = SerializationUtils.createReference(handleClass(name, klass, attributes));
+		ReferenceSerialization ref = createReference(handleClass(name, klass, attributes));
 		references.put(klass, ref);
 		return ref;
 	}	
@@ -193,46 +196,44 @@ public class ConfigWriterFromClass {
 	 * @return The corresponding serialization
 	 */
 	protected Serialization handleMap(String name, Class<?> klass, Type[] types, Serialization...attributes) {
-		ComplexSerialization map = null;
+		String type = TYPE_MAP;
+		ComplexSerialization map = createComplex(attributes);
 		String singleName = getSingular(name, "entry");
 
 		if ((types != null) && (types.length == 2)) {
 			
 			// simple map
 			if ((types[0] instanceof Class<?>) && ReflectionUtils.isSimple((Class<?>) types[0])) {
-				map = SerializationUtils.createComplex(TYPE_MAP, attributes);
 				map.addComment("map of [" + types[0] + "] and [" + types[1] + "]");
-				Serialization element = handleType(singleName, types[1], 
-						SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, singleName));
-				map.addElement(element);
+				if (!((types[1] instanceof Class<?>) && ReflectionUtils.isSimple((Class<?>) types[1]))) {
+					map.addElement(handleType(singleName, types[1], createConstantAttribute(ATTRIBUTE_NAME, singleName)));
+				}
 			} 
 			// complex map => list
 			else {
-				map = SerializationUtils.createComplex(TYPE_LIST, attributes);
+				type = TYPE_LIST;
 				map.addComment("Configured the complex map returned by [" + name + "] as a list.");
 				map.addComment("This can change to a <map> by setting its [key] attribute to the");
 				map.addComment("property of the key object that identifies it.");
-				ComplexSerialization element = SerializationUtils.createComplex(TYPE_COMPLEX);
-				map.addElement(element);
-				element.addElement(handleType("key", types[0],
-						SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, "key"),
-						SerializationUtils.createConstantAttribute(ATTRIBUTE_PROPERTY, "key")));
-				element.addElement(handleType("value", types[1],
-						SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, "value"),
-						SerializationUtils.createConstantAttribute(ATTRIBUTE_PROPERTY, "value")));
+				ComplexSerialization element = new ComplexSerialization();
+				element.addElement(handleType("key", types[0], 
+						createConstantAttribute(ATTRIBUTE_NAME, "key"), 
+						createConstantAttribute(ATTRIBUTE_PROPERTY, "key")));
+				element.addElement(handleType("value", types[1], 
+						createConstantAttribute(ATTRIBUTE_NAME, "value"), 
+						createConstantAttribute(ATTRIBUTE_PROPERTY, "value")));
+				map.addElement(createName(TYPE_COMPLEX, element));
 			}
 		}
 		
 		// map of unknown type
 		else {
-			map = SerializationUtils.createComplex(TYPE_MAP, attributes);
 			map.addComment("Unable to identify the types for the [" + name + "] map!");
 			map.addComment("The configuration of its entries must be writtent manually.");
-			map.addElement(SerializationUtils.createComplex(TYPE_VALUE,
-					SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, singleName)));
+			map.addElement(createComplex(TYPE_VALUE, createConstantAttribute(ATTRIBUTE_NAME, singleName)));
 		}
 		
-		return map;
+		return createName(type, map);
 	}
 	
 	/**
@@ -244,26 +245,22 @@ public class ConfigWriterFromClass {
 	 * @return The corresponding serialization
 	 */
 	protected Serialization handleIterator(String name, Class<?> klass, Type[] types, Serialization...attributes) {
-		ComplexSerialization list = null;
+		ComplexSerialization list = createComplex(attributes);
 		String singleName = getSingular(name, "element");
 
 		if ((types != null) && (types.length == 1)) {
-			list = SerializationUtils.createComplex(TYPE_LIST, attributes);
 			list.addComment("List of [" + types[0] + "]");
-			list.addElement(handleType(singleName, types[0],
-					SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, singleName)));
+			list.addElement(handleType(singleName, types[0], createConstantAttribute(ATTRIBUTE_NAME, singleName)));
 		}
 		
 		// list of unknown type
 		else {
-			list = SerializationUtils.createComplex(TYPE_LIST, attributes);
 			list.addComment("Unable to identify the types for the [" + name + "] list!");
 			list.addComment("The configuration of its entries must be writtent manually.");
-			list.addElement(SerializationUtils.createComplex(TYPE_VALUE,
-					SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, singleName)));
+			list.addElement(createComplex(TYPE_VALUE, createConstantAttribute(ATTRIBUTE_NAME, singleName)));
 		}
 		
-		return list;
+		return createName(TYPE_LIST, list);
 	}
 	
 	/**
@@ -274,7 +271,7 @@ public class ConfigWriterFromClass {
 	 * @return The corresponding serialization
 	 */
 	protected Serialization handleSingle(String name, Class<?> klass, Serialization...attributes) {
-		return SerializationUtils.createComplex(TYPE_VALUE, attributes);
+		return createName(TYPE_VALUE, createComplex(attributes));
 	}
 	
 	
@@ -286,18 +283,18 @@ public class ConfigWriterFromClass {
 	 * @return The corresponding serialization
 	 */
 	protected Serialization handleClass(String name, Class<?> klass, Serialization...attributes) {
-		ComplexSerialization complex = SerializationUtils.createComplex(TYPE_COMPLEX, attributes);
+		ComplexSerialization complex = createComplex(attributes);
 		complex.addComment(klass.getName());
 
 		// loops over the getter
 		for (Method getter : ReflectionUtils.getGetters(klass)) {
 			String field = ReflectionUtils.getGetterFieldName(getter);
 			complex.addElement(handleType(field, getter.getGenericReturnType(),
-						SerializationUtils.createConstantAttribute(ATTRIBUTE_NAME, field),
-						SerializationUtils.createConstantAttribute(ATTRIBUTE_PROPERTY, field)));
+						createConstantAttribute(ATTRIBUTE_NAME, field),
+						createConstantAttribute(ATTRIBUTE_PROPERTY, field)));
 		}
 		
-		return complex;
+		return createName(TYPE_COMPLEX, complex);
 	}
 
 	/**
@@ -306,7 +303,7 @@ public class ConfigWriterFromClass {
 	 * @param def The default value to return if no singular could be found
 	 * @return The singular value for this term or 
 	 */
-	protected String getSingular(String term, String def) {
+	protected static String getSingular(String term, String def) {
 		String result = "";
 		String str = StringUtils.reverse(term);
 		

@@ -27,8 +27,8 @@ public class DelegatingSerializationTest extends TestCase {
 	 * Tests getting the write empty
 	 */
 	public void testIsWriteEmpty() throws Exception {
-		assertTrue(serialization.isWriteEmpty());
-		delegate.setWriteEmpty(Boolean.FALSE);
 		assertFalse(serialization.isWriteEmpty());
+		delegate.setWriteEmpty(Boolean.TRUE);
+		assertTrue(serialization.isWriteEmpty());
 	}
 }

@@ -54,8 +54,8 @@ public class SerializationElementHandler implements ElementHandler {
 	protected static final String INVALID_TYPE_FORMAT = "Invalid element <%s> at [%s]!";
 	protected static final String MISSING_ATTRIBUTE_FORMAT = "Missing or invalid attribute %s on [%s]!";
 	protected static final String INVALID_ATTRIBUTE_ELEMENT_FORMAT = "Unexpected <attribute> at [%s]. Attributes are only valid directly under <complex> elements!";
-	protected static final String INVALID_LIST_FORMAT = "The list at [%s] is invalid. One and only one non-comment sub-element is expected!";
-	protected static final String INVALID_MAP_FORMAT = "The map at [%s] is invalid. Zero or one non-comment sub-element is expected!";
+	protected static final String INVALID_LIST_FORMAT = "The list at [%s] is invalid. Zero or one one non-comment sub-element expected!";
+	protected static final String INVALID_MAP_FORMAT = "The map at [%s] is invalid. Zero or one non-comment sub-element expected!";
 	protected static final String NAME_NOT_ALLOWED_FORMAT = "Name attribute are not allowed for the map sub-element at [%s]!";
 	protected static final String INVALID_ID_FORMAT = "Unable to find any element with the id(s): %s!";
 	protected static final String INVALID_ATTRIBUTES_FORMAT = "Invalid attributes %s on element <%s> at [%s]";
@@ -427,7 +427,7 @@ public class SerializationElementHandler implements ElementHandler {
 		}
 
 		if (!foundElement) {
-			throw new ConfigurationException(INVALID_LIST_FORMAT, element.getPath());
+			serialization.setElement(getObjectFactory().create(ValueSerialization.class));
 		}
 		return serialization;
 	}

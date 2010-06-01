@@ -227,12 +227,12 @@ public class JSONWriterTest extends TestCase {
 		ctx.setFormatting(true);
 		ctx.nextLevel("results");
 		Serialization ser = createMock(ComplexSerialization.class);
-		Serialization attribute = SerializationUtils.createConstantAttribute("id", "ABCD1234");
-		Serialization element = SerializationUtils.createConstantValue("name", "John Hotel");
+		Serialization element1 = SerializationUtils.createConstantAttribute("id", "ABCD1234");
+		Serialization element2 = SerializationUtils.createConstantValue("name", "John Hotel");
 		Object object = new Object();
 		
 		replay(ser);
-		writer.writeComplex(ser, "listing", object, CollectionUtils.asList(attribute), CollectionUtils.asList(element), null, ctx);
+		writer.writeComplex(ser, "listing", object, null, CollectionUtils.asList(element1, element2), null, ctx);
 		verify(ser);
 
 		assertEquals("\n      \"listing\": {\n         \"id\": \"ABCD1234\", \n         \"name\": \"John Hotel\"\n      }", os.toString());

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<serializations>
+
+    <!-- com.localmatters.serializer.test.domain.ObjectWithGenerics -->
+    <complex id="ObjectWithGenerics" name="ObjectWithGenerics">
+
+        <!-- Iteration of [class java.lang.String] -->
+        <list property="array"/>
+
+        <!-- Unable to identify the types for the [list] iteration!
+             The configuration of its entries must be writtent manually. -->
+        <list property="list">
+            <value name="element"/>
+        </list>
+
+        <!-- Iteration of [java.util.List<java.lang.String>] -->
+        <list property="listOfListOfString">
+
+            <!-- Iteration of [class java.lang.String] -->
+            <list name="element"/>
+        </list>
+
+        <!-- Iteration of [java.util.Map<java.lang.String, java.util.List>] -->
+        <list property="listOfMapOfStringAndList">
+
+            <!-- map of [class java.lang.String] and [interface java.util.List] -->
+            <map name="listOfMapOfStringAnd">
+
+                <!-- Unable to identify the types for the [entry] iteration!
+                     The configuration of its entries must be writtent manually. -->
+                <list name="entry">
+                    <value name="element"/>
+                </list>
+            </map>
+        </list>
+
+        <!-- Iteration of [class com.localmatters.serializer.test.domain.ParameterizedObject] -->
+        <list property="listOfParameterizedObject">
+
+            <!-- Iteration of [class java.lang.String] -->
+            <list name="element"/>
+        </list>
+
+        <!-- Iteration of [class java.lang.String] -->
+        <list property="listOfString"/>
+
+        <!-- Configured the complex map returned by [map] as a list.
+             This can change to a <map> by setting its [key] attribute to the
+             property of the key object that identifies it. -->
+        <list property="map">
+            <complex>
+
+                <!-- Unable to resolve the class for the element [key]!
+                     Its configuration must be writtent manually. -->
+                <value property="key"/>
+
+                <!-- Unable to resolve the class for the element [value]!
+                     Its configuration must be writtent manually. -->
+                <value property="value"/>
+            </complex>
+        </list>
+
+        <!-- map of [class java.lang.String] and [class java.lang.Double] -->
+        <map property="mapOfStringAndDouble"/>
+    </complex>
+</serializations>

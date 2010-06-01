@@ -1,61 +1,72 @@
 package com.localmatters.serializer.tool;
 
-import com.localmatters.serializer.test.domain.DummyObject;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import junit.framework.TestCase;
+
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+
+import com.localmatters.serializer.test.domain.DummyObject;
+import com.localmatters.serializer.test.domain.ObjectWithGenerics;
 
 /**
  * Tests the <code>ConfigWriterFromClass</code>
  */
 public class ConfigWriterFromClassTest extends TestCase {
-	private ConfigWriterFromClass writer;
-	
-	/**
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	@Override
-	protected void setUp() throws Exception {
-		writer = new ConfigWriterFromClass(DummyObject.class);
-	}
-	
-	/**
-	 * Test getting the singular name
-	 */
-	public void testGetSingular() {
 
-		assertEquals("default", writer.getSingular("value", "default"));
-		assertEquals("value", writer.getSingular("values", "default"));
-		assertEquals("value", writer.getSingular("valueList", "default"));
-		assertEquals("value", writer.getSingular("valuesList", "default"));
-		assertEquals("value", writer.getSingular("valueMap", "default"));
-		assertEquals("value", writer.getSingular("valuesMap", "default"));
-		assertEquals("default", writer.getSingular("valueEntry", "default"));
-		assertEquals("valueEntry", writer.getSingular("valuesEntry", "default"));
-
-		assertEquals("default", writer.getSingular("address", "default"));
-		assertEquals("default", writer.getSingular("As", "default"));
-		assertEquals("address", writer.getSingular("addresses", "default"));
-		assertEquals("address", writer.getSingular("addressList", "default"));
-		assertEquals("address", writer.getSingular("addressesList", "default"));
-		assertEquals("address", writer.getSingular("addressMap", "default"));
-		assertEquals("address", writer.getSingular("addressesMap", "default"));
-		assertEquals("default", writer.getSingular("addressEntry", "default"));
-		assertEquals("addressEntry", writer.getSingular("addressesEntry", "default"));
-		assertEquals("addressesEntry", writer.getSingular("addressesEntries", "default"));
-		
-		assertEquals("default", writer.getSingular("company", "default"));
-		assertEquals("company", writer.getSingular("companies", "default"));
-		assertEquals("company", writer.getSingular("companyList", "default"));
-		assertEquals("company", writer.getSingular("companiesList", "default"));
-		assertEquals("company", writer.getSingular("companyMap", "default"));
-		assertEquals("company", writer.getSingular("companiesMap", "default"));
-		assertEquals("default", writer.getSingular("companyEntry", "default"));
-		assertEquals("companyEntry", writer.getSingular("companiesEntry", "default"));
-		
-		assertEquals("company", writer.getSingular("companiesArray", "default"));
-		assertEquals("company", writer.getSingular("companiesIndex", "default"));
-		assertEquals("company", writer.getSingular("companiesSet", "default"));
-		assertEquals("company", writer.getSingular("companiesCollection", "default"));
+	/**
+	 * Tests getting the configuration for the <code>ObjectWithGenerics</code>
+	 * class
+	 */
+	public void testConfigForObjectWithGenerics() throws Exception {
+		Resource resource = new ClassPathResource("test-object-with-generics-config.xml");
+		assertEquals(resourceToString(resource), ConfigWriterFromClass.getConfiguration(ObjectWithGenerics.class.getName()));
 	}
 
+	/**
+	 * Tests getting the configuration for the <code>DummyObject</code>
+	 * class
+	 */
+	public void testConfigForDummyObject() throws Exception {
+		Resource resource = new ClassPathResource("test-dummy-object-config.xml");
+		assertEquals(resourceToString(resource), ConfigWriterFromClass.getConfiguration(DummyObject.class.getName()));
+	}
+
+	/**
+	 * Tests getting the configuration for <code>String</code>
+	 * class
+	 */
+	public void testConfigForString() throws Exception {
+		Resource resource = new ClassPathResource("test-string-config.xml");
+		assertEquals(resourceToString(resource), ConfigWriterFromClass.getConfiguration(String.class.getName()));
+	}
+
+	/**
+	 * Convert the content of the given resouce into a string
+	 * @param resource The resource
+	 * @return The corresponding string
+	 * @throws IOException
+	 */
+	private static String resourceToString(Resource resource) throws IOException {
+    	InputStream is = resource.getInputStream();
+        StringBuilder sb = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        try {
+        	String line = null;
+        	String sep = "";
+            while ((line = reader.readLine()) != null) {
+            	sb.append(sep).append(line);
+            	sep = "\n";
+            }
+        } finally {
+            is.close();
+        }
+        return sb.toString();
+    }
+
+	
 }

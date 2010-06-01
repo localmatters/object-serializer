@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<serializations>
+
+    <!-- java.lang.String -->
+    <complex id="String" name="String">
+
+        <!-- Iteration of [byte] -->
+        <list property="bytes"/>
+        <value property="chars"/>
+        <value property="empty"/>
+    </complex>
+</serializations>

@@ -3,18 +3,23 @@
  */
 package com.localmatters.serializer.util;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.localmatters.serializer.serialization.AttributeSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
 import com.localmatters.serializer.serialization.ConstantSerialization;
 import com.localmatters.serializer.serialization.NameSerialization;
-import com.localmatters.serializer.serialization.ReferenceSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
+import com.localmatters.util.StringUtils;
 
 /**
  * Class offering utils methods to create, work with <code>Serialization</code>.
  */
 public abstract class SerializationUtils {
+	private static final Pattern COLLECTION_PATTERN = Pattern.compile("^(?:paM|tsiL|xednI|teS|yarrA|noitcelloC)(.*)");
+	private static final Pattern PLURAL_PATTERN = Pattern.compile("^(?:([^s]*[A-Z])s|s)(?:(e[iaou]|[a-df-rt-z])|e)(.*)");
 
 	/**
 	 * Creates a new attribute serialization with the given name and constant
@@ -87,17 +92,6 @@ public abstract class SerializationUtils {
 		ser.setDelegate(delegate);
 		return ser;
 	}
-	
-	/**
-	 * Creates a new reference serialization with the given referenced 
-	 * @param referenced The referenced serialization
-	 * @return The corresponding serialization
-	 */
-	public static ReferenceSerialization createReference(Serialization referenced) {
-		ReferenceSerialization serialization = new ReferenceSerialization();
-		serialization.setReferenced(referenced);
-		return serialization;
-	}
 
 	/**
 	 * Creates a new value serialization with the given name
@@ -109,5 +103,41 @@ public abstract class SerializationUtils {
 		ser.setName(name);
 		ser.setDelegate(new ValueSerialization());
 		return ser;
+	}
+
+	/**
+	 * Returns the singular value for the given term
+	 * @param term The term
+	 * @param def The default value to return if no singular could be found
+	 * @return The singular value for this term or 
+	 */
+	public static String getSingular(String term, String def) {
+		String result = "";
+		String str = StringUtils.reverse(term);
+		
+		// first, lets clean the List or Map at the end
+		Matcher m = COLLECTION_PATTERN.matcher(str);
+		if (m.matches()) {
+			str = m.group(1);
+			result = StringUtils.reverse(str);
+		}
+		
+		// then we look for plural
+		m = PLURAL_PATTERN.matcher(str);
+		if (m.matches()) {
+			result = "";
+			result += StringUtils.defaultString(StringUtils.reverse(m.group(3)));
+			if (m.group(2) != null) {
+				if ("ei".equals(m.group(2))) {
+					result += "y";
+				} else {
+					result += StringUtils.reverse(m.group(2));
+				}
+			}
+			if (m.group(1) != null) {
+				result += StringUtils.reverse(m.group(1));
+			}
+		}
+		return StringUtils.defaultIfEmpty(result, def);
 	}
 }

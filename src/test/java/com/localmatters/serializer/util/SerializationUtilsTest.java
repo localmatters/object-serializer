@@ -9,7 +9,6 @@ import com.localmatters.serializer.serialization.AttributeSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
 import com.localmatters.serializer.serialization.ConstantSerialization;
 import com.localmatters.serializer.serialization.NameSerialization;
-import com.localmatters.serializer.serialization.ReferenceSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
 import com.localmatters.util.CollectionUtils;
@@ -92,16 +91,6 @@ public class SerializationUtilsTest extends TestCase {
 	}
 
 	/**
-	 * Tests creating a new reference serialization
-	 */
-	public void testCreateReference() {
-		Serialization referenced = SerializationUtils.createComplex();
-		ReferenceSerialization reference = SerializationUtils.createReference(referenced);
-		assertSame(referenced, reference.getReferenced());
-		assertEquals(referenced.isWriteEmpty(), reference.isWriteEmpty());
-	}
-
-	/**
 	 * Tests creating a new value serialization
 	 */
 	public void testCreateValue() {
@@ -109,5 +98,46 @@ public class SerializationUtilsTest extends TestCase {
 		assertEquals("name", name.getName());
 		assertNotNull(name.getDelegate());
 		assertTrue(name.getDelegate() instanceof ValueSerialization);
+	}
+	
+	/**
+	 * Test getting the singular name
+	 */
+	public void testGetSingular() {
+		assertEquals("default", SerializationUtils.getSingular("value", "default"));
+		assertEquals("value", SerializationUtils.getSingular("values", "default"));
+		assertEquals("value", SerializationUtils.getSingular("valueList", "default"));
+		assertEquals("value", SerializationUtils.getSingular("valuesList", "default"));
+		assertEquals("value", SerializationUtils.getSingular("valueMap", "default"));
+		assertEquals("value", SerializationUtils.getSingular("valuesMap", "default"));
+		assertEquals("default", SerializationUtils.getSingular("valueEntry", "default"));
+		assertEquals("valueEntry", SerializationUtils.getSingular("valuesEntry", "default"));
+
+		assertEquals("default", SerializationUtils.getSingular("address", "default"));
+		assertEquals("default", SerializationUtils.getSingular("As", "default"));
+		assertEquals("address", SerializationUtils.getSingular("addresses", "default"));
+		assertEquals("address", SerializationUtils.getSingular("addressList", "default"));
+		assertEquals("address", SerializationUtils.getSingular("addressesList", "default"));
+		assertEquals("address", SerializationUtils.getSingular("addressMap", "default"));
+		assertEquals("address", SerializationUtils.getSingular("addressesMap", "default"));
+		assertEquals("default", SerializationUtils.getSingular("addressEntry", "default"));
+		assertEquals("addressEntry", SerializationUtils.getSingular("addressesEntry", "default"));
+		assertEquals("addressesEntry", SerializationUtils.getSingular("addressesEntries", "default"));
+		
+		assertEquals("default", SerializationUtils.getSingular("company", "default"));
+		assertEquals("company", SerializationUtils.getSingular("companies", "default"));
+		assertEquals("company", SerializationUtils.getSingular("companyList", "default"));
+		assertEquals("company", SerializationUtils.getSingular("companiesList", "default"));
+		assertEquals("company", SerializationUtils.getSingular("companyMap", "default"));
+		assertEquals("company", SerializationUtils.getSingular("companiesMap", "default"));
+		assertEquals("default", SerializationUtils.getSingular("companyEntry", "default"));
+		assertEquals("companyEntry", SerializationUtils.getSingular("companiesEntry", "default"));
+		
+		assertEquals("company", SerializationUtils.getSingular("companiesArray", "default"));
+		assertEquals("company", SerializationUtils.getSingular("companiesIndex", "default"));
+		assertEquals("company", SerializationUtils.getSingular("companiesSet", "default"));
+		assertEquals("company", SerializationUtils.getSingular("companiesCollection", "default"));
+
+		assertEquals("y", SerializationUtils.getSingular("ies", "default"));
 	}
 }

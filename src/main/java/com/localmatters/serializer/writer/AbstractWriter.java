@@ -65,6 +65,8 @@ public abstract class AbstractWriter implements Writer {
 		} else {
 			key = String.valueOf(entry.getKey());
 		}
+		key = StringUtils.replacePattern(StringUtils.trim(key), "(\\W|[^_-])", "-");
+		key = StringUtils.replacePattern(key, "^(\\d)", "_$1");
 		return key;
 	}
 }

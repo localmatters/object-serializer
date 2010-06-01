@@ -24,7 +24,7 @@
 
                 <!-- Unable to identify the types for the [entry] iteration!
                      The configuration of its entries must be writtent manually. -->
-                <list name="entry">
+                <list>
                     <value name="element"/>
                 </list>
             </map>

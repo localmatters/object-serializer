@@ -6,14 +6,12 @@
 
         <!-- map of [class java.lang.String] and [class com.localmatters.serializer.test.domain.DummyObject$Address] -->
         <map property="addresses">
-            <ref name="address" target="Address"/>
+            <ref target="Address"/>
         </map>
 
         <!-- Unable to identify the types for the [addressesRaw] map!
              The configuration of its entries must be written manually. -->
-        <map property="addressesRaw">
-            <value name="addressRaw"/>
-        </map>
+        <map property="addressesRaw"/>
         <value property="id"/>
         <value property="name"/>
         <list property="orders"/>

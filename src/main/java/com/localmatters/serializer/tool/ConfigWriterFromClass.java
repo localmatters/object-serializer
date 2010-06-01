@@ -219,7 +219,7 @@ public class ConfigWriterFromClass {
 			if ((types[0] instanceof Class<?>) && ReflectionUtils.isSimple((Class<?>) types[0])) {
 				if (!((types[1] instanceof Class<?>) && ReflectionUtils.isSimple((Class<?>) types[1]))) {
 					map.addComment("map of [" + types[0] + "] and [" + types[1] + "]");
-					map.addElement(handleType(singleName, types[1], createConstantAttribute(ATTRIBUTE_NAME, singleName)));
+					map.addElement(handleType(singleName, types[1]));
 				}
 			} 
 			// complex map => list
@@ -241,7 +241,6 @@ public class ConfigWriterFromClass {
 		else {
 			map.addComment("Unable to identify the types for the [" + name + "] map!");
 			map.addComment("The configuration of its entries must be written manually.");
-			map.addElement(createComplex(TYPE_VALUE, createConstantAttribute(ATTRIBUTE_NAME, singleName)));
 		}
 		
 		return createName(type, map);

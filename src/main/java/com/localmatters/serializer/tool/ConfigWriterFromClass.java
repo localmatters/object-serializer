@@ -201,8 +201,8 @@ public class ConfigWriterFromClass {
 			
 			// simple map
 			if ((types[0] instanceof Class<?>) && ReflectionUtils.isSimple((Class<?>) types[0])) {
-				map.addComment("map of [" + types[0] + "] and [" + types[1] + "]");
 				if (!((types[1] instanceof Class<?>) && ReflectionUtils.isSimple((Class<?>) types[1]))) {
+					map.addComment("map of [" + types[0] + "] and [" + types[1] + "]");
 					map.addElement(handleType(singleName, types[1], createConstantAttribute(ATTRIBUTE_NAME, singleName)));
 				}
 			} 
@@ -244,8 +244,8 @@ public class ConfigWriterFromClass {
 		String singleName = getSingular(name, "element");
 
 		if ((types != null) && (types.length == 1)) {
-			list.addComment("Iteration of [" + types[0] + "]");
 			if (!((types[0] instanceof Class<?>) && ReflectionUtils.isSimple((Class<?>) types[0]))) {
+				list.addComment("Iteration of [" + types[0] + "]");
 				list.addElement(handleType(singleName, types[0], createConstantAttribute(ATTRIBUTE_NAME, singleName)));
 			}
 		}

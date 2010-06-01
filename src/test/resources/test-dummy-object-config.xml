@@ -16,8 +16,6 @@
         </map>
         <value property="id"/>
         <value property="name"/>
-
-        <!-- Iteration of [class java.lang.String] -->
         <list property="orders"/>
 
         <!-- Configured the complex map returned by [ordersByAddresses] as a list.
@@ -26,13 +24,9 @@
         <list property="ordersByAddresses">
             <complex>
                 <ref property="key" target="Address"/>
-
-                <!-- Iteration of [class java.lang.String] -->
                 <list property="value"/>
             </complex>
         </list>
-
-        <!-- Iteration of [class java.lang.String] -->
         <list property="ordersList"/>
     </complex>
 

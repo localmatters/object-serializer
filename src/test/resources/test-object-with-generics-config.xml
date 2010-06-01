@@ -3,8 +3,6 @@
 
     <!-- com.localmatters.serializer.test.domain.ObjectWithGenerics -->
     <complex id="ObjectWithGenerics" name="ObjectWithGenerics">
-
-        <!-- Iteration of [class java.lang.String] -->
         <list property="array"/>
 
         <!-- Unable to identify the types for the [list] iteration!
@@ -15,8 +13,6 @@
 
         <!-- Iteration of [java.util.List<java.lang.String>] -->
         <list property="listOfListOfString">
-
-            <!-- Iteration of [class java.lang.String] -->
             <list name="element"/>
         </list>
 
@@ -36,12 +32,8 @@
 
         <!-- Iteration of [class com.localmatters.serializer.test.domain.ParameterizedObject] -->
         <list property="listOfParameterizedObject">
-
-            <!-- Iteration of [class java.lang.String] -->
             <list name="element"/>
         </list>
-
-        <!-- Iteration of [class java.lang.String] -->
         <list property="listOfString"/>
 
         <!-- Configured the complex map returned by [map] as a list.
@@ -59,8 +51,6 @@
                 <value property="value"/>
             </complex>
         </list>
-
-        <!-- map of [class java.lang.String] and [class java.lang.Double] -->
         <map property="mapOfStringAndDouble"/>
     </complex>
 </serializations>

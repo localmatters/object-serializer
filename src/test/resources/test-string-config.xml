@@ -4,7 +4,6 @@
     <!-- java.lang.String -->
     <complex id="String" name="String">
         <list property="bytes"/>
-        <value property="chars"/>
         <value property="empty"/>
     </complex>
 </serializations>

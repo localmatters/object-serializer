@@ -144,7 +144,7 @@ public abstract class ReflectionUtils {
 		Map<String, Method> getters = new TreeMap<String, Method>();
 		Method[] methods = klass.getMethods();
 		for (Method method : methods) {
-			if (ArrayUtils.isEmpty(method.getTypeParameters())) {
+			if (ArrayUtils.isEmpty(method.getParameterTypes())) {
 				Matcher matcher = GETTER_PATTERN.matcher(method.getName());
 				if (matcher.find() && !GETTERS_TO_EXCLUDE.contains(method.getName())) {
 					getters.put(method.getName(), method);

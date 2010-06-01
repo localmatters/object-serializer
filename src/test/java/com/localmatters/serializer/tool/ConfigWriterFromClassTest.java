@@ -33,7 +33,7 @@ public class ConfigWriterFromClassTest extends TestCase {
 	 */
 	public void testConfigForDummyObject() throws Exception {
 		Resource resource = new ClassPathResource("test-dummy-object-config.xml");
-		assertEquals(resourceToString(resource), ConfigWriterFromClass.getConfiguration(DummyObject.class.getName()));
+		assertEquals(resourceToString(resource), ConfigWriterFromClass.getConfiguration(DummyObject.class));
 	}
 
 	/**
@@ -42,9 +42,19 @@ public class ConfigWriterFromClassTest extends TestCase {
 	 */
 	public void testConfigForString() throws Exception {
 		Resource resource = new ClassPathResource("test-string-config.xml");
-		assertEquals(resourceToString(resource), ConfigWriterFromClass.getConfiguration(String.class.getName()));
+		assertEquals(resourceToString(resource), ConfigWriterFromClass.getConfiguration(String.class));
 	}
 
+	/**
+	 * Tests getting the configuration for <code>String</code>
+	 * class
+	 */
+	public void testConfigForObjectWithGenericsDummyObjectAndString() throws Exception {
+		Resource resource = new ClassPathResource("test-multiple-config.xml");
+		assertEquals(resourceToString(resource), ConfigWriterFromClass.getConfiguration(ObjectWithGenerics.class, DummyObject.class, String.class));
+	}
+
+	
 	/**
 	 * Convert the content of the given resouce into a string
 	 * @param resource The resource

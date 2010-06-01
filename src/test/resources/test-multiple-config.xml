@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<serializations>
+
+    <!-- com.localmatters.serializer.test.domain.ObjectWithGenerics -->
+    <complex id="ObjectWithGenerics" name="ObjectWithGenerics">
+        <list property="array"/>
+
+        <!-- Unable to identify the types for the [list] iteration!
+             The configuration of its entries must be writtent manually. -->
+        <list property="list">
+            <value name="element"/>
+        </list>
+
+        <!-- Iteration of [java.util.List<java.lang.String>] -->
+        <list property="listOfListOfString">
+            <list name="element"/>
+        </list>
+
+        <!-- Iteration of [java.util.Map<java.lang.String, java.util.List>] -->
+        <list property="listOfMapOfStringAndList">
+
+            <!-- map of [class java.lang.String] and [interface java.util.List] -->
+            <map name="listOfMapOfStringAnd">
+
+                <!-- Unable to identify the types for the [entry] iteration!
+                     The configuration of its entries must be writtent manually. -->
+                <list name="entry">
+                    <value name="element"/>
+                </list>
+            </map>
+        </list>
+
+        <!-- Iteration of [class com.localmatters.serializer.test.domain.ParameterizedObject] -->
+        <list property="listOfParameterizedObject">
+            <list name="element"/>
+        </list>
+        <list property="listOfString"/>
+
+        <!-- Configured the complex map returned by [map] as a list.
+             This can change to a <map> by setting its [key] attribute to the
+             property of the key object that identifies it. -->
+        <list property="map">
+            <complex>
+
+                <!-- Unable to resolve the class for the element [key]!
+                     Its configuration must be writtent manually. -->
+                <value property="key"/>
+
+                <!-- Unable to resolve the class for the element [value]!
+                     Its configuration must be writtent manually. -->
+                <value property="value"/>
+            </complex>
+        </list>
+        <map property="mapOfStringAndDouble"/>
+    </complex>
+
+    <!-- com.localmatters.serializer.test.domain.DummyObject -->
+    <complex id="DummyObject" name="DummyObject">
+
+        <!-- map of [class java.lang.String] and [class com.localmatters.serializer.test.domain.DummyObject$Address] -->
+        <map property="addresses">
+            <ref name="address" target="Address"/>
+        </map>
+
+        <!-- Unable to identify the types for the [addressesRaw] map!
+             The configuration of its entries must be written manually. -->
+        <map property="addressesRaw">
+            <value name="addressRaw"/>
+        </map>
+        <value property="id"/>
+        <value property="name"/>
+        <list property="orders"/>
+
+        <!-- Configured the complex map returned by [ordersByAddresses] as a list.
+             This can change to a <map> by setting its [key] attribute to the
+             property of the key object that identifies it. -->
+        <list property="ordersByAddresses">
+            <complex>
+                <ref property="key" target="Address"/>
+                <list property="value"/>
+            </complex>
+        </list>
+        <list property="ordersList"/>
+    </complex>
+
+    <!-- java.lang.String -->
+    <complex id="String" name="String">
+        <list property="bytes"/>
+        <value property="chars"/>
+        <value property="empty"/>
+    </complex>
+
+    <!-- com.localmatters.serializer.test.domain.DummyObject$Address -->
+    <complex id="Address" name="Address">
+        <value property="city"/>
+        <value property="state"/>
+        <value property="street"/>
+        <value property="z"/>
+        <value property="zip"/>
+    </complex>
+</serializations>

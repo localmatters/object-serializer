@@ -40,7 +40,7 @@ import com.localmatters.serializer.writer.XMLWriter;
  */
 public class ConfigWriterFromClass {
 	private static final String INDEXED_AND_MAP_REMOVE_PATTERN = "^([^\\[\\{]+)(?:\\[|\\{).*$";
-	private Class<?> rootClass;
+	private Class<?>[] rootClasses;
 	private ComplexSerialization root;
 	private Map<Class<?>, NameSerialization> references;
 	private Map<Class<?>, String> ids;
@@ -50,8 +50,8 @@ public class ConfigWriterFromClass {
 	 * serialization configuration from
 	 * @param klass The class
 	 */
-	protected ConfigWriterFromClass(Class<?> klass) {
-		setRootClass(klass);
+	protected ConfigWriterFromClass(Class<?> ...classes) {
+		setRootClasses(classes);
 	}
 
 	/**
@@ -60,15 +60,21 @@ public class ConfigWriterFromClass {
 	 * @return The serialization to generate the basic configuration
 	 */
 	protected Serialization analyse() {
-		references = new HashMap<Class<?>, NameSerialization>();
-		references.put(getRootClass(), null);
 		ids = new HashMap<Class<?>, String>();
 		root = new ComplexSerialization();
+		references = new HashMap<Class<?>, NameSerialization>();
+		for (Class<?> klass : getRootClasses()) {
+			references.put(klass, null);
+		}
+
+		for (int i=getRootClasses().length; i>0; i--) {
+			Class<?> rootClass = getRootClasses()[i-1];
+			String name = rootClass.getSimpleName();
+			root.getElements().add(0, handleClass(name, rootClass, 
+					createConstantAttribute(ATTRIBUTE_ID, getIdForClass(rootClass)), 
+					createConstantAttribute(ATTRIBUTE_NAME, name)));
+		}
 		
-		String name = getRootClass().getSimpleName();
-		root.getElements().add(0, handleClass(name, getRootClass(), 
-				createConstantAttribute(ATTRIBUTE_ID, getIdForClass(getRootClass())), 
-				createConstantAttribute(ATTRIBUTE_NAME, name)));
 		return createName(TYPE_ROOT, root);
 	}
 	
@@ -294,40 +300,54 @@ public class ConfigWriterFromClass {
 	}
 	
 	/**
-	 * @return The root class
+	 * @return The root classes
 	 */
-	public Class<?> getRootClass() {
-		return rootClass;
+	public Class<?>[] getRootClasses() {
+		return rootClasses;
 	}
 
 	/**
-	 * @param rootClass The root class
+	 * @param rootClasses The root classes
 	 */
-	public void setRootClass(Class<?> rootClass) {
-		this.rootClass = rootClass;
+	public void setRootClasses(Class<?>[] rootClasses) {
+		this.rootClasses = rootClasses;
 	}
 
 	/**
 	 * Returns the serialization to use to generate the basic configuration for
-	 * the given class
-	 * @param klass The class to build the serialization for
+	 * the given classes
+	 * @param classes The classes to build the serialization for
 	 * @return The serialization to generate the basic serialization 
 	 * configuration for instances of the given class
 	 */
-	protected static Serialization getSerialization(Class<?> klass) {
-		ConfigWriterFromClass configWriter = new ConfigWriterFromClass(klass);
+	protected static Serialization getSerialization(Class<?>...classes) {
+		ConfigWriterFromClass configWriter = new ConfigWriterFromClass(classes);
 		return configWriter.analyse();
 	}	
 
 	/**
-	 * Returns the basic configuration to serialize instances of the given class 
-	 * @param className The name of the class
+	 * Returns the basic configuration to serialize instances of some classes 
+	 * @param className The names of the classes
 	 * @return The configuration
 	 * @throws ClassNotFoundException When the class cannot be found
 	 * @throws SerializationException When configuration cannot be generated
 	 */
-	public static String getConfiguration(String className) throws ClassNotFoundException, SerializationException {
-		Class<?> klass = ConfigWriterFromClass.class.getClassLoader().loadClass(className);
+	public static String getConfiguration(String...classNames) throws ClassNotFoundException, SerializationException {
+		Class<?>[] classes = new  Class<?>[classNames.length];
+		for (int i=0; i<classNames.length; i++) {
+			classes[i] = ConfigWriterFromClass.class.getClassLoader().loadClass(classNames[i]);
+		}
+		return getConfiguration(classes);
+	}
+
+	/**
+	 * Returns the basic configuration to serialize instances of some classes 
+	 * @param classes The classes to return the serialization configuration for
+	 * @return The configuration
+	 * @throws ClassNotFoundException When the class cannot be found
+	 * @throws SerializationException When configuration cannot be generated
+	 */
+	public static String getConfiguration(Class<?>...classes) throws ClassNotFoundException, SerializationException {
 		XMLWriter writer = new XMLWriter();
 		BeanUtilsPropertyResolver beanUtils = new BeanUtilsPropertyResolver();
 		beanUtils.setIndexedMappedRemoverPattern(Pattern.compile(INDEXED_AND_MAP_REMOVE_PATTERN));
@@ -336,8 +356,8 @@ public class ConfigWriterFromClass {
 		resolver.setDelegate(beanUtils);
 		SerializationContext ctx = new SerializationContext(writer, resolver, new ByteArrayOutputStream());
 		ctx.setFormatting(true);
-		Serialization serialization = getSerialization(klass);
-		writer.writeRoot(serialization, klass, ctx);
+		Serialization serialization = getSerialization(classes);
+		writer.writeRoot(serialization, classes, ctx);
 		return ctx.getOutputStream().toString();
 	}
 }

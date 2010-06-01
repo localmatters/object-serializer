@@ -15,6 +15,7 @@ import static com.localmatters.serializer.util.SerializationUtils.createConstant
 import static com.localmatters.serializer.util.SerializationUtils.createName;
 import static com.localmatters.serializer.util.SerializationUtils.getSingular;
 
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -33,7 +34,6 @@ import com.localmatters.serializer.serialization.NameSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.util.ReflectionUtils;
 import com.localmatters.serializer.writer.XMLWriter;
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 
 /**
  * A tools to write a default serialization configuration for a class
@@ -334,7 +334,7 @@ public class ConfigWriterFromClass {
 		ComplexPropertyResolver resolver = new ComplexPropertyResolver();
 		resolver.setToken(".");
 		resolver.setDelegate(beanUtils);
-		SerializationContext ctx = new SerializationContext(writer, resolver, new ByteOutputStream());
+		SerializationContext ctx = new SerializationContext(writer, resolver, new ByteArrayOutputStream());
 		ctx.setFormatting(true);
 		Serialization serialization = getSerialization(klass);
 		writer.writeRoot(serialization, klass, ctx);

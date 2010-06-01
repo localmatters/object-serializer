@@ -225,7 +225,7 @@ public class ConfigWriterFromClass {
 		if ((types != null) && (types.length == 2)) {
 			
 			// simple map
-			if ((types[0] instanceof Class<?>) && (String.class.equals(types[0]) || ((Class<?>) types[0]).isEnum())) {
+			if ((types[0] instanceof Class<?>) && ReflectionUtils.isNonNumericSimple((Class<?>) types[0])) {
 				if (!((types[1] instanceof Class<?>) && ReflectionUtils.isSimple((Class<?>) types[1]))) {
 					map.addComment("map of [" + types[0] + "] and [" + types[1] + "]");
 					map.addElement(handleType(singleName, types[1]));

@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import junit.framework.TestCase;
@@ -170,6 +171,7 @@ public class ReflectionUtilsTest extends TestCase {
 		assertTrue(ReflectionUtils.isSimple(String.class));
 		assertTrue(ReflectionUtils.isSimple(Date.class));
 		assertTrue(ReflectionUtils.isSimple(DummyEnum.class));
+		assertTrue(ReflectionUtils.isSimple(Locale.class));
 
 		assertFalse(ReflectionUtils.isSimple(Object.class));
 		assertFalse(ReflectionUtils.isSimple(DummyObject.class));

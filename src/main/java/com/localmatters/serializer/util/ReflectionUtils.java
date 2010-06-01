@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -104,17 +105,29 @@ public abstract class ReflectionUtils {
 	/**
 	 * Returns whether the instances of the given class can be represent by a
 	 * simple value; i.e whether this is a primitive or a primitive wrapper, a
-	 * string, a date, a enumeration, etc.
+	 * string, a date, an enumeration, etc.
 	 * @param klass
-	 * @return
+	 * @return True is the class is simple, false otherwise
 	 */
 	public static boolean isSimple(Class<?> klass) {
-		return isPrimitiveOrWrapper(klass) || 
-			(String.class.equals(klass)) || 
-			(Date.class.isAssignableFrom(klass)) || 
-			(klass.isEnum());
+		return isPrimitiveOrWrapper(klass) || isNonNumericSimple(klass);
+	}
+	
+	/**
+	 * Returns whether the instances of the given class can be represent by a
+	 * simple, non-numeric value; i.e whether this string, a date, an
+	 * enumeration, etc.
+	 * @param klass
+	 * @return True is the class is non-numeric and simple, false otherwise
+	 */
+	public static boolean isNonNumericSimple(Class<?> klass) {
+		return String.class.equals(klass) || 
+			Date.class.isAssignableFrom(klass) || 
+			klass.isEnum() ||
+			Locale.class.isAssignableFrom(klass);
 	}
 
+	
 	/**
 	 * Returns the return the type arguments of the given type.
 	 * @param type The type

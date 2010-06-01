@@ -160,14 +160,21 @@ public class ConfigWriterFromClass {
 	 */
 	protected NameSerialization handleReference(String name, Class<?> klass, Serialization...attributes) {
 		LOGGER.debug("REFERENCE - name [" + name + "] class [" + klass + "]");
+		boolean setAdReference = references.containsKey(klass);
+
 		NameSerialization ref = null;
-		if (!references.containsKey(klass)) {
-			references.put(klass, null);
+		if (!setAdReference) {
+			// to avoid cycle, we put a temporary name in the references map 
+			references.put(klass, createName("avoidCycle", null));
 			ref = handleClass(name, klass, attributes);
+			
+			// if the value in the reference map is null, another occurence of
+			// this class has been encountered
+			setAdReference = (references.get(klass) == null);
 			references.put(klass, ref);
 		}
 		
-		if (references.containsKey(klass)) {
+		if (setAdReference) {
 			String id = getIdForClass(klass);
 			ref = references.get(klass);
 			
@@ -176,17 +183,19 @@ public class ConfigWriterFromClass {
 			// configuration by a reference
 			if (ref != null) {
 				ComplexSerialization delegate = (ComplexSerialization) ref.getDelegate();
-				List<Serialization> referencedAttributes = delegate.getAttributes();
-				delegate.setAttributes(new ArrayList<Serialization>());
-				delegate.addAttribute(createConstantAttribute(ATTRIBUTE_ID, id));
-				delegate.addAttribute(createConstantAttribute(ATTRIBUTE_NAME, klass.getSimpleName()));
-				root.addElement(createName(ref.getName(), delegate));
-				
-				delegate = new ComplexSerialization();
-				ref.setName(TYPE_REFERENCE);
-				ref.setDelegate(delegate);
-				delegate.setAttributes(referencedAttributes);
-				delegate.addAttribute(createConstantAttribute(ATTRIBUTE_TARGET, id));				
+				if (delegate != null) {
+					List<Serialization> referencedAttributes = delegate.getAttributes();
+					delegate.setAttributes(new ArrayList<Serialization>());
+					delegate.addAttribute(createConstantAttribute(ATTRIBUTE_ID, id));
+					delegate.addAttribute(createConstantAttribute(ATTRIBUTE_NAME, klass.getSimpleName()));
+					root.addElement(createName(ref.getName(), delegate));
+					
+					delegate = new ComplexSerialization();
+					ref.setName(TYPE_REFERENCE);
+					ref.setDelegate(delegate);
+					delegate.setAttributes(referencedAttributes);
+					delegate.addAttribute(createConstantAttribute(ATTRIBUTE_TARGET, id));
+				}
 				references.put(klass, null);
 			}
 

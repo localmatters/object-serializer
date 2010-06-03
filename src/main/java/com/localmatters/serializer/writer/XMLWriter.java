@@ -43,7 +43,7 @@ public class XMLWriter extends AbstractWriter {
 			String name,
 			Object value, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(name);
+		ctx.nextLevel(StringUtils.defaultIfEmpty(name, "value"));
 
 		String prefix = getPrefix(ctx);
 		if (value != null) {
@@ -70,7 +70,7 @@ public class XMLWriter extends AbstractWriter {
 			String name,
 			Object attribute, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(name);
+		ctx.nextLevel(checkRequiredName(ctx, name));
 
 		if (attribute != null) {
 			write(ctx, SPACE)
@@ -98,7 +98,7 @@ public class XMLWriter extends AbstractWriter {
 			Collection<Serialization> elements, 
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(name);
+		ctx.nextLevel(checkRequiredName(ctx, name));
 
 		String prefix = getPrefix(ctx);
 		if (object != null) {
@@ -139,7 +139,7 @@ public class XMLWriter extends AbstractWriter {
 			Serialization element, 
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(name);
+		ctx.nextLevel(checkRequiredName(ctx, name));
 
 		String prefix = getPrefix(ctx);
 		if (itr.hasNext()) {
@@ -165,7 +165,7 @@ public class XMLWriter extends AbstractWriter {
 			Serialization value, 
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(name);
+		ctx.nextLevel(checkRequiredName(ctx, name));
 
 		String prefix = getPrefix(ctx);
 		if (CollectionUtils.isNotEmpty(map)) {

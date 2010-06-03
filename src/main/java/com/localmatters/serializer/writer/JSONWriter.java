@@ -50,7 +50,7 @@ public class JSONWriter extends AbstractWriter {
 			String name,
 			Object value, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(name);
+		ctx.nextLevel(StringUtils.defaultIfEmpty(name, "value"));
 
 		String prefix = getPrefix(ctx);
 		if (value != null) {
@@ -83,7 +83,7 @@ public class JSONWriter extends AbstractWriter {
 			String name,
 			Object attribute, 
 			SerializationContext ctx) throws SerializationException {
-		writeValue(ser, name, attribute, ctx);
+		writeValue(ser, checkRequiredName(ctx, name), attribute, ctx);
 	}
 
 	/**
@@ -96,7 +96,7 @@ public class JSONWriter extends AbstractWriter {
 			Collection<Serialization> elements, 
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(name);
+		ctx.nextLevel(checkRequiredName(ctx, name));
 
 		String prefix = getPrefix(ctx);
 		if (object != null) {
@@ -138,7 +138,7 @@ public class JSONWriter extends AbstractWriter {
 			Serialization element, 
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(name);
+		ctx.nextLevel(checkRequiredName(ctx, name));
 
 		String prefix = getPrefix(ctx);
 		if (itr.hasNext()) {
@@ -167,7 +167,7 @@ public class JSONWriter extends AbstractWriter {
 			Serialization value, 
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(name);
+		ctx.nextLevel(checkRequiredName(ctx, name));
 
 		String prefix = getPrefix(ctx);
 		if (CollectionUtils.isNotEmpty(map)) {

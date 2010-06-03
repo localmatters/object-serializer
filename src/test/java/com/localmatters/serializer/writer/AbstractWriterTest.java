@@ -23,6 +23,7 @@ import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.resolver.InvalidPropertyException;
 import com.localmatters.serializer.resolver.PropertyResolver;
 import com.localmatters.serializer.serialization.IOSerializationException;
+import com.localmatters.serializer.serialization.NameExpectedException;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.UnknownPropertyException;
 
@@ -135,5 +136,25 @@ public class AbstractWriterTest extends TestCase {
 		replay(resolver);
 		assertEquals("w", AbstractWriter.resolvesMapKey("first.letter", map.entrySet().iterator().next(), ctx));
 		verify(resolver);
+	}
+	
+	/**
+	 * Tests checking the required name when it is missing
+	 */
+	public void testCheckRequiredNameWhenMissing() {
+		SerializationContext ctx = new SerializationContext(writer, null, null);
+		try {
+			AbstractWriter.checkRequiredName(ctx, null);
+			fail("NameExpectedException expected");
+		} catch (NameExpectedException e) {
+		}
+	}
+	
+	/**
+	 * Tests checking the required name
+	 */
+	public void testCheckRequiredName() throws Exception {
+		SerializationContext ctx = new SerializationContext(writer, null, null);
+		assertEquals("listing", AbstractWriter.checkRequiredName(ctx, "listing"));
 	}
 }

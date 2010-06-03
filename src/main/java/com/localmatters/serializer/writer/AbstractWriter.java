@@ -7,6 +7,7 @@ import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.SerializationException;
 import com.localmatters.serializer.resolver.PropertyResolverException;
 import com.localmatters.serializer.serialization.IOSerializationException;
+import com.localmatters.serializer.serialization.NameExpectedException;
 import com.localmatters.serializer.serialization.UnknownPropertyException;
 import com.localmatters.util.StringUtils;
 
@@ -68,5 +69,19 @@ public abstract class AbstractWriter implements Writer {
 		key = StringUtils.replacePattern(StringUtils.trim(key), "([^\\w_-])", "-");
 		key = StringUtils.replacePattern(key, "^(\\d)", "_$1");
 		return key;
+	}
+	
+	/**
+	 * Checks that the given name is not blank
+	 * @param ctx The serialization context
+	 * @param name The name to evaluate
+	 * @return The name if it is not blank
+	 * @throws NameExpectedException Thrown when the name is blank
+	 */
+	protected static String checkRequiredName(SerializationContext ctx, String name) throws NameExpectedException {
+		if (StringUtils.isBlank(name)) {
+			throw new NameExpectedException(ctx);
+		}
+		return name;
 	}
 }

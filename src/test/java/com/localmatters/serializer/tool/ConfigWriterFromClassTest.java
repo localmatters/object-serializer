@@ -38,20 +38,11 @@ public class ConfigWriterFromClassTest extends TestCase {
 	}
 
 	/**
-	 * Tests getting the configuration for <code>String</code>
-	 * class
-	 */
-	public void testConfigForString() throws Exception {
-		Resource resource = new ClassPathResource("test-string-config.xml");
-		assertEquals(resourceToString(resource), ConfigWriterFromClass.getConfiguration(String.class));
-	}
-
-	/**
 	 * Tests getting the configuration for multiple classes
 	 */
 	public void testConfigForObjectWithGenericsDummyObjectAndString() throws Exception {
 		Resource resource = new ClassPathResource("test-multiple-config.xml");
-		assertEquals(resourceToString(resource), ConfigWriterFromClass.getConfiguration(ObjectWithGenerics.class, DummyObject.class, String.class, ChildOfSelfreferencingObject.class));
+		assertEquals(resourceToString(resource), ConfigWriterFromClass.getConfiguration(ObjectWithGenerics.class, DummyObject.class, ChildOfSelfreferencingObject.class));
 	}
 	
 	/**

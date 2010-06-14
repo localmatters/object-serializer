@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<serializations>
-
-    <!-- java.lang.String -->
-    <complex id="String" name="String">
-        <list property="bytes"/>
-        <value property="empty"/>
-    </complex>
-</serializations>

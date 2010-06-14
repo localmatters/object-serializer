@@ -81,12 +81,6 @@
         <list property="ordersList"/>
     </complex>
 
-    <!-- java.lang.String -->
-    <complex id="String" name="String">
-        <list property="bytes"/>
-        <value property="empty"/>
-    </complex>
-
     <!-- com.localmatters.serializer.test.domain.ChildOfSelfreferencingObject -->
     <complex id="ChildOfSelfreferencingObject" name="ChildOfSelfreferencingObject">
         <value property="name"/>

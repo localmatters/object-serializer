@@ -13,7 +13,7 @@ public class NameSerialization extends DelegatingSerialization {
 	/**
 	 * @see com.localmatters.serializer.serialization.Serialization#serialize(com.localmatters.serializer.serialization.Serialization, java.lang.String, java.lang.Object, com.localmatters.serializer.SerializationContext)
 	 */
-	public void serialize(Serialization ser, String name, Object object, SerializationContext ctx) throws SerializationException {
+	public void serialize(Serialization ser, String aName, Object object, SerializationContext ctx) throws SerializationException {
 		getDelegate().serialize(ser, getName(), object, ctx);
 	}
 

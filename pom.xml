@@ -30,7 +30,7 @@
         <dependency>
             <groupId>com.localmatters</groupId>
             <artifactId>lm-mvc</artifactId>
-            <version>1.4.24-SNAPSHOT</version>
+            <version>1.4.24</version>
         </dependency>
     
         <!-- Jakarta Commons Libraries =====================================-->

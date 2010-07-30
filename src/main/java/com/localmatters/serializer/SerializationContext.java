@@ -20,6 +20,7 @@ public class SerializationContext {
 	private OutputStream outputStream;
 	private Map<String, Object> beans;
 	private boolean formatting = false;
+	private byte[] prefix = null;
 
 	/**
 	 * Constructor with the specification of the writer, the property resolver,
@@ -157,5 +158,22 @@ public class SerializationContext {
 	 */
 	public void setFormatting(boolean formatting) {
 		this.formatting = formatting;
+	}
+
+	/**
+	 * @return The prefix that should be written the next time a write occurs
+	 */
+	public byte[] consomePrefix() {
+		byte[] res = prefix;
+		prefix = null;
+		return res;
+	}
+
+	/**
+	 * @param aPrefix The prefix that should be written the next time a write 
+	 * occurs
+	 */
+	public void pushPrefix(byte[] aPrefix) {
+		this.prefix = aPrefix;
 	}
 }

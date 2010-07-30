@@ -36,7 +36,13 @@ public abstract class AbstractWriter implements Writer {
 	 */
 	protected AbstractWriter write(SerializationContext ctx, byte[] bytes) throws SerializationException {
 		try {
-			ctx.getOutputStream().write(bytes);
+			if (bytes.length > 0) {
+				byte[] prefix = ctx.consomePrefix();
+				if (prefix != null) {
+					ctx.getOutputStream().write(prefix);
+				}
+				ctx.getOutputStream().write(bytes);
+			}
 		} catch (IOException e) {
 			throw new IOSerializationException(ctx, e);
 		}

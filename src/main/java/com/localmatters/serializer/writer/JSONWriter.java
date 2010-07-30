@@ -101,20 +101,24 @@ public class JSONWriter extends AbstractWriter {
 		String prefix = getPrefix(ctx);
 		if (object != null) {
 			write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_LEFT_CURLY);
-			byte[] sep = "".getBytes();
+			byte[] sep = new byte[]{};
 			
 			if (CollectionUtils.isNotEmpty(attributes)) {
 				for (Serialization attribute : attributes) {
-					write(ctx, sep);
+					ctx.pushPrefix(sep);
 					attribute.serialize(attribute, null, object, ctx);
-					sep = COMMA;
+					if (ctx.consomePrefix() == null) {
+						sep = COMMA;
+					}
 				}
 			}
 			if (CollectionUtils.isNotEmpty(elements)) {
 				for (Serialization element : elements) {
-					write(ctx, sep);
+					ctx.pushPrefix(sep);
 					element.serialize(element, null, object, ctx);
-					sep = COMMA;
+					if (ctx.consomePrefix() == null) {
+						sep = COMMA;
+					}
 				}
 			}
 			if (CollectionUtils.isNotEmpty(attributes) || CollectionUtils.isNotEmpty(elements)) {
@@ -143,11 +147,13 @@ public class JSONWriter extends AbstractWriter {
 		String prefix = getPrefix(ctx);
 		if (itr.hasNext()) {
 			write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_LEFT_SQUARE);
-			byte[] sep = "".getBytes();
+			byte[] sep = new byte[]{};
 			while (itr.hasNext()) {
-				write(ctx, sep);
+				ctx.pushPrefix(sep);
 				element.serialize(element, null, itr.next(), ctx);
-				sep = COMMA;
+				if (ctx.consomePrefix() == null) {
+					sep = COMMA;
+				}
 			}
 			write(ctx, prefix).write(ctx, RIGHT_SQUARE);
 		} else if (ser.isWriteEmpty()) {
@@ -172,11 +178,13 @@ public class JSONWriter extends AbstractWriter {
 		String prefix = getPrefix(ctx);
 		if (CollectionUtils.isNotEmpty(map)) {
 			write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_LEFT_CURLY);
-			byte[] sep = "".getBytes();
+			byte[] sep = new byte[]{};
 			for (Map.Entry<?, ?> entry : map.entrySet()) {
-				write(ctx, sep);
+				ctx.pushPrefix(sep);
 				value.serialize(value, resolvesMapKey(key, entry, ctx), entry.getValue(), ctx);
-				sep = COMMA;
+				if (ctx.consomePrefix() == null) {
+					sep = COMMA;
+				}
 			}
 			write(ctx, prefix).write(ctx, RIGHT_CURLY);
 		} else if (ser.isWriteEmpty()) {

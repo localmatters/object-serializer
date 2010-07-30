@@ -73,7 +73,7 @@ public class DummyObject {
 	/**
 	 * @return The addresses
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public Map getAddressesRaw() {
 		return addresses;
 	}

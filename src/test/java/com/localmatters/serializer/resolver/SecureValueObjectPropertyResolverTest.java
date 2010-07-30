@@ -103,7 +103,7 @@ public class SecureValueObjectPropertyResolverTest extends TestCase {
 	private class DummyVO1 implements ValueObject {
 		private static final long serialVersionUID = 1L;
 		public String getAttributeKey() {return "dummy1";}
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings("rawtypes")
 		public Map getHiddenFormParameters() {return null;}
 	}
 
@@ -113,7 +113,7 @@ public class SecureValueObjectPropertyResolverTest extends TestCase {
 	private class DummyVO2 implements ValueObject {
 		private static final long serialVersionUID = 1L;
 		public String getAttributeKey() {return "dummy2";}
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings("rawtypes")
 		public Map getHiddenFormParameters() {return null;}
 	}
 }

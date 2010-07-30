@@ -15,7 +15,7 @@ public class TestObjectFactory extends ClassLookupObjectFactory {
 	/**
 	 * Default constructor
 	 */
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public TestObjectFactory() {
         super();
         setClassMap(new HashMap<String, Class>());
@@ -30,7 +30,7 @@ public class TestObjectFactory extends ClassLookupObjectFactory {
      * @param keyClass The key class
      * @param classToCreate The class to create
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
 	public void add(Class keyClass, Class classToCreate) {
         String key = getKeyStrategy().generateKey(keyClass);
         Validate.notNull(key);

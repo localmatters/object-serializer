@@ -10,12 +10,12 @@ import java.util.Map;
  * A test object with many generic variables.
  */
 public class ObjectWithGenerics {
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private List list;
 	private List<String> listOfString;
 	private List<List<String>> listOfListOfString;
 	private List<ParameterizedObject> listOfParameterizedObject;
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private List<Map<String, List>> listOfMapOfStringAndList;
 	private Map<?, ?> map;
 	private Map<String, Double> mapOfStringAndDouble;
@@ -24,14 +24,14 @@ public class ObjectWithGenerics {
 	/**
 	 * @return The list
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public List getList() {
 		return list;
 	}
 	/**
 	 * @param list The list to set
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public void setList(List list) {
 		this.list = list;
 	}
@@ -50,14 +50,14 @@ public class ObjectWithGenerics {
 	/**
 	 * @return The listOfMapOfStringAndList
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public List<Map<String, List>> getListOfMapOfStringAndList() {
 		return listOfMapOfStringAndList;
 	}
 	/**
 	 * @param listOfMapOfStringAndList The listOfMapOfStringAndList to set
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public void setListOfMapOfStringAndList(
 			List<Map<String, List>> listOfMapOfStringAndList) {
 		this.listOfMapOfStringAndList = listOfMapOfStringAndList;

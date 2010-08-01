@@ -17,6 +17,7 @@ import com.localmatters.serializer.serialization.AttributeSerialization;
 import com.localmatters.serializer.serialization.BeanSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
 import com.localmatters.serializer.serialization.ConstantSerialization;
+import com.localmatters.serializer.serialization.DelegatingSerialization;
 import com.localmatters.serializer.serialization.IteratorSerialization;
 import com.localmatters.serializer.serialization.MapSerialization;
 import com.localmatters.serializer.serialization.NameSerialization;
@@ -112,6 +113,10 @@ public class SerializationElementHandler implements ElementHandler {
 			String target = reference.getValue();
 			Serialization referenced = configs.get(target);
 			if (referenced != null) {
+				while (referenced instanceof DelegatingSerialization) {
+					DelegatingSerialization delegating = (DelegatingSerialization) referenced;
+					referenced = delegating.getDelegate();
+				}
 				reference.getKey().setReferenced(referenced);
 			} else {
 				invalids.add(target);
@@ -119,7 +124,7 @@ public class SerializationElementHandler implements ElementHandler {
 		}
 		return invalids;
 	}
-
+	
 	/**
 	 * Resolves the extensions
 	 * @param extensions The map of requested extensions
@@ -420,7 +425,7 @@ public class SerializationElementHandler implements ElementHandler {
 					throw new ConfigurationException(INVALID_LIST_FORMAT, element.getPath());
 				} else {
 					foundElement = true;
-					Serialization elem = handleId(children.get(0));
+					Serialization elem = handleId(child);
 					serialization.setElement(elem);
 				}
 			}
@@ -456,7 +461,7 @@ public class SerializationElementHandler implements ElementHandler {
 						throw new ConfigurationException(NAME_NOT_ALLOWED_FORMAT, element.getPath());
 					}
 					foundElement = true;
-					Serialization elem = handleId(children.get(0));
+					Serialization elem = handleId(child);
 					serialization.setValue(elem);
 				}
 			}

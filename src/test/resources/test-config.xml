@@ -2,7 +2,7 @@
 <serializations>
     <complex id="listingConfig" name="listing" bean="results" property="listings[0]">
 	    <attribute name="name" property="businessName" display-empty="false"/>
-	    <ref target="addressConfig" name="listingAddress"/>
+	    <ref target="addressConfig" name="listingAddress" property="mainAddress"/>
     </complex>
 
     <complex id="addressConfig" name="address" property="address"/>

@@ -209,7 +209,7 @@ public class JSONWriterTest extends TestCase {
 	}
 	
 	/**
-	 * Tests serializing an object without properties
+	 * Tests serializing a complex without properties
 	 */
 	public void testComplexWhenNoProperty() throws Exception {
 		Serialization ser = createMock(ComplexSerialization.class);
@@ -221,7 +221,7 @@ public class JSONWriterTest extends TestCase {
 	}
 	
 	/**
-	 * Tests serializing a object with formatting
+	 * Tests serializing a complex with formatting
 	 */
 	public void testComplexWhenFormatting() throws Exception {
 		ctx.setFormatting(true);
@@ -242,7 +242,26 @@ public class JSONWriterTest extends TestCase {
 	}
 	
 	/**
-	 * Tests serializing a object that has only sub-element
+	 * Tests serializing a complex that has no name
+	 */
+	public void testComplexWithNoName() throws Exception {
+		ctx.nextLevel("results");
+		Serialization ser = createMock(ComplexSerialization.class);
+		Serialization attribute1 = SerializationUtils.createConstantAttribute("desc", null);
+		Serialization attribute2 = SerializationUtils.createConstantAttribute("id", "ABCD1234");
+		Serialization element = SerializationUtils.createConstantValue("name", "John Hotel");
+		Object object = new Object();
+		
+		replay(ser);
+		writer.writeComplex(ser, null, object, CollectionUtils.asList(attribute1, attribute2), CollectionUtils.asList(element), null, ctx);
+		verify(ser);
+
+		assertEquals("{\"id\": \"ABCD1234\", \"name\": \"John Hotel\"}", os.toString());
+		assertEquals("results", ctx.getPath());
+	}
+	
+	/**
+	 * Tests serializing a complex
 	 */
 	public void testComplex() throws Exception {
 		ctx.nextLevel("results");
@@ -285,6 +304,23 @@ public class JSONWriterTest extends TestCase {
 		verify(ser);
 		assertEquals("\"orders\": []", os.toString());
 		assertEquals(StringUtils.EMPTY, ctx.getPath());
+	}
+
+	/**
+	 * Tests serializing a iterator
+	 */
+	public void testIteratorWithNoName() throws Exception {
+		ctx.setFormatting(true);
+		ctx.nextLevel("results");
+		Serialization ser = createMock(IteratorSerialization.class);
+		Iterator<String> itr = CollectionUtils.asList("baseball", "hockey", null).iterator();
+		Serialization element = new ValueSerialization();
+		
+		replay(ser);
+		writer.writeIterator(ser, null, itr, "sport", element, null, ctx);
+		verify(ser);
+		assertEquals("\n      [\n         \"baseball\", \n         \"hockey\"\n      ]", os.toString());
+		assertEquals("results", ctx.getPath());
 	}
 
 	/**
@@ -349,6 +385,29 @@ public class JSONWriterTest extends TestCase {
 		writer.writeMap(ser, "leisures", map, null, value, null, ctx);
 		verify(ser);
 		assertEquals("\n   \"leisures\": {\n      \"sport\": \"baskeball\", \n      \"hobby\": \"photography\"\n   }", os.toString());
+		assertEquals(StringUtils.EMPTY, ctx.getPath());
+	}
+
+	/**
+	 * Tests serializing a map
+	 */
+	public void testMapWithNoName() throws Exception {
+		PropertyResolver resolver = createMock(PropertyResolver.class);
+		ctx = new SerializationContext(writer, resolver, os);
+		
+		Serialization ser = createMock(MapSerialization.class);
+		Serialization value = new ValueSerialization();
+		Map<String, String> map = new LinkedHashMap<String, String>();
+		map.put("sport", "baskeball");
+		map.put("hobby", "photography");
+		
+		expect(resolver.resolve("sport", "keyProperty")).andReturn("s");
+		expect(resolver.resolve("hobby", "keyProperty")).andReturn("h");
+		
+		replay(ser, resolver);
+		writer.writeMap(ser, null, map, "keyProperty", value, null, ctx);
+		verify(ser, resolver);
+		assertEquals("{\"s\": \"baskeball\", \"h\": \"photography\"}", os.toString());
 		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
 

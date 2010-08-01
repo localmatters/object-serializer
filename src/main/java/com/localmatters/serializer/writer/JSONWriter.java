@@ -21,6 +21,7 @@ public class JSONWriter extends AbstractWriter {
 	private static final byte[] NULL = "null".getBytes();
 	private static final byte[] LEFT_CURLY = "{".getBytes();
 	private static final byte[] RIGHT_CURLY = "}".getBytes();
+	private static final byte[] LEFT_SQUARE = "[".getBytes();
 	private static final byte[] RIGHT_SQUARE = "]".getBytes();
 	private static final byte[] QUOTE = "\"".getBytes();
 	private static final byte[] QUOTE_COLUMN = "\": ".getBytes();
@@ -96,11 +97,15 @@ public class JSONWriter extends AbstractWriter {
 			Collection<Serialization> elements, 
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(checkRequiredName(ctx, name));
+		ctx.nextLevel(StringUtils.defaultIfEmpty(name, "complex"));
 
 		String prefix = getPrefix(ctx);
 		if (object != null) {
-			write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_LEFT_CURLY);
+			if (StringUtils.isEmpty(name)) {
+				write(ctx, prefix).write(ctx, LEFT_CURLY);
+			} else {
+				write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_LEFT_CURLY);
+			}
 			byte[] sep = new byte[]{};
 			
 			if (CollectionUtils.isNotEmpty(attributes)) {
@@ -142,11 +147,15 @@ public class JSONWriter extends AbstractWriter {
 			Serialization element, 
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(checkRequiredName(ctx, name));
+		ctx.nextLevel(StringUtils.defaultIfEmpty(name, "iterator"));
 
 		String prefix = getPrefix(ctx);
 		if (itr.hasNext()) {
-			write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_LEFT_SQUARE);
+			if (StringUtils.isEmpty(name)) {
+				write(ctx, prefix).write(ctx, LEFT_SQUARE);
+			} else {
+				write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_LEFT_SQUARE);
+			}
 			byte[] sep = new byte[]{};
 			while (itr.hasNext()) {
 				ctx.pushPrefix(sep);
@@ -173,11 +182,15 @@ public class JSONWriter extends AbstractWriter {
 			Serialization value, 
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(checkRequiredName(ctx, name));
+		ctx.nextLevel(StringUtils.defaultIfEmpty(name, "map"));
 
 		String prefix = getPrefix(ctx);
 		if (CollectionUtils.isNotEmpty(map)) {
-			write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_LEFT_CURLY);
+			if (StringUtils.isEmpty(name)) {
+				write(ctx, prefix).write(ctx, LEFT_CURLY);
+			} else {
+				write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_LEFT_CURLY);
+			}
 			byte[] sep = new byte[]{};
 			for (Map.Entry<?, ?> entry : map.entrySet()) {
 				ctx.pushPrefix(sep);

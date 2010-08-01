@@ -66,6 +66,12 @@ public class IteratorSerialization extends CommentSerialization {
 	 * @param element The index elements serialization
 	 */
 	public void setElement(Serialization element) {
-		this.element = element;
+		if (element instanceof NameSerialization) {
+			NameSerialization name = (NameSerialization) element;
+			setElementName(name.getName());
+			this.element = name.getDelegate();
+		} else {
+			this.element = element;
+		}
 	}
 }

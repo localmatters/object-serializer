@@ -1,5 +1,6 @@
 package com.localmatters.serializer.tool;
 
+import static com.localmatters.serializer.config.SerializationElementHandler.ATTRIBUTE_BEAN;
 import static com.localmatters.serializer.config.SerializationElementHandler.ATTRIBUTE_ID;
 import static com.localmatters.serializer.config.SerializationElementHandler.ATTRIBUTE_NAME;
 import static com.localmatters.serializer.config.SerializationElementHandler.ATTRIBUTE_PROPERTY;
@@ -75,6 +76,7 @@ public class ConfigWriterFromClass {
 			String name = rootClass.getSimpleName();
 			root.getElements().add(0, handleClass(name, rootClass, 
 					createConstantAttribute(ATTRIBUTE_ID, getIdForClass(rootClass)), 
+					createConstantAttribute(ATTRIBUTE_BEAN, name),
 					createConstantAttribute(ATTRIBUTE_NAME, name)));
 		}
 		
@@ -124,7 +126,7 @@ public class ConfigWriterFromClass {
 		if (klass == null) {
 			ComplexSerialization value = createComplex(attributes);
 			value.addComment("Unable to resolve the class for the element [" + name + "]!");
-			value.addComment("Its configuration must be writtent manually.");
+			value.addComment("Its configuration must be written manually.");
 			return createName(TYPE_VALUE, value);
 		}
 
@@ -278,7 +280,7 @@ public class ConfigWriterFromClass {
 		// list of unknown type
 		else {
 			list.addComment("Unable to identify the types for the [" + name + "] iteration!");
-			list.addComment("The configuration of its entries must be writtent manually.");
+			list.addComment("The configuration of its entries must be written manually.");
 			list.addElement(createComplex(TYPE_VALUE, createConstantAttribute(ATTRIBUTE_NAME, singleName)));
 		}
 		

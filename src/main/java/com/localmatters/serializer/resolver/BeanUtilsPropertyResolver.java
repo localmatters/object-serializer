@@ -1,5 +1,7 @@
 package com.localmatters.serializer.resolver;
 
+import java.util.Arrays;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,14 +18,29 @@ public class BeanUtilsPropertyResolver implements PropertyResolver {
 	/**
 	 * @see com.localmatters.serializer.resolver.PropertyResolver#resolve(java.lang.Object, java.lang.String)
 	 */
+	@SuppressWarnings("rawtypes")
 	public Object resolve(Object bean, String property) throws InvalidPropertyException {
 		try {
 			// if the property is a list or a map, we first check that it is not
 			// null as the PropertyUtils is, unfortunately not lenient 
 			Matcher matcher = getIndexedMappedRemoverPattern().matcher(property);
 			if (matcher.find()) {
-				if (PropertyUtils.getProperty(bean, matcher.group(1)) == null) {
+				Object indexOrMap = PropertyUtils.getProperty(bean, matcher.group(1));
+				if (indexOrMap == null) {
 					return null;
+				} 
+				if (indexOrMap instanceof Iterable) {
+					if (!((Iterable) indexOrMap).iterator().hasNext()) {
+						return null;
+					}
+				} else if (indexOrMap instanceof Map) {
+					if (((Map) indexOrMap).isEmpty()) {
+						return null;
+					}
+				} else if (indexOrMap.getClass().isArray()) {
+					if (Arrays.asList((Object[])indexOrMap).isEmpty()) {
+						return null;
+					}
 				}
 			}
 

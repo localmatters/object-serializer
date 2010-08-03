@@ -3,6 +3,8 @@ package com.localmatters.serializer.serialization;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.getCurrentArguments;
 import static org.easymock.EasyMock.isA;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.same;
@@ -15,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 
 import junit.framework.TestCase;
+
+import org.easymock.IAnswer;
 
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.util.SerializationUtils;
@@ -106,6 +110,20 @@ public class IteratorSerializationTest extends TestCase {
 	public void testHandleArray() throws Exception {
 		String[] array = new String[]{"one", "two", "three"};
 		writer.writeIterator(same(parentSer), eq("orders"), isA(Iterator.class), eq("order"), same(element), same(comments), same(ctx));
+		expectLastCall().andAnswer(new IAnswer<Object>() {
+			@SuppressWarnings("unchecked")
+			public Object answer() throws Throwable {
+				Object[] args = getCurrentArguments();
+				Iterator<String> itr = (Iterator<String>) args[2];
+				assertTrue(itr.hasNext());
+				assertEquals("one", itr.next());
+				assertTrue(itr.hasNext());
+				assertEquals("two", itr.next());
+				assertTrue(itr.hasNext());
+				assertEquals("three", itr.next());
+				return null;
+			}
+		});
 		replay(writer, element, parentSer);
 		ser.serialize(parentSer, "orders", array, ctx);
 		verify(writer, element, parentSer);

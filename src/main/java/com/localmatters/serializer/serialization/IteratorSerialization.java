@@ -27,7 +27,7 @@ public class IteratorSerialization extends CommentSerialization {
 		if (obj == null) {
 			itr = EMTPY_ITERATOR;
 		} else if (obj.getClass().isArray()) {
-			itr = Arrays.asList(obj).iterator();
+			itr = Arrays.asList((Object[])obj).iterator();
 		} else if (obj instanceof Iterable<?>) {
 			itr = ((Iterable<?>) obj).iterator();
 		} else if (obj instanceof Map<?, ?>) {

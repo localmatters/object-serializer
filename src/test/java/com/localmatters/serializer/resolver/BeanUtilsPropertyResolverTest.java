@@ -1,5 +1,7 @@
 package com.localmatters.serializer.resolver;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -20,7 +22,7 @@ public class BeanUtilsPropertyResolverTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		resolver = new BeanUtilsPropertyResolver();
-		resolver.setIndexedMappedRemoverPattern(Pattern.compile("^([^\\[\\{]+)(?:\\[|\\{).*$"));
+		resolver.setIndexedMappedRemoverPattern(Pattern.compile("^([^\\[\\(]+)(?:\\[|\\().*$"));
 	}
 
 	/**
@@ -57,6 +59,17 @@ public class BeanUtilsPropertyResolverTest extends TestCase {
 	}
 
 	/**
+	 * Tests resolving an empty list property
+	 */
+	public void testEmptyListProperty() {
+		try {
+			assertNull(resolver.resolve(new Dummy(), "icons[0]"));
+		} catch (InvalidPropertyException e) {
+			fail("The resolution of a valid property should not result in an exception");
+		}
+	}
+
+	/**
 	 * Tests resolving a non-null list property
 	 */
 	public void testListProperty() {
@@ -72,12 +85,77 @@ public class BeanUtilsPropertyResolverTest extends TestCase {
 	 */
 	public void testNullMapProperty() {
 		try {
-			assertNull(resolver.resolve(new Dummy(), "addresses{home}"));
+			assertNull(resolver.resolve(new Dummy(), "addresses(home)"));
+		} catch (InvalidPropertyException e) {
+			fail("The resolution of a valid property should not result in an exception");
+		}
+	}
+
+	/**
+	 * Tests resolving an empty map property
+	 */
+	public void testEmptyMapProperty() {
+		try {
+			assertNull(resolver.resolve(new Dummy(), "friends(home)"));
+		} catch (InvalidPropertyException e) {
+			fail("The resolution of a valid property should not result in an exception");
+		}
+	}
+
+	/**
+	 * Tests resolving a map property
+	 */
+	public void testMapProperty() {
+		try {
+			assertEquals("the poo", resolver.resolve(new Dummy(), "stories(winnie)"));
 		} catch (InvalidPropertyException e) {
 			fail("The resolution of a valid property should not result in an exception");
 		}
 	}
 	
+	/**
+	 * Tests resolving a null array property
+	 */
+	public void testNullArrayProperty() {
+		try {
+			assertNull(resolver.resolve(new Dummy(), "meals[0]"));
+		} catch (InvalidPropertyException e) {
+			fail("The resolution of a valid property should not result in an exception");
+		}
+	}
+	
+	/**
+	 * Tests resolving an empty array property
+	 */
+	public void testEmptyArrayProperty() {
+		try {
+			assertNull(resolver.resolve(new Dummy(), "levels[0]"));
+		} catch (InvalidPropertyException e) {
+			fail("The resolution of a valid property should not result in an exception");
+		}
+	}
+	
+	/**
+	 * Tests resolving an array property
+	 */
+	public void testArrayProperty() {
+		try {
+			assertEquals("truck", resolver.resolve(new Dummy(), "toys[1]"));
+		} catch (InvalidPropertyException e) {
+			fail("The resolution of a valid property should not result in an exception");
+		}
+	}
+
+	/**
+	 * Tests resolving an invalid property
+	 */
+	public void testInvalidIndexMappedProperty() {
+		try {
+			resolver.resolve(new Dummy(), "id[1]");
+			fail("InvalidPropertyException expected");
+		} catch (InvalidPropertyException e) {
+		}
+	}
 	
 	/**
 	 * Class describing a dummy object for testing
@@ -86,7 +164,17 @@ public class BeanUtilsPropertyResolverTest extends TestCase {
 		public String getId() {return "12345";}
 		public String getName() {return "dummy";}
 		public List<String> getPhotos() {return null;}
-		public Map<String, String> getAddresses() {return null;}
+		public List<String> getIcons() {return Collections.emptyList();}
 		public List<String> getAds() {return CollectionUtils.asList("buy from us", "we are fun");}
+		public String[] getLevels() {return new String[]{};}
+		public String[] getMeals() {return null;}
+		public String[] getToys() {return new String[]{"bear", "truck"};}
+		public Map<String, String> getAddresses() {return null;}
+		public Map<String, String> getFriends() {return new HashMap<String, String>();}
+		public Map<String, String> getStories() {
+			HashMap<String, String> map = new HashMap<String, String>();
+			map.put("winnie", "the poo");
+			return map;
+		}
 	}
 }

@@ -1,0 +1,16 @@
+<assembly>
+    <id>schema</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <includes>
+                <include>*.xsd</include>
+            </includes>
+            <directory>src/main/schema</directory>
+            <outputDirectory>${artifact.artifactId}-${artifact.version}-schema</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>

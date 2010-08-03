@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This schema describes the structure of a lm-object-serializer configuration
+     file. Such configuration file describes how different objects or models
+     should be serialized. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"  
+           targetNamespace="http://www.localmatters.com/schema/serializations" 
+           xmlns:ser="http://www.localmatters.com/schema/serializations"
+           xmlns="http://www.localmatters.com/schema/serializations" 
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="1.0.1">
+
+    <!-- Serializations and direct children (which expects an ID) -->
+    <xs:element name="serializations">
+        <xs:annotation>
+            <xs:documentation xml:lang="en-US">Configuration defining how to serialize objects and models</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element name="complex">
+                    <xs:complexType>
+                        <xs:complexContent>
+                            <xs:extension base="complexType">
+                                <xs:attribute name="id" type="xs:string" use="required"/>
+                            </xs:extension>    
+                        </xs:complexContent>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="map">
+                    <xs:complexType>
+                        <xs:complexContent>
+                            <xs:extension base="mapType">
+                                <xs:attribute name="id" type="xs:string" use="required"/>
+                            </xs:extension>    
+                        </xs:complexContent>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="list">
+                    <xs:complexType>
+                        <xs:complexContent>
+                            <xs:extension base="listType">
+                                <xs:attribute name="id" type="xs:string" use="required"/>
+                            </xs:extension>    
+                        </xs:complexContent>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="value">
+                    <xs:complexType>
+                        <xs:complexContent>
+                            <xs:extension base="valueType">
+                                <xs:attribute name="id" type="xs:string" use="required"/>
+                            </xs:extension>    
+                        </xs:complexContent>
+                    </xs:complexType>
+                </xs:element>
+            </xs:choice>
+        </xs:complexType>
+        
+        <!-- constraints on the ID -->
+        <xs:unique name="idKey">
+            <xs:selector xpath=".//*"/>
+            <xs:field xpath="@id"/>
+        </xs:unique>
+        <xs:keyref name="parentRef" refer="idKey">
+            <xs:selector xpath=".//ser:complex"/>
+            <xs:field xpath="@parent"/>
+        </xs:keyref>
+        <xs:keyref name="targetRef" refer="idKey">
+            <xs:selector xpath=".//ser:ref"/>
+            <xs:field xpath="@target"/>
+        </xs:keyref>
+
+    </xs:element>
+
+    
+    <!-- Complex Tag type -->
+    <xs:complexType name="complexType">
+		<xs:sequence>
+			<xs:element name="comment" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element name="attribute">
+				    <xs:complexType>
+				        <xs:attributeGroup ref="baseAttributesGroup"/>
+				        <xs:attribute name="id" type="xs:string" use="optional"/>
+				    </xs:complexType>
+				</xs:element>
+				<xs:group ref="baseElementsGroupOptionalId"/>
+			</xs:choice>
+		</xs:sequence>
+        <xs:attributeGroup ref="baseAttributesGroup"/>
+        <xs:attribute name="parent" type="xs:string" use="optional"/>
+    </xs:complexType>
+    
+    
+    <!-- Map Tag type -->
+    <xs:complexType name="mapType">
+        <xs:sequence>
+            <xs:element name="comment" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:group ref="baseElementsGroupOptionalId" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="baseAttributesGroup"/>
+        <xs:attribute name="key" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    
+    <!-- List Tag type -->
+    <xs:complexType name="listType">
+        <xs:sequence>
+            <xs:element name="comment" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:group ref="baseElementsGroupOptionalId" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="baseAttributesGroup"/>
+    </xs:complexType>
+
+    
+    <!-- Value Tag type -->
+    <xs:complexType name="valueType">
+        <xs:attributeGroup ref="baseAttributesGroup"/>
+    </xs:complexType>
+    
+    
+    <!-- Ref Tag type -->
+    <xs:complexType name="refType">
+        <xs:attributeGroup ref="baseAttributesGroup"/>
+        <xs:attribute name="target" type="xs:string" use="required"/>
+    </xs:complexType>
+    
+
+    <!-- The base list of sub-elements with optional IDs -->
+    <xs:group name="baseElementsGroupOptionalId">
+        <xs:choice>
+		    <xs:element name="complex">
+                <xs:complexType>
+                    <xs:complexContent>
+			            <xs:extension base="complexType">
+			                <xs:attribute name="id" type="xs:string" use="optional"/>
+			            </xs:extension>    
+    		        </xs:complexContent>
+                </xs:complexType>
+		    </xs:element>
+		    <xs:element name="map">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="mapType">
+                            <xs:attribute name="id" type="xs:string" use="optional"/>
+                        </xs:extension>    
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+		    <xs:element name="list">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="listType">
+                            <xs:attribute name="id" type="xs:string" use="optional"/>
+                        </xs:extension>    
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+		    <xs:element name="value">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="valueType">
+                            <xs:attribute name="id" type="xs:string" use="optional"/>
+                        </xs:extension>    
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+		    <xs:element name="ref" type="refType"/>
+        </xs:choice>
+    </xs:group>
+
+
+    <!-- Base attributes -->
+    <xs:attributeGroup name="baseAttributesGroup">
+        <xs:attribute name="name" type="xs:string" use="optional"/>
+        <xs:attribute name="property" type="xs:string" use="optional"/>
+        <xs:attribute name="bean" type="xs:string" use="optional"/>
+        <xs:attribute name="constant" type="xs:string" use="optional"/>
+        <xs:attribute name="display-empty" type="xs:boolean" use="optional" default="false"/>
+    </xs:attributeGroup>
+    
+</xs:schema>

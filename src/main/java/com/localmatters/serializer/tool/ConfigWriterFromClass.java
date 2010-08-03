@@ -280,7 +280,7 @@ public class ConfigWriterFromClass {
 		// list of unknown type
 		else {
 			list.addComment("Unable to identify the types for the [" + name + "] iteration!");
-			list.addComment("The configuration of its entries must be written manually.");
+			list.addComment("The configuration of its elements must be written manually.");
 			list.addElement(createComplex(TYPE_VALUE, createConstantAttribute(ATTRIBUTE_NAME, singleName)));
 		}
 		

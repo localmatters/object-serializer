@@ -6,7 +6,7 @@
         <list property="array"/>
 
         <!-- Unable to identify the types for the [list] iteration!
-             The configuration of its entries must be written manually. -->
+             The configuration of its elements must be written manually. -->
         <list property="list">
             <value name="element"/>
         </list>
@@ -23,7 +23,7 @@
             <map name="listOfMapOfStringAnd">
 
                 <!-- Unable to identify the types for the [entry] iteration!
-                     The configuration of its entries must be written manually. -->
+                     The configuration of its elements must be written manually. -->
                 <list>
                     <value name="element"/>
                 </list>

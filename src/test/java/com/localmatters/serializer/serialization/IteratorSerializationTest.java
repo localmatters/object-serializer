@@ -17,6 +17,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import com.localmatters.serializer.SerializationContext;
+import com.localmatters.serializer.util.SerializationUtils;
 import com.localmatters.serializer.writer.Writer;
 
 /**
@@ -108,5 +109,15 @@ public class IteratorSerializationTest extends TestCase {
 		replay(writer, element, parentSer);
 		ser.serialize(parentSer, "orders", array, ctx);
 		verify(writer, element, parentSer);
+	}
+	
+	public void testSetNameDelegate() {
+		NameSerialization name = SerializationUtils.createName("entry", element);
+		replay(writer, element, parentSer);
+		ser.setElement(name);
+		verify(writer, element, parentSer);
+		assertSame(element, ser.getElement());
+		assertEquals("entry", ser.getElementName());
+		
 	}
 }

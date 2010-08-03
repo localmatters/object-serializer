@@ -23,7 +23,8 @@ public class InMemorySerializationManager extends AbstractRefreshableContent imp
 	private String encoding = DEFAULT_ENCODING;
 	private Map<String, Serialization> serializations = Collections.emptyMap();
 	private LMObjectFactory objectFactory;
-	
+	private boolean alwaysRefresh;
+
 	/**
 	 * @see com.localmatters.util.refreshable.AbstractRefreshableContent#doRefresh()
 	 */
@@ -48,6 +49,9 @@ public class InMemorySerializationManager extends AbstractRefreshableContent imp
 	 * @see com.localmatters.serializer.config.SerializationManager#getSerialization(java.lang.String)
 	 */
 	public Serialization getSerialization(String id) {
+		if (isAlwaysRefresh()) {
+			refresh();
+		}
 		return serializations.get(id);
 	}
 
@@ -102,5 +106,21 @@ public class InMemorySerializationManager extends AbstractRefreshableContent imp
 	@Required
 	public void setObjectFactory(LMObjectFactory objectFactory) {
 		this.objectFactory = objectFactory;
+	}
+
+	/**
+	 * @return Whether the configuration should always be refreshed (this should
+	 * be true ONLY for development)
+	 */
+	public boolean isAlwaysRefresh() {
+		return alwaysRefresh;
+	}
+
+	/**
+	 * @param alwaysRefresh Whether the configuration should always be refreshed
+	 * (this should be true ONLY for development)
+	 */
+	public void setAlwaysRefresh(boolean alwaysRefresh) {
+		this.alwaysRefresh = alwaysRefresh;
 	}
 }

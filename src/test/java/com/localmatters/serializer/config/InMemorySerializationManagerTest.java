@@ -17,9 +17,9 @@ import com.localmatters.util.CollectionUtils;
 import com.localmatters.util.refreshable.InitialRefreshFailedException;
 
 /**
- * Tests the <code>InMemoryHandlerManager</code>
+ * Tests the <code>InMemorySerializationManager</code>
  */
-public class InMemoryHandlerManagerTest extends TestCase {
+public class InMemorySerializationManagerTest extends TestCase {
 	private InMemorySerializationManager manager;
 	
 	/**
@@ -85,7 +85,15 @@ public class InMemoryHandlerManagerTest extends TestCase {
 		Serialization listing = manager.getSerialization("listingConfig");
 		assertNotNull(listing);
 		assertTrue(listing instanceof NameSerialization);
-		
+
+		// tests always refresh
+		manager.setAlwaysRefresh(true);
+		assertNotSame(listing, manager.getSerialization("listingConfig"));
+		manager.setAlwaysRefresh(false);
+		listing = manager.getSerialization("listingConfig");
+		assertNotNull(listing);
+		assertTrue(listing instanceof NameSerialization);
+
 		// listing name
 		NameSerialization name = (NameSerialization) listing;
 		assertEquals("listing", name.getName());

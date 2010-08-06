@@ -5,11 +5,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
-
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.SerializationException;
 import com.localmatters.serializer.serialization.Serialization;
+import com.localmatters.serializer.util.EscapeUtils;
 import com.localmatters.util.CollectionUtils;
 import com.localmatters.util.StringUtils;
 
@@ -47,7 +46,7 @@ public class XMLWriter extends AbstractWriter {
 
 		String prefix = getPrefix(ctx);
 		if (value != null) {
-			String str = StringEscapeUtils.escapeXml(String.valueOf(value));
+			String str = EscapeUtils.escapeXml(String.valueOf(value));
 			if (StringUtils.isNotBlank(name)) {
 				write(ctx, prefix)
 				.write(ctx, LT).write(ctx, name).write(ctx, GT)
@@ -76,7 +75,7 @@ public class XMLWriter extends AbstractWriter {
 			write(ctx, SPACE)
 			.write(ctx, name)
 			.write(ctx, EQUALS_QUOTE)
-			.write(ctx, StringEscapeUtils.escapeXml(String.valueOf(attribute)))
+			.write(ctx, EscapeUtils.escapeXml(String.valueOf(attribute)))
 			.write(ctx, QUOTE);
 		} else if (ser.isWriteEmpty()) {
 			write(ctx, SPACE)

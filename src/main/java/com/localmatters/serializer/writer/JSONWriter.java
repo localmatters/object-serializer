@@ -11,6 +11,7 @@ import com.localmatters.serializer.serialization.DelegatingSerialization;
 import com.localmatters.serializer.serialization.NameSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
+import com.localmatters.serializer.util.EscapeUtils;
 import com.localmatters.serializer.util.ReflectionUtils;
 import com.localmatters.util.CollectionUtils;
 import com.localmatters.util.StringUtils;
@@ -78,7 +79,7 @@ public class JSONWriter extends AbstractWriter {
 			if (ReflectionUtils.isNumeric(value.getClass()) || ReflectionUtils.isBoolean(value.getClass())) {
 				write(ctx, str);
 			} else {
-				write(ctx, QUOTE).write(ctx, StringUtils.replace(str, "\"", "\\\"")).write(ctx, QUOTE);
+				write(ctx, QUOTE).write(ctx, EscapeUtils.escapeJson(str)).write(ctx, QUOTE);
 			}
 		} else if (ser.isWriteEmpty()) {
 			write(ctx, prefix);

@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
-
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.SerializationException;
 import com.localmatters.serializer.serialization.DelegatingSerialization;
@@ -80,7 +78,7 @@ public class JSONWriter extends AbstractWriter {
 			if (ReflectionUtils.isNumeric(value.getClass()) || ReflectionUtils.isBoolean(value.getClass())) {
 				write(ctx, str);
 			} else {
-				write(ctx, QUOTE).write(ctx, StringEscapeUtils.escapeJava(str)).write(ctx, QUOTE);
+				write(ctx, QUOTE).write(ctx, StringUtils.replace(str, "\"", "\\\"")).write(ctx, QUOTE);
 			}
 		} else if (ser.isWriteEmpty()) {
 			write(ctx, prefix);

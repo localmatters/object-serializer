@@ -188,7 +188,7 @@ public class JSONWriterTest extends TestCase {
 		replay(ser);
 		writer.writeValue(ser, null, "hotel & café", ctx);
 		verify(ser);
-		assertEquals("\"hotel & caf\\u00E9\"", os.toString());
+		assertEquals("\"hotel & café\"", os.toString());
 		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
 	
@@ -203,7 +203,7 @@ public class JSONWriterTest extends TestCase {
 		replay(ser, delegate);
 		writer.writeAttribute(ser, "name", "hotel & café", ctx);
 		verify(ser, delegate);
-		assertEquals("\n   \"name\": \"hotel & caf\\u00E9\"", os.toString());
+		assertEquals("\n   \"name\": \"hotel & café\"", os.toString());
 		assertEquals("listing", ctx.getPath());
 	}
 

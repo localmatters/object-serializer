@@ -20,6 +20,9 @@ public class BeanUtilsPropertyResolver implements PropertyResolver {
 	 */
 	@SuppressWarnings("rawtypes")
 	public Object resolve(Object bean, String property) throws InvalidPropertyException {
+		if (bean == null) {
+			return null;
+		}
 		try {
 			// if the property is a list or a map, we first check that it is not
 			// null as the PropertyUtils is, unfortunately not lenient 

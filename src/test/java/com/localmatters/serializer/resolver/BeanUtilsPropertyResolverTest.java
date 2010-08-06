@@ -26,6 +26,13 @@ public class BeanUtilsPropertyResolverTest extends TestCase {
 	}
 
 	/**
+	 * Tests resolving when the object is null
+	 */
+	public void testWithNullBean() throws Exception {
+		assertNull(resolver.resolve(null, "type"));
+	}
+
+	/**
 	 * Tests resolving an invalid property
 	 */
 	public void testInvalidProperty() {

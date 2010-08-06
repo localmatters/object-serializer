@@ -44,7 +44,7 @@ public class JSONWriter extends AbstractWriter {
 			SerializationContext ctx) throws SerializationException {
 		Serialization delegate = ser;
 		while(delegate instanceof DelegatingSerialization) {
-			delegate = ((DelegatingSerialization) ser).getDelegate();
+			delegate = ((DelegatingSerialization) delegate).getDelegate();
 		}
 		if (delegate instanceof ValueSerialization) {
 			write(ctx, LEFT_CURLY);

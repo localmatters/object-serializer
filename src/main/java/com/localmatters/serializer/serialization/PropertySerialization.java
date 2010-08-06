@@ -24,12 +24,16 @@ public class PropertySerialization extends DelegatingSerialization {
 	 */
 	public void serialize(Serialization ser, String name, Object obj, SerializationContext ctx) throws SerializationException {
 		Object value = null;
-		try {
-			value = ctx.getPropertyResolver().resolve(obj, getProperty());
-		} catch (PropertyResolverException e) {
-			throw new UnknownPropertyException(getProperty(), ctx, e);
+		if (obj != null) {
+			try {
+				value = ctx.getPropertyResolver().resolve(obj, getProperty());
+			} catch (PropertyResolverException e) {
+				throw new UnknownPropertyException(getProperty(), ctx, e);
+			}
 		}
-		getDelegate().serialize(ser, StringUtils.defaultString(name, getProperty()), value, ctx);
+		if ((value != null) || isWriteEmpty()) {
+			getDelegate().serialize(ser, StringUtils.defaultString(name, getProperty()), value, ctx);
+		}
 	}
 	
 	/**

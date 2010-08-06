@@ -18,10 +18,9 @@ public class BeanSerialization extends DelegatingSerialization {
 	 */
 	public void serialize(Serialization ser, String name, Object object, SerializationContext ctx) throws SerializationException {
 		Object beanObject = ctx.getBean(getBean());
-		if (beanObject == null) {
-			throw new UnknownBeanException(getBean());	
+		if ((beanObject != null) || isWriteEmpty()) {
+			getDelegate().serialize(ser, name, beanObject, ctx);
 		}
-		getDelegate().serialize(ser, name, beanObject, ctx);
 	}
 
 	/**

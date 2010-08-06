@@ -1,6 +1,7 @@
 package com.localmatters.serializer.serialization;
 
 import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 
@@ -41,15 +42,23 @@ public class BeanSerializationTest extends TestCase {
 	}
 
 	/**
-	 * Tests the serialization when the bean is unknown
+	 * Tests the serialization when the bean is unknown and not write empty
 	 */
-	public void testHandleUnknownBean() throws Exception {
+	public void testHandleUnknownBeanNotWriteEmpty() throws Exception {
+		expect(delegate.isWriteEmpty()).andReturn(false);
 		replay(delegate, writer);
-		try {
-			ser.serialize(parentSer, "bean", object, ctx);
-			fail("UnknownBeanException expected");
-		} catch (UnknownBeanException e) {
-		}
+		ser.serialize(parentSer, "bean", object, ctx);
+		verify(delegate, writer);
+	}
+
+	/**
+	 * Tests the serialization when the bean is unknown and write empty
+	 */
+	public void testHandleUnknownBeanWriteEmpty() throws Exception {
+		expect(delegate.isWriteEmpty()).andReturn(true);
+		delegate.serialize(parentSer, "bean", null, ctx);
+		replay(delegate, writer);
+		ser.serialize(parentSer, "bean", object, ctx);
 		verify(delegate, writer);
 	}
 

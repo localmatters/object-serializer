@@ -39,6 +39,29 @@ public class PropertySerializationTest extends TestCase {
 	}
 
 	/**
+	 * Tests the serialization when the object is null and not write empty
+	 */
+	public void testHandleNullObjectNotWriteEmpty() throws Exception {
+		ser.setProperty("name");
+		expect(delegate.isWriteEmpty()).andReturn(false);
+		replay(delegate, resolver, writer, parentSer);
+		ser.serialize(parentSer, null, null, ctx);
+		verify(delegate, resolver, writer, parentSer);
+	}
+
+	/**
+	 * Tests the serialization when the object is null and write empty
+	 */
+	public void testHandleNullObjectWriteEmpty() throws Exception {
+		ser.setProperty("name");
+		expect(delegate.isWriteEmpty()).andReturn(true);
+		delegate.serialize(parentSer, "name", null, ctx);
+		replay(delegate, resolver, writer, parentSer);
+		ser.serialize(parentSer, null, null, ctx);
+		verify(delegate, resolver, writer, parentSer);
+	}
+
+	/**
 	 * Tests the serialization when the property is invalid
 	 */
 	public void testHandleInvalidProperty() throws Exception {

@@ -80,7 +80,7 @@ public class JSONWriter extends AbstractWriter {
 			if (ReflectionUtils.isNumeric(value.getClass()) || ReflectionUtils.isBoolean(value.getClass())) {
 				write(ctx, str);
 			} else {
-				write(ctx, QUOTE).write(ctx, StringEscapeUtils.escapeXml(str)).write(ctx, QUOTE);
+				write(ctx, QUOTE).write(ctx, StringEscapeUtils.escapeJava(str)).write(ctx, QUOTE);
 			}
 		} else if (ser.isWriteEmpty()) {
 			write(ctx, prefix);

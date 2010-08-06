@@ -84,10 +84,10 @@ public class JSONWriterTest extends TestCase {
 	public void testRootWhenNamedComplex() throws Exception {
 		ComplexSerialization complex = new ComplexSerialization();
 		complex.addElement(createConstantAttribute("id", "123456"));
-		complex.addElement(createConstantAttribute("name", "12345 Hotel"));
+		complex.addElement(createConstantAttribute("name", "12345 \"Hotel\" & spa"));
 		Serialization ser = createName("listing", complex);
 		writer.writeRoot(ser, null, ctx);
-		assertEquals("{\"id\": \"123456\", \"name\": \"12345 Hotel\"}", os.toString());
+		assertEquals("{\"id\": \"123456\", \"name\": \"12345 \\\"Hotel\\\" & spa\"}", os.toString());
 		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
 
@@ -188,7 +188,7 @@ public class JSONWriterTest extends TestCase {
 		replay(ser);
 		writer.writeValue(ser, null, "hotel & café", ctx);
 		verify(ser);
-		assertEquals("\"hotel &amp; caf&#233;\"", os.toString());
+		assertEquals("\"hotel & caf\\u00E9\"", os.toString());
 		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
 	
@@ -203,7 +203,7 @@ public class JSONWriterTest extends TestCase {
 		replay(ser, delegate);
 		writer.writeAttribute(ser, "name", "hotel & café", ctx);
 		verify(ser, delegate);
-		assertEquals("\n   \"name\": \"hotel &amp; caf&#233;\"", os.toString());
+		assertEquals("\n   \"name\": \"hotel & caf\\u00E9\"", os.toString());
 		assertEquals("listing", ctx.getPath());
 	}
 

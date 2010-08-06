@@ -9,7 +9,10 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.SerializationException;
+import com.localmatters.serializer.serialization.DelegatingSerialization;
+import com.localmatters.serializer.serialization.NameSerialization;
 import com.localmatters.serializer.serialization.Serialization;
+import com.localmatters.serializer.serialization.ValueSerialization;
 import com.localmatters.serializer.util.ReflectionUtils;
 import com.localmatters.util.CollectionUtils;
 import com.localmatters.util.StringUtils;
@@ -39,9 +42,22 @@ public class JSONWriter extends AbstractWriter {
 	public void writeRoot(Serialization ser, 
 			Object root, 
 			SerializationContext ctx) throws SerializationException {
-		write(ctx, LEFT_CURLY);
-		ser.serialize(ser, null, root, ctx);
-		write(ctx, getPrefix(ctx)).write(ctx, RIGHT_CURLY);
+		Serialization delegate = ser;
+		while(delegate instanceof DelegatingSerialization) {
+			delegate = ((DelegatingSerialization) ser).getDelegate();
+		}
+		if (delegate instanceof ValueSerialization) {
+			write(ctx, LEFT_CURLY);
+			ser.serialize(ser, null, root, ctx);
+			write(ctx, getPrefix(ctx)).write(ctx, RIGHT_CURLY);
+		} else if (ser instanceof NameSerialization) {
+			delegate = ((NameSerialization) ser).getDelegate();
+			delegate.serialize(delegate, null, root, ctx);
+		} else {
+			ser.serialize(ser, null, root, ctx);
+			
+		}
+		
 	}
 
 	/**
@@ -100,7 +116,7 @@ public class JSONWriter extends AbstractWriter {
 		ctx.nextLevel(StringUtils.defaultIfEmpty(name, "complex"));
 
 		String prefix = getPrefix(ctx);
-		if (object != null) {
+		if (CollectionUtils.isNotEmpty(attributes) || CollectionUtils.isNotEmpty(elements)) {
 			if (StringUtils.isEmpty(name)) {
 				write(ctx, prefix).write(ctx, LEFT_CURLY);
 			} else {
@@ -126,10 +142,7 @@ public class JSONWriter extends AbstractWriter {
 					}
 				}
 			}
-			if (CollectionUtils.isNotEmpty(attributes) || CollectionUtils.isNotEmpty(elements)) {
-				write(ctx, prefix);
-			}
-			write(ctx, RIGHT_CURLY);
+			write(ctx, prefix).write(ctx, RIGHT_CURLY);
 		} else if (ser.isWriteEmpty()){
 			write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_CLOSED_CURLY);
 		}
@@ -173,11 +186,12 @@ public class JSONWriter extends AbstractWriter {
 	}
 
 	/**
-	 * @see com.localmatters.serializer.writer.Writer#writeMap(com.localmatters.serializer.serialization.Serialization, java.lang.String, java.util.Map, java.lang.String, com.localmatters.serializer.serialization.Serialization, java.util.Collection, com.localmatters.serializer.SerializationContext)
+	 * @see com.localmatters.serializer.writer.Writer#writeMap(com.localmatters.serializer.serialization.Serialization, java.lang.String, java.util.Collection, java.lang.String, com.localmatters.serializer.serialization.Serialization, java.util.Collection, com.localmatters.serializer.SerializationContext)
 	 */
+	@SuppressWarnings("rawtypes")
 	public void writeMap(Serialization ser, 
 			String name,
-			Map<?,?> map, 
+			Collection<Map.Entry> entries, 
 			String key,
 			Serialization value, 
 			Collection<String> comments, 
@@ -185,14 +199,14 @@ public class JSONWriter extends AbstractWriter {
 		ctx.nextLevel(StringUtils.defaultIfEmpty(name, "map"));
 
 		String prefix = getPrefix(ctx);
-		if (CollectionUtils.isNotEmpty(map)) {
+		if (CollectionUtils.isNotEmpty(entries)) {
 			if (StringUtils.isEmpty(name)) {
 				write(ctx, prefix).write(ctx, LEFT_CURLY);
 			} else {
 				write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_LEFT_CURLY);
 			}
 			byte[] sep = new byte[]{};
-			for (Map.Entry<?, ?> entry : map.entrySet()) {
+			for (Map.Entry entry : entries) {
 				ctx.pushPrefix(sep);
 				value.serialize(value, resolvesMapKey(key, entry, ctx), entry.getValue(), ctx);
 				if (ctx.consomePrefix() == null) {
@@ -219,7 +233,7 @@ public class JSONWriter extends AbstractWriter {
 			prefix = prefixes.get(deepness);
 			if (prefix == null) {
 				prefix = "\n";
-				for (int i=0; i<deepness; i++) {
+				for (int i=1; i<deepness; i++) {
 					prefix += INDENTATION;
 				}
 				prefixes.put(deepness, prefix);

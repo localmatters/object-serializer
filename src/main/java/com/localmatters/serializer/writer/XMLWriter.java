@@ -101,7 +101,7 @@ public class XMLWriter extends AbstractWriter {
 		ctx.nextLevel(checkRequiredName(ctx, name));
 
 		String prefix = getPrefix(ctx);
-		if (object != null) {
+		if (CollectionUtils.isNotEmpty(attributes) || CollectionUtils.isNotEmpty(elements)) {
 			writeComments(ctx, prefix, comments).write(ctx, LT).write(ctx, name);
 
 			// writes the attributes
@@ -156,11 +156,12 @@ public class XMLWriter extends AbstractWriter {
 	}
 
 	/**
-	 * @see com.localmatters.serializer.writer.Writer#writeMap(com.localmatters.serializer.serialization.Serialization, java.lang.String, java.util.Map, java.lang.String, com.localmatters.serializer.serialization.Serialization, java.util.Collection, com.localmatters.serializer.SerializationContext)
+	 * @see com.localmatters.serializer.writer.Writer#writeMap(com.localmatters.serializer.serialization.Serialization, java.lang.String, java.util.Collection, java.lang.String, com.localmatters.serializer.serialization.Serialization, java.util.Collection, com.localmatters.serializer.SerializationContext)
 	 */
+	@SuppressWarnings("rawtypes")
 	public void writeMap(Serialization ser, 
 			String name,
-			Map<?,?> map, 
+			Collection<Map.Entry> entries, 
 			String key,
 			Serialization value, 
 			Collection<String> comments, 
@@ -168,9 +169,9 @@ public class XMLWriter extends AbstractWriter {
 		ctx.nextLevel(checkRequiredName(ctx, name));
 
 		String prefix = getPrefix(ctx);
-		if (CollectionUtils.isNotEmpty(map)) {
+		if (CollectionUtils.isNotEmpty(entries)) {
 			writeComments(ctx, prefix, comments).write(ctx, LT).write(ctx, name).write(ctx, GT);
-			for (Map.Entry<?, ?> entry : map.entrySet()) {
+			for (Map.Entry entry : entries) {
 				value.serialize(value, resolvesMapKey(key, entry, ctx), entry.getValue(), ctx);
 			}
 			write(ctx, prefix).write(ctx, LT_SLASH).write(ctx, name).write(ctx, GT);

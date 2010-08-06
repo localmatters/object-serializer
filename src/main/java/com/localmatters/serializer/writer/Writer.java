@@ -101,9 +101,10 @@ public interface Writer {
 	 * @param ctx The serialization context
 	 * @throws SerializationException When the serialization fails
 	 */
+	@SuppressWarnings("rawtypes")
 	public void writeMap(Serialization ser, 
 			String name,
-			Map<?,?> map, 
+			Collection<Map.Entry> map, 
 			String key,
 			Serialization value, 
 			Collection<String> comments, 

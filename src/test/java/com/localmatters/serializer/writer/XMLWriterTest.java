@@ -252,7 +252,7 @@ public class XMLWriterTest extends TestCase {
 		Serialization ser = createMock(ComplexSerialization.class);
 		expect(ser.isWriteEmpty()).andReturn(true);
 		replay(ser);
-		writer.writeComplex(ser, "listing", null, null, null, CollectionUtils.asList("just a listing"), ctx);
+		writer.writeComplex(ser, "listing", new Object(), null, null, CollectionUtils.asList("just a listing"), ctx);
 		verify(ser);
 		assertEquals("\n\n    <!-- just a listing -->\n    <listing/>", os.toString());
 		assertEquals("results", ctx.getPath());
@@ -263,10 +263,11 @@ public class XMLWriterTest extends TestCase {
 	 */
 	public void testComplexWhenNoProperty() throws Exception {
 		Serialization ser = createMock(ComplexSerialization.class);
+		expect(ser.isWriteEmpty()).andReturn(false);
 		replay(ser);
-		writer.writeComplex(ser, "listing", new Object(), null, null, null, ctx);
+		writer.writeComplex(ser, "listing", null, null, null, null, ctx);
 		verify(ser);
-		assertEquals("<listing/>", os.toString());
+		assertEquals(StringUtils.EMPTY, os.toString());
 		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
 	
@@ -401,16 +402,17 @@ public class XMLWriterTest extends TestCase {
 	/**
 	 * Tests serializing a map when formatting
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void testMapWhenFormatting() throws Exception {
 		ctx.setFormatting(true);
 		Serialization ser = createMock(MapSerialization.class);
 		Serialization value = new ValueSerialization();
-		Map<String, String> map = new LinkedHashMap<String, String>();
+		Map map = new LinkedHashMap<String, String>();
 		map.put("sport", "baskeball");
 		map.put("hobby", "photography");
 		
 		replay(ser);
-		writer.writeMap(ser, "leisures", map, null, value, null, ctx);
+		writer.writeMap(ser, "leisures", map.entrySet(), null, value, null, ctx);
 		verify(ser);
 		assertEquals("\n<leisures>\n    <sport>baskeball</sport>\n    <hobby>photography</hobby>\n</leisures>", os.toString());
 		assertEquals(StringUtils.EMPTY, ctx.getPath());
@@ -419,13 +421,14 @@ public class XMLWriterTest extends TestCase {
 	/**
 	 * Tests serializing a map
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void testMap() throws Exception {
 		PropertyResolver resolver = createMock(PropertyResolver.class);
 		ctx = new SerializationContext(writer, resolver, os);
 		
 		Serialization ser = createMock(MapSerialization.class);
 		Serialization value = new ValueSerialization();
-		Map<String, String> map = new LinkedHashMap<String, String>();
+		Map map = new LinkedHashMap<String, String>();
 		map.put("sport", "baskeball");
 		map.put("hobby", "photography");
 		
@@ -433,7 +436,7 @@ public class XMLWriterTest extends TestCase {
 		expect(resolver.resolve("hobby", "keyProperty")).andReturn("h");
 		
 		replay(ser, resolver);
-		writer.writeMap(ser, "leisures", map, "keyProperty", value, null, ctx);
+		writer.writeMap(ser, "leisures", map.entrySet(), "keyProperty", value, null, ctx);
 		verify(ser, resolver);
 		assertEquals("<leisures><s>baskeball</s><h>photography</h></leisures>", os.toString());
 		assertEquals(StringUtils.EMPTY, ctx.getPath());

@@ -37,11 +37,12 @@ public class AbstractWriterTest extends TestCase {
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	@Override
+	@SuppressWarnings("rawtypes")
 	protected void setUp() throws Exception {
 		writer = new AbstractWriter() {
 			public void writeValue(Serialization ser, String name, Object value, SerializationContext ctx) {}
 			public void writeRoot(Serialization ser, Object root, SerializationContext ctx) {}
-			public void writeMap(Serialization ser, String name, Map<?, ?> map, String key, Serialization value, Collection<String> comments, SerializationContext ctx) {}
+			public void writeMap(Serialization ser, String name, Collection<Map.Entry> entries, String key, Serialization value, Collection<String> comments, SerializationContext ctx) {}
 			public void writeIterator(Serialization ser, String name, Iterator<?> itr, String elementName, Serialization element, Collection<String> comments, SerializationContext ctx) {}
 			public void writeComplex(Serialization ser, String name, Object complex, Collection<Serialization> attributes, Collection<Serialization> elements, Collection<String> comments, SerializationContext ctx) {}
 			public void writeAttribute(Serialization ser, String name,Object attribute, SerializationContext ctx) {}

@@ -9,8 +9,14 @@
     <artifactId>lm-object-serializer</artifactId>
     <name>Local Matters Object Serializer</name>
     <version>1.0.7-SNAPSHOT</version>
-    <description>Class to serialize object</description>
-
+    <description>Framework to serialize objects to JSON or XML</description>
+    <packaging>bundle</packaging>
+    <organization>
+        <name>Local Matters, Inc.</name>
+        <url>http://www.localmatters.com</url>
+    </organization>
+    <inceptionYear>2010</inceptionYear>
+    
     <scm>
         <connection>scm:svn:https://build/subversion/DestinationSearch/lm-object-serializer/trunk</connection>
         <developerConnection>scm:svn:https://build/subversion/DestinationSearch/lm-object-serializer/trunk</developerConnection>
@@ -138,6 +144,16 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-Copyright>Copyright (c) ${pom.inceptionYear} ${pom.organization.name}</Bundle-Copyright>
+                    </instructions>
+                </configuration>
             </plugin>
         </plugins>
     </build>

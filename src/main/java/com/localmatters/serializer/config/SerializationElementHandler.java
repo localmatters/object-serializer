@@ -27,6 +27,7 @@ import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
 import com.localmatters.util.CollectionUtils;
 import com.localmatters.util.StringUtils;
+import com.localmatters.util.objectfactory.ClassLookupObjectFactory;
 import com.localmatters.util.objectfactory.LMObjectFactory;
 
 /**
@@ -75,8 +76,12 @@ public class SerializationElementHandler implements ElementHandler {
 	public SerializationElementHandler(LMObjectFactory objectFactory) {
 		setObjectFactory(objectFactory);
 	}
-	
-	/**
+
+    public SerializationElementHandler() {
+        this(null);
+    }
+
+    /**
 	 * @see org.dom4j.ElementHandler#onStart(org.dom4j.ElementPath)
 	 */
 	public void onStart(ElementPath elementPath) {
@@ -498,10 +503,21 @@ public class SerializationElementHandler implements ElementHandler {
 	 * @param objectFactory The object factory
 	 */
 	private void setObjectFactory(LMObjectFactory objectFactory) {
-		this.objectFactory = objectFactory;
+        if (objectFactory == null) {
+            this.objectFactory = createDefaultObjectFactory();
+        }
+        else {
+            this.objectFactory = objectFactory;
+        }
 	}
 
-	/**
+    private ClassLookupObjectFactory createDefaultObjectFactory() {
+        ClassLookupObjectFactory defaultObjectFactory = new ClassLookupObjectFactory();
+        defaultObjectFactory.setUseClassWhenLookupFails(true);
+        return defaultObjectFactory;
+    }
+
+    /**
 	 * @return The map of references
 	 */
 	protected Map<ReferenceSerialization, String> getReferences() {

@@ -17,7 +17,6 @@ import com.localmatters.serializer.serialization.AttributeSerialization;
 import com.localmatters.serializer.serialization.BeanSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
 import com.localmatters.serializer.serialization.ConstantSerialization;
-import com.localmatters.serializer.serialization.DelegatingSerialization;
 import com.localmatters.serializer.serialization.IteratorSerialization;
 import com.localmatters.serializer.serialization.MapSerialization;
 import com.localmatters.serializer.serialization.NameSerialization;
@@ -118,11 +117,7 @@ public class SerializationElementHandler implements ElementHandler {
 			String target = reference.getValue();
 			Serialization referenced = configs.get(target);
 			if (referenced != null) {
-				while (referenced instanceof DelegatingSerialization) {
-					DelegatingSerialization delegating = (DelegatingSerialization) referenced;
-					referenced = delegating.getDelegate();
-				}
-				reference.getKey().setReferenced(referenced);
+				reference.getKey().setReferenced(referenced.getContextlessSerialization());
 			} else {
 				invalids.add(target);
 			}

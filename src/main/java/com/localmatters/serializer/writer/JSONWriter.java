@@ -7,7 +7,6 @@ import java.util.Map;
 
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.SerializationException;
-import com.localmatters.serializer.serialization.DelegatingSerialization;
 import com.localmatters.serializer.serialization.NameSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
@@ -41,20 +40,16 @@ public class JSONWriter extends AbstractWriter {
 	public void writeRoot(Serialization ser, 
 			Object root, 
 			SerializationContext ctx) throws SerializationException {
-		Serialization delegate = ser;
-		while(delegate instanceof DelegatingSerialization) {
-			delegate = ((DelegatingSerialization) delegate).getDelegate();
-		}
-		if (delegate instanceof ValueSerialization) {
+		Serialization contextless = ser.getContextlessSerialization();
+		if (contextless instanceof ValueSerialization) {
 			write(ctx, LEFT_CURLY);
 			ser.serialize(ser, null, root, ctx);
 			write(ctx, getPrefix(ctx)).write(ctx, RIGHT_CURLY);
 		} else if (ser instanceof NameSerialization) {
-			delegate = ((NameSerialization) ser).getDelegate();
-			delegate.serialize(delegate, null, root, ctx);
+			contextless = ((NameSerialization) ser).getDelegate();
+			contextless.serialize(contextless, null, root, ctx);
 		} else {
 			ser.serialize(ser, null, root, ctx);
-			
 		}
 		
 	}

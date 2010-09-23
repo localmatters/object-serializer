@@ -29,4 +29,11 @@ public abstract class DelegatingSerialization implements Serialization {
 	public void setDelegate(Serialization delegate) {
 		this.delegate = delegate;
 	}
+
+	/**
+	 * @see com.localmatters.serializer.serialization.Serialization#getContextlessSerialization()
+	 */
+	public Serialization getContextlessSerialization() {
+		return getDelegate().getContextlessSerialization();
+	}
 }

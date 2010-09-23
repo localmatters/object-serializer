@@ -30,4 +30,11 @@ public abstract class AbstractSerialization implements Serialization {
 	public void setWriteEmpty(Boolean writeEmpty) {
 		this.writeEmpty = writeEmpty;
 	}
+
+	/**
+	 * @see com.localmatters.serializer.serialization.Serialization#getContextlessSerialization()
+	 */
+	public Serialization getContextlessSerialization() {
+		return this;
+	}
 }

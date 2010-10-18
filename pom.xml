@@ -18,8 +18,8 @@
     <inceptionYear>2010</inceptionYear>
     
     <scm>
-        <connection>scm:svn:https://build/subversion/DestinationSearch/lm-object-serializer/trunk</connection>
-        <developerConnection>scm:svn:https://build/subversion/DestinationSearch/lm-object-serializer/trunk</developerConnection>
+        <connection>scm:svn:https://subversion.corp.localmatters.com/subversion/DestinationSearch/lm-object-serializer/trunk</connection>
+        <developerConnection>scm:svn:https://subversion.corp.localmatters.com/subversion/DestinationSearch/lm-object-serializer/trunk</developerConnection>
     </scm>
 
     <properties>

@@ -37,4 +37,11 @@ public abstract class AbstractSerialization implements Serialization {
 	public Serialization getContextlessSerialization() {
 		return this;
 	}
+
+	/**
+	 * @see com.localmatters.serializer.serialization.Serialization#removeDefaultName()
+	 */
+	public String removeDefaultName() {
+	    return null;
+	}
 }

@@ -99,4 +99,16 @@ public class PropertySerializationTest extends TestCase {
 		ser.serialize(parentSer, "firstlastname", object, ctx);
 		verify(delegate, resolver, writer, parentSer);
 	}
+    
+    /**
+     * Tests the remove default name
+     */
+    public void testRemoveDefaultName() {
+        ser.setProperty("name");
+        expect(delegate.removeDefaultName()).andReturn("superHeroName");
+        replay(delegate);
+        assertSame("name", ser.removeDefaultName());
+        verify(delegate);
+        assertNull(ser.getDefaultName());
+    }
 }

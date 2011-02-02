@@ -1,6 +1,7 @@
 package com.localmatters.serializer.serialization;
 
 import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import junit.framework.TestCase;
@@ -43,4 +44,16 @@ public class NameSerializationTest extends TestCase {
 		ser.serialize(parentSer, "name", object, ctx);
 		verify(delegate, writer);
 	}
+    
+    /**
+     * Tests the remove default name
+     */
+    public void testRemoveDefaultName() {
+        expect(delegate.removeDefaultName()).andReturn("superHeroName");
+        replay(delegate);
+        assertSame("newName", ser.removeDefaultName());
+        verify(delegate);
+        assertNull(ser.getName());
+    }
+	
 }

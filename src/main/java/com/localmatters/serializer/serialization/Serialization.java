@@ -39,4 +39,12 @@ public interface Serialization {
 	 */
 	public Serialization getContextlessSerialization();
 	
+	/**
+	 * Method to get the default name that would be used and removes it. This
+	 * is needed in order to control the name within a list at the list level
+	 * instead of at the child level itself
+	 * @return The default name that has been removed or null
+	 */
+	public String removeDefaultName();
+	
 }

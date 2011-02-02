@@ -50,4 +50,14 @@ public class DelegatingSerializationTest extends TestCase {
 		assertSame(value, serialization.getContextlessSerialization());
 		verify(delegate);
 	}
+    
+    /**
+     * Tests the remove default name
+     */
+    public void testRemoveDefaultName() {
+        expect(delegate.removeDefaultName()).andReturn("superHeroName");
+        replay(delegate);
+        assertSame("superHeroName", serialization.removeDefaultName());
+        verify(delegate);
+    }
 }

@@ -30,4 +30,15 @@ public class NameSerialization extends DelegatingSerialization {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	/**
+	 * @see com.localmatters.serializer.serialization.DelegatingSerialization#removeDefaultName()
+	 */
+	@Override
+	public String removeDefaultName() {
+	    super.removeDefaultName();
+	    String removed = getName();
+	    setName(null);
+	    return removed;
+	}
 }

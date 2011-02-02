@@ -36,4 +36,11 @@ public abstract class DelegatingSerialization implements Serialization {
 	public Serialization getContextlessSerialization() {
 		return getDelegate().getContextlessSerialization();
 	}
+
+	/**
+	 * @see com.localmatters.serializer.serialization.Serialization#removeDefaultName()
+	 */
+	public String removeDefaultName() {
+	    return getDelegate().removeDefaultName();
+	}
 }

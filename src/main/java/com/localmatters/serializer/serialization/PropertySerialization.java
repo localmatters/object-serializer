@@ -18,6 +18,7 @@ import com.localmatters.util.StringUtils;
  */
 public class PropertySerialization extends DelegatingSerialization {
 	private String property;
+	private String defaultName;
 
 	/**
 	 * @see com.localmatters.serializer.serialization.Serialization#serialize(com.localmatters.serializer.serialization.Serialization, java.lang.String, java.lang.Object, com.localmatters.serializer.SerializationContext)
@@ -32,7 +33,7 @@ public class PropertySerialization extends DelegatingSerialization {
 			}
 		}
 		if ((value != null) || isWriteEmpty()) {
-			getDelegate().serialize(ser, StringUtils.defaultString(name, getProperty()), value, ctx);
+			getDelegate().serialize(ser, StringUtils.defaultString(name, getDefaultName()), value, ctx);
 		}
 	}
 	
@@ -48,5 +49,33 @@ public class PropertySerialization extends DelegatingSerialization {
 	 */
 	public void setProperty(String property) {
 		this.property = property;
+		setDefaultName(property);
 	}
+    
+    /**
+     * @see com.localmatters.serializer.serialization.DelegatingSerialization#removeDefaultName()
+     */
+    @Override
+    public String removeDefaultName() {
+        super.removeDefaultName();
+        String removed = getDefaultName();
+        setDefaultName(null);
+        return removed;
+    }
+
+    /**
+     * @return The default name
+     */
+    protected String getDefaultName() {
+        return defaultName;
+    }
+
+    /**
+     * @param defaultName The default name
+     */
+    protected void setDefaultName(String defaultName) {
+        this.defaultName = defaultName;
+    }
+	
+    
 }

@@ -8,7 +8,7 @@
     <groupId>com.localmatters</groupId>
     <artifactId>lm-object-serializer</artifactId>
     <name>Local Matters Object Serializer</name>
-    <version>1.0.9</version>
+    <version>1.0.10-SNAPSHOT</version>
     <description>Framework to serialize objects to JSON or XML</description>
     <packaging>bundle</packaging>
     <organization>
@@ -18,8 +18,8 @@
     <inceptionYear>2010</inceptionYear>
     
     <scm>
-        <connection>scm:svn:https://subversion.corp.localmatters.com/subversion/DestinationSearch/lm-object-serializer/tags/lm-object-serializer-1.0.9</connection>
-        <developerConnection>scm:svn:https://subversion.corp.localmatters.com/subversion/DestinationSearch/lm-object-serializer/tags/lm-object-serializer-1.0.9</developerConnection>
+        <connection>scm:svn:https://subversion.corp.localmatters.com/subversion/DestinationSearch/lm-object-serializer/trunk</connection>
+        <developerConnection>scm:svn:https://subversion.corp.localmatters.com/subversion/DestinationSearch/lm-object-serializer/trunk</developerConnection>
     </scm>
 
     <properties>

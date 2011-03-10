@@ -22,9 +22,9 @@ import com.localmatters.util.ArrayUtils;
  * Class offering utils methods to reflect upon objects and classes
  */
 public abstract class ReflectionUtils {
-	private static Pattern GETTER_PATTERN = Pattern.compile("^(?:get|is|has)([A-Z]|\\d)(\\w*)?$");
-	private static Set<String> GETTERS_TO_EXCLUDE;
-	private static Map<Class<?>, Class<?>> WRAPPER_2_PRIMITIVE_MAP;
+	private static final Pattern GETTER_PATTERN = Pattern.compile("^(?:get|is|has)([A-Z]|\\d)(\\w*)?$");
+	private static final Set<String> GETTERS_TO_EXCLUDE;
+	private static final Map<Class<?>, Class<?>> WRAPPER_2_PRIMITIVE_MAP;
 	private static final Set<Class<?>> NUMBERS;
 	
 	/**

@@ -13,7 +13,7 @@
  *  $Revision$
  *  $Date$
  */
-package com.localmatters.serializer.config.parser;
+package com.localmatters.serializer.config;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,24 +22,11 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
-import org.springframework.core.io.Resource;
 
-import com.localmatters.serializer.config.ConfigurationException;
-import com.localmatters.serializer.config.SerializationElementHandler;
 import com.localmatters.serializer.serialization.Serialization;
-import com.localmatters.util.objectfactory.LMObjectFactory;
 
 public class XmlSerializationParser implements SerializationParser {
     private String _defaultEncoding = "UTF-8";
-    private LMObjectFactory _objectFactory;
-
-    public LMObjectFactory getObjectFactory() {
-        return _objectFactory;
-    }
-
-    public void setObjectFactory(LMObjectFactory objectFactory) {
-        _objectFactory = objectFactory;
-    }
 
     public String getDefaultEncoding() {
         return _defaultEncoding;
@@ -49,11 +36,12 @@ public class XmlSerializationParser implements SerializationParser {
         _defaultEncoding = defaultEncoding;
     }
 
-    public Map<String, Serialization> parse(Resource resource) throws IOException {
-        InputStream input = null;
+    /**
+     * @see com.localmatters.serializer.config.SerializationParser#parse(java.io.InputStream)
+     */
+    public Map<String, Serialization> parse(InputStream input) throws IOException {
         try {
-            input= resource.getInputStream();
-            SerializationElementHandler handler = new SerializationElementHandler(getObjectFactory());
+            SerializationElementHandler handler = new SerializationElementHandler();
 
             SAXReader saxReader = new SAXReader();
             saxReader.addHandler("/" + SerializationElementHandler.TYPE_ROOT, handler);
@@ -66,8 +54,7 @@ public class XmlSerializationParser implements SerializationParser {
             if (e.getNestedException() instanceof ConfigurationException) {
                 throw (ConfigurationException) e.getNestedException();
             }
-            throw new ConfigurationException(
-                String.format("Unable to load the handlers configuration %s!", resource.getDescription()), e);
+            throw new ConfigurationException("Unable to parse the serialization configuration!", e);
         }
         finally {
             IOUtils.closeQuietly(input);

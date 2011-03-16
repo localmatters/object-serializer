@@ -10,12 +10,15 @@ import static org.easymock.classextension.EasyMock.verify;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import junit.framework.TestCase;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.resolver.PropertyResolver;
@@ -24,8 +27,6 @@ import com.localmatters.serializer.serialization.IteratorSerialization;
 import com.localmatters.serializer.serialization.MapSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
-import com.localmatters.util.CollectionUtils;
-import com.localmatters.util.StringUtils;
 
 /**
  * Tests the <code>XMLWriter</code>
@@ -66,7 +67,7 @@ public class XMLWriterTest extends TestCase {
 	 * Tests writing comments when not formatting
 	 */
 	public void testWriteCommentsWhenNotFormating() throws Exception {
-		writer.writeComments(ctx, "\n    ", CollectionUtils.asList("Hello -- World", "What's up?"));
+		writer.writeComments(ctx, "\n    ", Arrays.asList("Hello -- World", "What's up?"));
 		assertEquals(StringUtils.EMPTY, os.toString());
 	}
 	
@@ -85,7 +86,7 @@ public class XMLWriterTest extends TestCase {
 	 */
 	public void testWritePrefixWithComment() throws Exception {
 		ctx.setFormatting(true);
-		writer.writeComments(ctx, "\n    ", CollectionUtils.asList("Hello -- World", "What's up?"));
+		writer.writeComments(ctx, "\n    ", Arrays.asList("Hello -- World", "What's up?"));
 		assertEquals("\n\n    <!-- Hello ** World\n         What's up? -->\n    ", os.toString());
 	}
 
@@ -252,7 +253,7 @@ public class XMLWriterTest extends TestCase {
 		Serialization ser = createMock(ComplexSerialization.class);
 		expect(ser.isWriteEmpty()).andReturn(true);
 		replay(ser);
-		writer.writeComplex(ser, "listing", new Object(), null, null, CollectionUtils.asList("just a listing"), ctx);
+		writer.writeComplex(ser, "listing", new Object(), null, null, Arrays.asList("just a listing"), ctx);
 		verify(ser);
 		assertEquals("\n\n    <!-- just a listing -->\n    <listing/>", os.toString());
 		assertEquals("results", ctx.getPath());
@@ -283,7 +284,7 @@ public class XMLWriterTest extends TestCase {
 		Object object = new Object();
 		
 		replay(ser);
-		writer.writeComplex(ser, "listing", object, null, CollectionUtils.asList(element1, element2), null, ctx);
+		writer.writeComplex(ser, "listing", object, null, Arrays.asList(element1, element2), null, ctx);
 		verify(ser);
 
 		assertEquals("\n    <listing>\n        <id>ABCD1234</id>\n        <name>John Hotel</name>\n    </listing>", os.toString());
@@ -301,7 +302,7 @@ public class XMLWriterTest extends TestCase {
 		Object object = new Object();
 		
 		replay(ser);
-		writer.writeComplex(ser, "listing", object, CollectionUtils.asList(attribute1, attribute2), null, CollectionUtils.asList("just a listing"), ctx);
+		writer.writeComplex(ser, "listing", object, Arrays.asList(attribute1, attribute2), null, Arrays.asList("just a listing"), ctx);
 		verify(ser);
 
 		assertEquals("<listing id=\"ABCD1234\" name=\"John Hotel\"/>", os.toString());
@@ -319,7 +320,7 @@ public class XMLWriterTest extends TestCase {
 		Object object = new Object();
 		
 		replay(ser);
-		writer.writeComplex(ser, "listing", object, CollectionUtils.asList(attribute), CollectionUtils.asList(element), CollectionUtils.asList("just a listing"), ctx);
+		writer.writeComplex(ser, "listing", object, Arrays.asList(attribute), Arrays.asList(element), Arrays.asList("just a listing"), ctx);
 		verify(ser);
 
 		assertEquals("<listing id=\"ABCD1234\"><name>John Hotel</name></listing>", os.toString());
@@ -360,7 +361,7 @@ public class XMLWriterTest extends TestCase {
 		ctx.setFormatting(true);
 		ctx.nextLevel("results");
 		Serialization ser = createMock(IteratorSerialization.class);
-		Iterator<String> itr = CollectionUtils.asList("baseball", "hockey").iterator();
+		Iterator<String> itr = Arrays.asList("baseball", "hockey").iterator();
 		Serialization element = new ValueSerialization();
 		
 		replay(ser);

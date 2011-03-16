@@ -1,10 +1,11 @@
 package com.localmatters.serializer.serialization;
 
 
+import org.apache.commons.lang.StringUtils;
+
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.SerializationException;
 import com.localmatters.serializer.resolver.PropertyResolverException;
-import com.localmatters.util.StringUtils;
 
 /**
  * <p>A delegating serialization that can be used to get the object to serialize

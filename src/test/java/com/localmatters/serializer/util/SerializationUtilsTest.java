@@ -5,13 +5,14 @@ package com.localmatters.serializer.util;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.localmatters.serializer.serialization.AttributeSerialization;
 import com.localmatters.serializer.serialization.ComplexSerialization;
 import com.localmatters.serializer.serialization.ConstantSerialization;
 import com.localmatters.serializer.serialization.NameSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
-import com.localmatters.util.CollectionUtils;
 
 /**
  * Tests the <code>SerializationUtils</code>
@@ -58,7 +59,7 @@ public class SerializationUtilsTest extends TestCase {
 		Serialization attr1 = new AttributeSerialization();
 		Serialization attr2 = new AttributeSerialization();
 		ComplexSerialization complex = SerializationUtils.createComplex(attr1, attr2);
-		assertEquals(2, CollectionUtils.sizeOf(complex.getAttributes()));
+		assertEquals(2, CollectionUtils.size(complex.getAttributes()));
 		assertSame(attr1, complex.getAttributes().get(0));
 		assertSame(attr2, complex.getAttributes().get(1));
 		assertTrue(CollectionUtils.isEmpty(complex.getElements()));
@@ -74,7 +75,7 @@ public class SerializationUtilsTest extends TestCase {
 		assertEquals("name", name.getName());
 		Serialization delegate = name.getDelegate();
 		ComplexSerialization complex = (ComplexSerialization) delegate;
-		assertEquals(2, CollectionUtils.sizeOf(complex.getAttributes()));
+		assertEquals(2, CollectionUtils.size(complex.getAttributes()));
 		assertSame(attr1, complex.getAttributes().get(0));
 		assertSame(attr2, complex.getAttributes().get(1));
 		assertTrue(CollectionUtils.isEmpty(complex.getElements()));

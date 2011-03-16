@@ -1,8 +1,7 @@
 package com.localmatters.serializer.resolver;
 
-import org.springframework.beans.factory.annotation.Required;
+import org.apache.commons.lang.StringUtils;
 
-import com.localmatters.util.StringUtils;
 
 /**
  * A delegating resolver that will tokenizes the property name and resolve each
@@ -21,7 +20,7 @@ public class ComplexPropertyResolver extends DelegatingPropertyResolver {
 			throw new InvalidPropertyException(property, bean.getClass().getName());
 		}
 		Object value = bean;
-		String[] simpleProperties = StringUtils.splitByMultiByteDelimiter(property, getToken(), true);
+		String[] simpleProperties = StringUtils.splitByWholeSeparatorPreserveAllTokens(property, getToken());
 		for (String simpleProperty : simpleProperties) {
 			if (StringUtils.isBlank(simpleProperty)) {
 				throw new InvalidPropertyException(property, bean.getClass().getName());
@@ -44,7 +43,6 @@ public class ComplexPropertyResolver extends DelegatingPropertyResolver {
 	/**
 	 * @param token The token separating each level of the property
 	 */
-	@Required
 	public void setToken(String token) {
 		this.token = token;
 	}

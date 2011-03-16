@@ -3,13 +3,14 @@ package com.localmatters.serializer.writer;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.SerializationException;
 import com.localmatters.serializer.resolver.PropertyResolverException;
 import com.localmatters.serializer.serialization.IOSerializationException;
 import com.localmatters.serializer.serialization.NameExpectedException;
 import com.localmatters.serializer.serialization.UnknownPropertyException;
-import com.localmatters.util.StringUtils;
 
 /**
  * This class defines a common functionalities between serializers
@@ -72,8 +73,7 @@ public abstract class AbstractWriter implements Writer {
 		} else {
 			key = String.valueOf(entry.getKey());
 		}
-		key = StringUtils.replacePattern(StringUtils.trim(key), "([^\\w_-])", "-");
-		key = StringUtils.replacePattern(key, "^(\\d)", "_$1");
+		key = StringUtils.defaultString(key).trim().replaceAll("([^\\w_-]+)", "-").replaceAll("^(\\d)", "_$1");
 		return key;
 	}
 	

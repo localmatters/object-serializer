@@ -1,12 +1,11 @@
 package com.localmatters.serializer.resolver;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import com.localmatters.util.CollectionUtils;
 
 import junit.framework.TestCase;
 
@@ -165,7 +164,7 @@ public class BeanUtilsPropertyResolverTest extends TestCase {
 		public String getName() {return "dummy";}
 		public List<String> getPhotos() {return null;}
 		public List<String> getIcons() {return Collections.emptyList();}
-		public List<String> getAds() {return CollectionUtils.asList("buy from us", "we are fun");}
+		public List<String> getAds() {return Arrays.asList("buy from us", "we are fun");}
 		public String[] getLevels() {return new String[]{};}
 		public String[] getMeals() {return null;}
 		public String[] getToys() {return new String[]{"bear", "truck"};}

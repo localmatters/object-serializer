@@ -52,8 +52,6 @@ public class ComplexPropertyResolverTest extends TestCase {
 			resolver.resolve(bean, "listing..name");
 			fail("InvalidPropertyException expected");
 		} catch (InvalidPropertyException e) {
-		} catch (NotPublicPropertyException e) {
-			fail("InvalidPropertyException expected");
 		}
 		verify(delegate);
 	}

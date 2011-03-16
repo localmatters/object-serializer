@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.localmatters.util.ArrayUtils;
 
 /**
  * Class offering utils methods to reflect upon objects and classes
@@ -157,7 +156,8 @@ public abstract class ReflectionUtils {
 		Map<String, Method> getters = new TreeMap<String, Method>();
 		Method[] methods = klass.getMethods();
 		for (Method method : methods) {
-			if (ArrayUtils.isEmpty(method.getParameterTypes())) {
+			Class<?>[] parameterTypes = method.getParameterTypes();
+            if (parameterTypes == null || (parameterTypes.length == 0)) {
 				Matcher matcher = GETTER_PATTERN.matcher(method.getName());
 				if (matcher.find() && !GETTERS_TO_EXCLUDE.contains(method.getName())) {
 					getters.put(method.getName(), method);

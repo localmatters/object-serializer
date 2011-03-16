@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.SerializationException;
 import com.localmatters.serializer.serialization.NameSerialization;
@@ -12,8 +15,6 @@ import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
 import com.localmatters.serializer.util.EscapeUtils;
 import com.localmatters.serializer.util.ReflectionUtils;
-import com.localmatters.util.CollectionUtils;
-import com.localmatters.util.StringUtils;
 
 /**
  * This class defines a serialization writer that outputs JSON.

@@ -10,6 +10,7 @@ import static org.easymock.EasyMock.same;
 import static org.easymock.EasyMock.verify;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -18,12 +19,12 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.easymock.IAnswer;
 
 import com.localmatters.serializer.SerializationContext;
 import com.localmatters.serializer.serialization.MapSerialization.SameKeyValueEntry;
 import com.localmatters.serializer.writer.Writer;
-import com.localmatters.util.CollectionUtils;
 
 /**
  * Tests the <code>MapSerialization</code>
@@ -86,7 +87,7 @@ public class MapSerializationTest extends TestCase {
 		expectLastCall().andAnswer(new IAnswer<Object>() {
 			public Object answer() throws Throwable {
 				Collection<SameKeyValueEntry<String>> entries = (Collection<SameKeyValueEntry<String>>) getCurrentArguments()[2];
-				assertEquals(2, CollectionUtils.sizeOf(entries));
+				assertEquals(2, CollectionUtils.size(entries));
 				Iterator<SameKeyValueEntry<String>> itr = entries.iterator();
 				SameKeyValueEntry<String> entry = itr.next();
 				assertEquals("hello", entry.getEntry());
@@ -109,12 +110,12 @@ public class MapSerializationTest extends TestCase {
 	 */
 	@SuppressWarnings("unchecked")
 	public void testHandleIterable() throws Exception {
-		Iterable<String> iterable = CollectionUtils.asList("hello", "world");
+		Iterable<String> iterable = Arrays.asList("hello", "world");
 		writer.writeMap(same(parentSer), eq("addresses"), isA(Collection.class), eq("key"), same(value), same(comments), same(ctx));
 		expectLastCall().andAnswer(new IAnswer<Object>() {
 			public Object answer() throws Throwable {
 				Collection<SameKeyValueEntry<String>> entries = (Collection<SameKeyValueEntry<String>>) getCurrentArguments()[2];
-				assertEquals(2, CollectionUtils.sizeOf(entries));
+				assertEquals(2, CollectionUtils.size(entries));
 				Iterator<SameKeyValueEntry<String>> itr = entries.iterator();
 				SameKeyValueEntry<String> entry = itr.next();
 				assertEquals("hello", entry.getEntry());

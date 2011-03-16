@@ -1,6 +1,7 @@
 package com.localmatters.serializer.config;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -8,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.dom4j.ElementHandler;
 import org.dom4j.ElementPath;
@@ -24,10 +27,6 @@ import com.localmatters.serializer.serialization.PropertySerialization;
 import com.localmatters.serializer.serialization.ReferenceSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
-import com.localmatters.util.CollectionUtils;
-import com.localmatters.util.StringUtils;
-import com.localmatters.util.objectfactory.ClassLookupObjectFactory;
-import com.localmatters.util.objectfactory.LMObjectFactory;
 
 /**
  * The DOM4J element handler to parse the configuration elements
@@ -50,35 +49,22 @@ public class SerializationElementHandler implements ElementHandler {
 	public static final String TYPE_COMPLEX = "complex";
 	public static final String TYPE_REFERENCE = "ref";
 	public static final String TYPE_COMMENT = "comment";
-	protected static final String DUPLICATE_ID_FORMAT = "Duplicate elements found with the same id (\"%s\")!";
-	protected static final String MISSING_ID = "All elements directly under the root must have a non-blank id!";
-	protected static final String INVALID_TYPE_FORMAT = "Invalid element <%s> at [%s]!";
-	protected static final String MISSING_ATTRIBUTE_FORMAT = "Missing or invalid attribute %s on [%s]!";
-	protected static final String INVALID_ATTRIBUTE_ELEMENT_FORMAT = "Unexpected <attribute> at [%s]. Attributes are only valid directly under <complex> elements!";
-	protected static final String INVALID_LIST_FORMAT = "The list at [%s] is invalid. Zero or one one non-comment sub-element expected!";
-	protected static final String INVALID_MAP_FORMAT = "The map at [%s] is invalid. Zero or one non-comment sub-element expected!";
-	protected static final String NAME_NOT_ALLOWED_FORMAT = "Name attribute are not allowed for the map sub-element at [%s]!";
-	protected static final String INVALID_ID_FORMAT = "Unable to find any element with the id(s): %s!";
-	protected static final String INVALID_ATTRIBUTES_FORMAT = "Invalid attributes %s on element <%s> at [%s]";
-	protected static final String INVALID_LOOP_REFERENCES = "The configuration defines a loop of parents; which is not allowed!";
+	public static final String DUPLICATE_ID_FORMAT = "Duplicate elements found with the same id (\"%s\")!";
+	public static final String MISSING_ID = "All elements directly under the root must have a non-blank id!";
+	public static final String INVALID_TYPE_FORMAT = "Invalid element <%s> at [%s]!";
+	public static final String MISSING_ATTRIBUTE_FORMAT = "Missing or invalid attribute %s on [%s]!";
+	public static final String INVALID_ATTRIBUTE_ELEMENT_FORMAT = "Unexpected <attribute> at [%s]. Attributes are only valid directly under <complex> elements!";
+	public static final String INVALID_LIST_FORMAT = "The list at [%s] is invalid. Zero or one one non-comment sub-element expected!";
+	public static final String INVALID_MAP_FORMAT = "The map at [%s] is invalid. Zero or one non-comment sub-element expected!";
+	public static final String NAME_NOT_ALLOWED_FORMAT = "Name attribute are not allowed for the map sub-element at [%s]!";
+	public static final String INVALID_ID_FORMAT = "Unable to find any element with the id(s): %s!";
+	public static final String INVALID_ATTRIBUTES_FORMAT = "Invalid attributes %s on element <%s> at [%s]";
+	public static final String INVALID_LOOP_REFERENCES = "The configuration defines a loop of parents; which is not allowed!";
 	
-	private LMObjectFactory objectFactory;
 	private Map<String, Serialization> serializations = new HashMap<String, Serialization>();
 	private Map<ReferenceSerialization, String> references = new HashMap<ReferenceSerialization, String>();
 	private Map<String, ComplexSerialization> complexWithIds = new HashMap<String, ComplexSerialization>();
 	private Map<ComplexSerialization, String> extensions = new HashMap<ComplexSerialization, String>();
-
-	/**
-	 * Constructor with the specification of the object factory
-	 * @param objectFactory
-	 */
-	public SerializationElementHandler(LMObjectFactory objectFactory) {
-		setObjectFactory(objectFactory);
-	}
-
-    public SerializationElementHandler() {
-        this(null);
-    }
 
     /**
 	 * @see org.dom4j.ElementHandler#onStart(org.dom4j.ElementPath)
@@ -134,7 +120,7 @@ public class SerializationElementHandler implements ElementHandler {
 	@SuppressWarnings("unchecked")
 	protected static Set<String> resolveExtensions(Map<ComplexSerialization, String> extensions, Map<String, ComplexSerialization> parents) {
 		Set<String> invalids = new HashSet<String>();
-		int size = CollectionUtils.sizeOf(extensions);
+		int size = CollectionUtils.size(extensions);
 		while (size != 0) {
 			Iterator<Map.Entry<ComplexSerialization, String>> itr = extensions.entrySet().iterator();
 			while (itr.hasNext()) {
@@ -147,14 +133,14 @@ public class SerializationElementHandler implements ElementHandler {
 				} else if (!extensions.containsKey(parent)) {
 					itr.remove();
 					ComplexSerialization serialization = extension.getKey();
-					serialization.setAttributes(CollectionUtils.mergeAsList(parent.getAttributes(), serialization.getAttributes()));
-					serialization.setElements(CollectionUtils.mergeAsList(parent.getElements(), serialization.getElements()));
+					serialization.setAttributes(mergeAsList(parent.getAttributes(), serialization.getAttributes()));
+					serialization.setElements(mergeAsList(parent.getElements(), serialization.getElements()));
 					if (serialization.getWriteEmpty() == null) {
 						serialization.setWriteEmpty(parent.isWriteEmpty());
 					}
 				}
 			}
-			int newSize = CollectionUtils.sizeOf(extensions);
+			int newSize = CollectionUtils.size(extensions);
 			if ((newSize != 0) && (newSize == size)) {
 				throw new ConfigurationException(INVALID_LOOP_REFERENCES);
 			}
@@ -162,6 +148,24 @@ public class SerializationElementHandler implements ElementHandler {
 		}
 		return invalids;
 	}
+
+	/**
+	 * Merges the provided list together
+	 * @param <T> The type of the list to merge
+	 * @param lists The list to merge
+	 * @return The result of the merge
+	 */
+    private static <T> List<T> mergeAsList(Collection<T> ... lists) {
+        List<T> destList = new ArrayList<T>();
+        for (Collection<T> list : lists) {
+            if (list != null) {
+                destList.addAll(list);
+            }
+        }
+        return destList;
+    }
+
+	
 	
 	/**
 	 * Handles the id attribute
@@ -207,7 +211,7 @@ public class SerializationElementHandler implements ElementHandler {
 		if (StringUtils.isNotBlank(name)) {
 			attributes.put(ATTRIBUTE_NAME, name);
 			Serialization delegate = handleConstant(element, attributes);
-			NameSerialization serialization = getObjectFactory().create(NameSerialization.class);
+			NameSerialization serialization = new NameSerialization();
 			serialization.setName(name);
 			serialization.setDelegate(delegate);
 			return serialization;
@@ -226,7 +230,7 @@ public class SerializationElementHandler implements ElementHandler {
 		if (StringUtils.isNotBlank(constant)) {
 			attributes.put(ATTRIBUTE_CONSTANT, constant);
 			Serialization delegate = handleBean(element, attributes);
-			ConstantSerialization serialization = getObjectFactory().create(ConstantSerialization.class);
+			ConstantSerialization serialization = new ConstantSerialization();
 			serialization.setConstant(constant);
 			serialization.setDelegate(delegate);
 			return serialization;
@@ -245,7 +249,7 @@ public class SerializationElementHandler implements ElementHandler {
 		if (StringUtils.isNotBlank(bean)) {
 			attributes.put(ATTRIBUTE_BEAN, bean);
 			Serialization delegate = handleProperty(element, attributes);
-			BeanSerialization serialization = getObjectFactory().create(BeanSerialization.class);
+			BeanSerialization serialization = new BeanSerialization();
 			serialization.setBean(bean);
 			serialization.setDelegate(delegate);
 			return serialization;
@@ -264,7 +268,7 @@ public class SerializationElementHandler implements ElementHandler {
 		if (StringUtils.isNotBlank(property)) {
 			attributes.put(ATTRIBUTE_PROPERTY, property);
 			Serialization delegate = handleType(element, attributes);
-			PropertySerialization serialization = getObjectFactory().create(PropertySerialization.class);
+			PropertySerialization serialization = new PropertySerialization();
 			serialization.setProperty(property);
 			serialization.setDelegate(delegate);
 			return serialization;
@@ -312,7 +316,7 @@ public class SerializationElementHandler implements ElementHandler {
 
 		// validates the number of attributes with the ones that have been
 		// consumed to see if the element contains invalid attributes
-		if (CollectionUtils.sizeOf(element.attributes()) != CollectionUtils.sizeOf(attributes)) {
+		if (CollectionUtils.size(element.attributes()) != CollectionUtils.size(attributes)) {
 			List<String> invalids = new ArrayList<String>();
 			for (Element attribute : (List<Element>) element.attributes()) {
 				String attributeName = attribute.getName();
@@ -333,7 +337,7 @@ public class SerializationElementHandler implements ElementHandler {
 	 */
 	@SuppressWarnings("unchecked")
 	protected ComplexSerialization handleComplex(Element element, Map<String, String> attributes) {
-		ComplexSerialization ser = getObjectFactory().create(ComplexSerialization.class);
+		ComplexSerialization ser = new ComplexSerialization();
 
 		List<Element> children = element.elements();
 		if (CollectionUtils.isNotEmpty(children)) {
@@ -371,7 +375,7 @@ public class SerializationElementHandler implements ElementHandler {
 	protected AttributeSerialization handleAttribute(Element element, Map<String, String> attributes) {
 		Element parent = element.getParent();
 		if ((parent != null) && TYPE_COMPLEX.equalsIgnoreCase(parent.getName())) {
-			return getObjectFactory().create(AttributeSerialization.class);
+			return new AttributeSerialization();
 		}
 		throw new ConfigurationException(INVALID_ATTRIBUTE_ELEMENT_FORMAT, element.getPath());
 	}
@@ -383,7 +387,7 @@ public class SerializationElementHandler implements ElementHandler {
 	 * @return The serialization for this element
 	 */
 	protected ValueSerialization handleValue(Element element, Map<String, String> attributes) {
-		return getObjectFactory().create(ValueSerialization.class);
+		return new ValueSerialization();
 	}
 
 	/**
@@ -399,7 +403,7 @@ public class SerializationElementHandler implements ElementHandler {
 		}
 		attributes.put(ATTRIBUTE_TARGET, target);
 
-		ReferenceSerialization serialization = getObjectFactory().create(ReferenceSerialization.class);
+		ReferenceSerialization serialization = new ReferenceSerialization();
 		getReferences().put(serialization, target);
 		return serialization;
 	}
@@ -412,7 +416,7 @@ public class SerializationElementHandler implements ElementHandler {
 	 */
 	@SuppressWarnings("unchecked")
 	protected IteratorSerialization handleList(Element element, Map<String, String> attributes) {
-		IteratorSerialization serialization = getObjectFactory().create(IteratorSerialization.class);
+		IteratorSerialization serialization = new IteratorSerialization();
 		
 		boolean foundElement = false;
 		List<Element> children = element.elements();
@@ -432,7 +436,7 @@ public class SerializationElementHandler implements ElementHandler {
 		}
 
 		if (!foundElement) {
-			serialization.setElement(getObjectFactory().create(ValueSerialization.class));
+			serialization.setElement(new ValueSerialization());
 		}
 		return serialization;
 	}
@@ -445,7 +449,7 @@ public class SerializationElementHandler implements ElementHandler {
 	 */
 	@SuppressWarnings("unchecked")
 	protected MapSerialization handleMap(Element element, Map<String, String> attributes) {
-		MapSerialization serialization = getObjectFactory().create(MapSerialization.class);
+		MapSerialization serialization = new MapSerialization();
 		
 		boolean foundElement = false;
 		List<Element> children = element.elements();
@@ -468,7 +472,7 @@ public class SerializationElementHandler implements ElementHandler {
 		}
 
 		if (!foundElement) {
-			serialization.setValue(getObjectFactory().create(ValueSerialization.class));
+			serialization.setValue(new ValueSerialization());
 		}
 
 		String key = element.attributeValue(ATTRIBUTE_KEY);
@@ -486,31 +490,6 @@ public class SerializationElementHandler implements ElementHandler {
 	public Map<String, Serialization> getSerializations() {
 		return serializations;
 	}
-
-	/**
-	 * @return The object factory
-	 */
-	private LMObjectFactory getObjectFactory() {
-		return objectFactory;
-	}
-
-	/**
-	 * @param objectFactory The object factory
-	 */
-	private void setObjectFactory(LMObjectFactory objectFactory) {
-        if (objectFactory == null) {
-            this.objectFactory = createDefaultObjectFactory();
-        }
-        else {
-            this.objectFactory = objectFactory;
-        }
-	}
-
-    private ClassLookupObjectFactory createDefaultObjectFactory() {
-        ClassLookupObjectFactory defaultObjectFactory = new ClassLookupObjectFactory();
-        defaultObjectFactory.setUseClassWhenLookupFails(true);
-        return defaultObjectFactory;
-    }
 
     /**
 	 * @return The map of references

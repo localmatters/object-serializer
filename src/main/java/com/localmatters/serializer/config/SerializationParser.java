@@ -13,15 +13,14 @@
  *  $Revision$
  *  $Date$
  */
-package com.localmatters.serializer.config.parser;
+package com.localmatters.serializer.config;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
-
-import org.springframework.core.io.Resource;
 
 import com.localmatters.serializer.serialization.Serialization;
 
 public interface SerializationParser {
-    Map<String, Serialization> parse(Resource input) throws IOException;
+    Map<String, Serialization> parse(InputStream input) throws IOException;
 }

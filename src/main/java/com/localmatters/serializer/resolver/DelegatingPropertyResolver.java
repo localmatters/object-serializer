@@ -1,6 +1,5 @@
 package com.localmatters.serializer.resolver;
 
-import org.springframework.beans.factory.annotation.Required;
 
 
 /**
@@ -19,7 +18,6 @@ public abstract class DelegatingPropertyResolver implements PropertyResolver {
 	/**
 	 * @param delegate The delegate resolver
 	 */
-	@Required
 	public void setDelegate(PropertyResolver delegate) {
 		this.delegate = delegate;
 	}

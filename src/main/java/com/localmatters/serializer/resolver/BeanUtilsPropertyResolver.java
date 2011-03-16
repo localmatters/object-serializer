@@ -6,7 +6,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.springframework.beans.factory.annotation.Required;
 
 /**
  * Property resolver that uses the Apache BeanUtils's PropertyUtils to resolve
@@ -64,7 +63,6 @@ public class BeanUtilsPropertyResolver implements PropertyResolver {
 	 * any map or index information. This pattern is expected to have a 
 	 * capturing group of the clean part of the property.
 	 */
-	@Required
 	public void setIndexedMappedRemoverPattern(Pattern indexedMappedRemoverPattern) {
 		this.indexedMappedRemoverPattern = indexedMappedRemoverPattern;
 	}

@@ -5,9 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.localmatters.serializer.resolver.PropertyResolver;
 import com.localmatters.serializer.writer.Writer;
-import com.localmatters.util.CollectionUtils;
 
 /**
  * Provides the current context for the serialization.
@@ -53,7 +54,7 @@ public class SerializationContext {
 	 * @return The deepness of this context
 	 */
 	public int getDeepness() {
-		return CollectionUtils.sizeOf(levels);
+		return CollectionUtils.size(levels);
 	}
 	
 	/**

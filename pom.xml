@@ -8,7 +8,7 @@
     <groupId>com.localmatters</groupId>
     <artifactId>lm-object-serializer</artifactId>
     <name>Local Matters Object Serializer</name>
-    <version>1.0.10-SNAPSHOT</version>
+    <version>2.0.1-SNAPSHOT</version>
     <description>Framework to serialize objects to JSON or XML</description>
     <packaging>bundle</packaging>
     <organization>
@@ -28,16 +28,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.localmatters.util</groupId>
-            <artifactId>lm-util</artifactId>
-            <version>1.1.54</version>
-        </dependency>
-        <dependency>
-            <groupId>com.localmatters</groupId>
-            <artifactId>lm-mvc</artifactId>
-            <version>1.4.24</version>
-        </dependency>
     
         <!-- Jakarta Commons Libraries =====================================-->
         <dependency>
@@ -68,32 +58,21 @@
         </dependency>
 
         <!-- Miscellaneous Libraries =======================================-->
+
         <dependency>
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
             <version>1.6.1</version>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <version>${spring.version}</version>
-            <optional>true</optional>
-        </dependency>
+
+        <!-- Test Libraries ================================================-->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>${spring.version}</version>
-            <optional>true</optional>
+            <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-            <version>${spring.version}</version>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- Test Libraries ================================================-->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
@@ -104,12 +83,6 @@
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
             <version>2.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.localmatters.util</groupId>
-            <artifactId>test-util</artifactId>
-            <version>1.0.20</version>
             <scope>test</scope>
         </dependency>
         <dependency>

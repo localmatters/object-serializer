@@ -11,6 +11,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -21,7 +22,6 @@ import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.test.domain.ChildOfSelfreferencingObject;
 import com.localmatters.serializer.test.domain.DummyObject;
 import com.localmatters.serializer.test.domain.ObjectWithGenerics;
-import com.localmatters.util.CollectionUtils;
 
 /**
  * Tests the <code>ConfigWriterFromClass</code>
@@ -64,10 +64,10 @@ public class ConfigWriterFromClassTest extends TestCase {
 		assertEquals("list", name.getName());
 		assertTrue(name.getDelegate() instanceof ComplexSerialization);
 		ComplexSerialization list = (ComplexSerialization) name.getDelegate();
-		assertEquals(1, CollectionUtils.sizeOf(list.getAttributes()));
+		assertEquals(1, CollectionUtils.size(list.getAttributes()));
 		assertSame(attribute, list.getAttributes().get(0));
-		assertEquals(1, CollectionUtils.sizeOf(list.getElements()));
-		assertEquals(2, CollectionUtils.sizeOf(list.getComments()));
+		assertEquals(1, CollectionUtils.size(list.getElements()));
+		assertEquals(2, CollectionUtils.size(list.getComments()));
 		assertEquals("Unable to identify the types for the [addresses] iteration!", list.getComments().get(0));
 		assertEquals("The configuration of its elements must be written manually.", list.getComments().get(1));
 	}
@@ -82,10 +82,10 @@ public class ConfigWriterFromClassTest extends TestCase {
 		assertEquals("map", name.getName());
 		assertTrue(name.getDelegate() instanceof ComplexSerialization);
 		ComplexSerialization list = (ComplexSerialization) name.getDelegate();
-		assertEquals(1, CollectionUtils.sizeOf(list.getAttributes()));
+		assertEquals(1, CollectionUtils.size(list.getAttributes()));
 		assertSame(attribute, list.getAttributes().get(0));
 		assertTrue(CollectionUtils.isEmpty(list.getElements()));
-		assertEquals(2, CollectionUtils.sizeOf(list.getComments()));
+		assertEquals(2, CollectionUtils.size(list.getComments()));
 		assertEquals("Unable to identify the types for the [addresses] map!", list.getComments().get(0));
 		assertEquals("The configuration of its entries must be written manually.", list.getComments().get(1));
 	}
@@ -101,15 +101,15 @@ public class ConfigWriterFromClassTest extends TestCase {
 		assertEquals("map", name.getName());
 		assertTrue(name.getDelegate() instanceof ComplexSerialization);
 		ComplexSerialization list = (ComplexSerialization) name.getDelegate();
-		assertEquals(1, CollectionUtils.sizeOf(list.getAttributes()));
+		assertEquals(1, CollectionUtils.size(list.getAttributes()));
 		assertSame(attribute, list.getAttributes().get(0));
-		assertEquals(1, CollectionUtils.sizeOf(list.getElements()));
-		assertEquals(1, CollectionUtils.sizeOf(list.getComments()));
+		assertEquals(1, CollectionUtils.size(list.getElements()));
+		assertEquals(1, CollectionUtils.size(list.getComments()));
 		assertEquals("map of [class java.lang.String] and [DummyType]", list.getComments().get(0));
 	}
 	
 	/**
-	 * Tests handling a parametrized type when the raw type is not a class 
+	 * Tests handling a parameterized type when the raw type is not a class 
 	 */
 	public void testHandleParametrizedTypeWhenRawNotClass() {
 		ConfigWriterFromClass writer = new ConfigWriterFromClass(Object.class);
@@ -124,10 +124,10 @@ public class ConfigWriterFromClassTest extends TestCase {
 		assertEquals("value", name.getName());
 		assertTrue(name.getDelegate() instanceof ComplexSerialization);
 		ComplexSerialization complex = (ComplexSerialization) name.getDelegate();
-		assertEquals(1, CollectionUtils.sizeOf(complex.getAttributes()));
+		assertEquals(1, CollectionUtils.size(complex.getAttributes()));
 		assertSame(attribute, complex.getAttributes().get(0));
 		assertTrue(CollectionUtils.isEmpty(complex.getElements()));
-		assertEquals(2, CollectionUtils.sizeOf(complex.getComments()));
+		assertEquals(2, CollectionUtils.size(complex.getComments()));
 		assertEquals("Unable to resolve the class for the element [invalid]!", complex.getComments().get(0));
 		assertEquals("Its configuration must be written manually.", complex.getComments().get(1));
 	}

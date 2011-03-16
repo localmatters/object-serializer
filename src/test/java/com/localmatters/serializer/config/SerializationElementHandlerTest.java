@@ -31,6 +31,7 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.easymock.classextension.EasyMock.createMock;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +39,7 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.dom4j.Element;
 
 import com.localmatters.serializer.serialization.AttributeSerialization;
@@ -51,8 +53,6 @@ import com.localmatters.serializer.serialization.PropertySerialization;
 import com.localmatters.serializer.serialization.ReferenceSerialization;
 import com.localmatters.serializer.serialization.Serialization;
 import com.localmatters.serializer.serialization.ValueSerialization;
-import com.localmatters.util.CollectionUtils;
-import com.localmatters.util.objectfactory.LMObjectFactory;
 
 /**
  * Tests the <code>SerializationElementHandler</code>
@@ -60,7 +60,6 @@ import com.localmatters.util.objectfactory.LMObjectFactory;
 public class SerializationElementHandlerTest extends TestCase {
 	private static final String PATH = "/serializations/complex/something";
 	private SerializationElementHandler handler;
-	private LMObjectFactory factory;
 	private Element element;
 	private Map<String, String> attributes;
 	
@@ -69,8 +68,7 @@ public class SerializationElementHandlerTest extends TestCase {
 	 */
 	@Override
 	protected void setUp() throws Exception {
-		factory = createMock(LMObjectFactory.class);
-		handler = new SerializationElementHandler(factory);
+		handler = new SerializationElementHandler();
 		element = createMock(Element.class);
 		attributes = new HashMap<String, String>();
 	}
@@ -80,14 +78,14 @@ public class SerializationElementHandlerTest extends TestCase {
 	 */
 	public void testHandleIdWhenMissingRequiredId() {
 		expect(element.attributeValue(ATTRIBUTE_ID)).andReturn(null);
-		replay(factory, element);
+		replay(element);
 		try {
 			handler.handleId(element, attributes, true);
 			fail("ConfigurationException expected");
 		} catch (ConfigurationException e) {
 			assertEquals(MISSING_ID, e.getMessage());
 		}
-		verify(factory, element);
+		verify(element);
 	}
 
 	/**
@@ -98,22 +96,20 @@ public class SerializationElementHandlerTest extends TestCase {
 		handler.getSerializations().put("12345", serialization);
 
 		expect(element.attributeValue(ATTRIBUTE_ID)).andReturn("12345");
-		replay(factory, element);
+		replay(element);
 		try {
 			handler.handleId(element, attributes, false);
 			fail("ConfigurationException expected");
 		} catch (ConfigurationException e) {
 			assertEquals(String.format(DUPLICATE_ID_FORMAT, "12345"), e.getMessage());
 		}
-		verify(factory, element);
+		verify(element);
 	}
 	
 	/**
 	 * Tests the <code>handleId</code> method
 	 */
 	public void testHandleId() {
-		ValueSerialization serialization = new ValueSerialization();
-
 		expect(element.attributeValue(ATTRIBUTE_ID)).andReturn("12345");
 		expect(element.attributeValue(ATTRIBUTE_NAME)).andReturn(null);
 		expect(element.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
@@ -121,147 +117,130 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(element.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
 		expect(element.getName()).andReturn(TYPE_VALUE);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
-		expect(factory.create(ValueSerialization.class)).andReturn(serialization);
-		expect(element.attributes()).andReturn(CollectionUtils.asList("12345"));
+		expect(element.attributes()).andReturn(Arrays.asList("12345"));
 
-		replay(factory, element);
+		replay(element);
 		Serialization result = handler.handleId(element, attributes, true);
-		verify(factory, element);
+		verify(element);
 
-		assertSame(serialization, result);
-		assertEquals(1, CollectionUtils.sizeOf(handler.getSerializations()));
+		assertTrue(result instanceof ValueSerialization);
+		assertEquals(1, CollectionUtils.size(handler.getSerializations()));
 	}
 	
 	/**
 	 * Tests the <code>handleName</code> method
 	 */
 	public void testHandleName() {
-		NameSerialization serialization = new NameSerialization();
-		ValueSerialization valueConfig = new ValueSerialization();
-
 		expect(element.attributeValue(ATTRIBUTE_NAME)).andReturn("code");
 		expect(element.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
 		expect(element.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
 		expect(element.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
 		expect(element.getName()).andReturn(TYPE_VALUE);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
-		expect(factory.create(ValueSerialization.class)).andReturn(valueConfig);
-		expect(factory.create(NameSerialization.class)).andReturn(serialization);
-		expect(element.attributes()).andReturn(CollectionUtils.asList("code"));
+		expect(element.attributes()).andReturn(Arrays.asList("code"));
 
-		replay(factory, element);
+		replay(element);
 		Serialization result = handler.handleName(element, attributes);
-		verify(factory, element);
+		verify(element);
 
-		assertSame(serialization, result);
+		assertTrue(result instanceof NameSerialization);
+		NameSerialization serialization =(NameSerialization) result;
 		assertEquals("code", serialization.getName());
-		assertSame(valueConfig, serialization.getDelegate());
-		assertEquals(valueConfig.isWriteEmpty(), serialization.isWriteEmpty());
+		assertTrue(serialization.getDelegate() instanceof ValueSerialization);
+		ValueSerialization value = (ValueSerialization) serialization.getDelegate();
+		assertEquals(value.isWriteEmpty(), serialization.isWriteEmpty());
 	}
 	
 	/**
 	 * Tests the <code>handleConstant</code> method
 	 */
 	public void testHandleConstant() {
-		ConstantSerialization serialization = new ConstantSerialization();
-		ValueSerialization valueConfig = new ValueSerialization();
-
 		expect(element.attributeValue(ATTRIBUTE_CONSTANT)).andReturn("abcd1234");
 		expect(element.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
 		expect(element.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
 		expect(element.getName()).andReturn(TYPE_VALUE);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
-		expect(factory.create(ValueSerialization.class)).andReturn(valueConfig);
-		expect(factory.create(ConstantSerialization.class)).andReturn(serialization);
-		expect(element.attributes()).andReturn(CollectionUtils.asList("abcd1234"));
+		expect(element.attributes()).andReturn(Arrays.asList("abcd1234"));
 
-		replay(factory, element);
+		replay(element);
 		Serialization result = handler.handleConstant(element, attributes);
-		verify(factory, element);
+		verify(element);
 
-		assertSame(serialization, result);
+		assertTrue(result instanceof ConstantSerialization);
+		ConstantSerialization serialization = (ConstantSerialization) result;
 		assertEquals("abcd1234", serialization.getConstant());
-		assertSame(valueConfig, serialization.getDelegate());
-		assertEquals(valueConfig.isWriteEmpty(), serialization.isWriteEmpty());
+        assertTrue(serialization.getDelegate() instanceof ValueSerialization);
+        ValueSerialization value = (ValueSerialization) serialization.getDelegate();
+		assertEquals(value.isWriteEmpty(), serialization.isWriteEmpty());
 	}
 	
 	/**
 	 * Tests the <code>handleBean</code> method
 	 */
 	public void testHandleBean() {
-		BeanSerialization serialization = new BeanSerialization();
-		ValueSerialization valueConfig = new ValueSerialization();
-
 		expect(element.attributeValue(ATTRIBUTE_BEAN)).andReturn("searchResults");
 		expect(element.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
 		expect(element.getName()).andReturn(TYPE_VALUE);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
-		expect(factory.create(ValueSerialization.class)).andReturn(valueConfig);
-		expect(factory.create(BeanSerialization.class)).andReturn(serialization);
-		expect(element.attributes()).andReturn(CollectionUtils.asList("searchResults"));
+		expect(element.attributes()).andReturn(Arrays.asList("searchResults"));
 
-		replay(factory, element);
+		replay(element);
 		Serialization result = handler.handleBean(element, attributes);
-		verify(factory, element);
+		verify(element);
 
-		assertSame(serialization, result);
+		assertTrue(result instanceof BeanSerialization);
+		BeanSerialization serialization = (BeanSerialization) result;
 		assertEquals("searchResults", serialization.getBean());
-		assertSame(valueConfig, serialization.getDelegate());
-		assertEquals(valueConfig.isWriteEmpty(), serialization.isWriteEmpty());
+        assertTrue(serialization.getDelegate() instanceof ValueSerialization);
+        ValueSerialization value = (ValueSerialization) serialization.getDelegate();
+        assertEquals(value.isWriteEmpty(), serialization.isWriteEmpty());
 	}
 	
 	/**
 	 * Tests the <code>handleProperty</code> method
 	 */
 	public void testHandleProperty() {
-		PropertySerialization serialization = new PropertySerialization();
-		ValueSerialization valueConfig = new ValueSerialization();
-
 		expect(element.attributeValue(ATTRIBUTE_PROPERTY)).andReturn("address.street");
 		expect(element.getName()).andReturn(TYPE_VALUE);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
-		expect(factory.create(ValueSerialization.class)).andReturn(valueConfig);
-		expect(factory.create(PropertySerialization.class)).andReturn(serialization);
-		expect(element.attributes()).andReturn(CollectionUtils.asList("address.street"));
+		expect(element.attributes()).andReturn(Arrays.asList("address.street"));
 
-		replay(factory, element);
+		replay(element);
 		Serialization result = handler.handleProperty(element, attributes);
-		verify(factory, element);
+		verify(element);
 
-		assertSame(serialization, result);
+		assertTrue(result instanceof PropertySerialization);
+		PropertySerialization serialization = (PropertySerialization) result;
 		assertEquals("address.street", serialization.getProperty());
-		assertSame(valueConfig, serialization.getDelegate());
-		assertEquals(valueConfig.isWriteEmpty(), serialization.isWriteEmpty());
+        assertTrue(serialization.getDelegate() instanceof ValueSerialization);
+        ValueSerialization value = (ValueSerialization) serialization.getDelegate();
+        assertEquals(value.isWriteEmpty(), serialization.isWriteEmpty());
 	}
 	
 	/**
 	 * Tests the <code>handleValue</code> method
 	 */
 	public void testHandleValue() {
-		ValueSerialization serialization = new ValueSerialization();
-		expect(factory.create(ValueSerialization.class)).andReturn(serialization);
-		replay(factory, element);
+		replay(element);
 		Serialization result = handler.handleValue(element, attributes);
-		verify(factory, element);
-		assertSame(serialization, result);
+		verify(element);
+		assertTrue(result instanceof ValueSerialization);
 	}
 
 	/**
 	 * Tests the <code>handleType</code> method when value
 	 */
 	public void testHandleTypeWhenValue() {
-		ValueSerialization serialization = new ValueSerialization();
-
 		expect(element.getName()).andReturn(TYPE_VALUE);
-		expect(factory.create(ValueSerialization.class)).andReturn(serialization);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn("true");
-		expect(element.attributes()).andReturn(CollectionUtils.asList("true"));
+		expect(element.attributes()).andReturn(Arrays.asList("true"));
 
-		replay(factory, element);
+		replay(element);
 		Serialization result = handler.handleType(element, attributes);
-		verify(factory, element);
+		verify(element);
 
-		assertSame(serialization, result);
+        assertTrue(result instanceof ValueSerialization);
+        ValueSerialization serialization = (ValueSerialization) result;
 		assertTrue(serialization.isWriteEmpty());
 	}
 
@@ -272,14 +251,14 @@ public class SerializationElementHandlerTest extends TestCase {
 	public void testHandleAttributeWhenNoParent() {
 		expect(element.getParent()).andReturn(null);
 		expect(element.getPath()).andReturn(PATH);
-		replay(factory, element);
+		replay(element);
 		try {
 			handler.handleAttribute(element, attributes);
 			fail("ConfigurationException expected");
 		} catch (ConfigurationException e) {
 			assertEquals(String.format(INVALID_ATTRIBUTE_ELEMENT_FORMAT, PATH), e.getMessage());
 		}
-		verify(factory, element);
+		verify(element);
 	}
 
 	/**
@@ -291,71 +270,62 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(element.getParent()).andReturn(parent);
 		expect(parent.getName()).andReturn(TYPE_LIST);
 		expect(element.getPath()).andReturn(PATH);
-		replay(factory, element, parent);
+		replay(element, parent);
 		try {
 			handler.handleAttribute(element, attributes);
 			fail("ConfigurationException expected");
 		} catch (ConfigurationException e) {
 			assertEquals(String.format(INVALID_ATTRIBUTE_ELEMENT_FORMAT, PATH), e.getMessage());
 		}
-		verify(factory, element, parent);
+		verify(element, parent);
 	}
 
 	/**
 	 * Tests the <code>handleAttribute</code> method
 	 */
 	public void testHandleAttribute() {
-		AttributeSerialization serialization = new AttributeSerialization();
 		Element parent = createMock(Element.class);
 		expect(element.getParent()).andReturn(parent);
 		expect(parent.getName()).andReturn(TYPE_COMPLEX);
-		expect(factory.create(AttributeSerialization.class)).andReturn(serialization);
-		replay(factory, element, parent);
+		replay(element, parent);
 		Serialization result = handler.handleAttribute(element, attributes);
-		verify(factory, element, parent);
-		assertSame(serialization, result);
+		verify(element, parent);
+		assertTrue(result instanceof AttributeSerialization);
 	}
 
 	/**
 	 * Tests the <code>handleType</code> method when attribute
 	 */
 	public void testHandleTypeWhenAttribute() {
-		AttributeSerialization serialization = new AttributeSerialization();
 		Element parent = createMock(Element.class);
-
 		expect(element.getName()).andReturn(TYPE_ATTRIBUTE);
 		expect(element.getParent()).andReturn(parent);
 		expect(parent.getName()).andReturn(TYPE_COMPLEX);
-		expect(factory.create(AttributeSerialization.class)).andReturn(serialization);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn("no");
-		expect(element.attributes()).andReturn(CollectionUtils.asList("no"));
+		expect(element.attributes()).andReturn(Arrays.asList("no"));
 
-		replay(factory, element, parent);
+		replay(element, parent);
 		Serialization result = handler.handleType(element, attributes);
-		verify(factory, element, parent);
+		verify(element, parent);
 
-		assertSame(serialization, result);
-		assertFalse(serialization.isWriteEmpty());
+		assertTrue(result instanceof AttributeSerialization);
+		assertFalse(result.isWriteEmpty());
 	}
 
 	/**
 	 * Tests the <code>handleList</code> method when the element has no child
 	 */
 	public void testHandleListWhenNoChild() {
-		IteratorSerialization ser = new IteratorSerialization();
-		ValueSerialization elementSer = new ValueSerialization();
-		
-		expect(factory.create(IteratorSerialization.class)).andReturn(ser);
 		expect(element.elements()).andReturn(null);
-		expect(factory.create(ValueSerialization.class)).andReturn(elementSer);
 
-		replay(factory, element);
+		replay(element);
 		Serialization result = handler.handleList(element, attributes);
-		verify(factory, element);
+		verify(element);
 
-		assertSame(ser, result);
-		assertSame(elementSer, ser.getElement());
-		assertFalse(elementSer.isWriteEmpty());
+		assertTrue(result instanceof IteratorSerialization);
+		IteratorSerialization ser = (IteratorSerialization) result;
+		assertTrue(ser.getElement() instanceof ValueSerialization);
+		assertFalse(ser.getElement().isWriteEmpty());
 		assertTrue(CollectionUtils.isEmpty(ser.getComments()));
 	}
 
@@ -364,13 +334,10 @@ public class SerializationElementHandlerTest extends TestCase {
 	 * children
 	 */
 	public void testHandleListWhenTooManyNonCommentChildren() {
-		IteratorSerialization serialization = new IteratorSerialization();
-		ValueSerialization elementConfig = new ValueSerialization();
 		Element child1 = createMock(Element.class);
 		Element child2 = createMock(Element.class);
 
-		expect(factory.create(IteratorSerialization.class)).andReturn(serialization);
-		expect(element.elements()).andReturn(CollectionUtils.asList(child1, child2));
+		expect(element.elements()).andReturn(Arrays.asList(child1, child2));
 		expect(child1.getName()).andReturn(TYPE_VALUE);
 		expect(child1.attributeValue(ATTRIBUTE_ID)).andReturn(null);
 		expect(child1.attributeValue(ATTRIBUTE_NAME)).andReturn(null);
@@ -380,31 +347,27 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(child1.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
 		expect(child1.attributes()).andReturn(Collections.emptyList());
 		expect(child1.getName()).andReturn(TYPE_VALUE);
-		expect(factory.create(ValueSerialization.class)).andReturn(elementConfig);
 		expect(child2.getName()).andReturn(TYPE_VALUE);
 		expect(element.getPath()).andReturn(PATH);
 
-		replay(factory, element, child1, child2);
+		replay(element, child1, child2);
 		try {
 			handler.handleList(element, attributes);
 			fail("ConfigurationException expected");
 		} catch (ConfigurationException e) {
 			assertEquals(String.format(INVALID_LIST_FORMAT, PATH), e.getMessage());
 		}
-		verify(factory, element, child1, child2);
+		verify(element, child1, child2);
 	}
 
 	/**
 	 * Tests the <code>handleList</code> method
 	 */
 	public void testHandleList() {
-		IteratorSerialization ser = new IteratorSerialization();
-		ValueSerialization elementSer = new ValueSerialization();
 		Element child = createMock(Element.class);
 		Element comment = createMock(Element.class);
 
-		expect(factory.create(IteratorSerialization.class)).andReturn(ser);
-		expect(element.elements()).andReturn(CollectionUtils.asList(child, comment));
+		expect(element.elements()).andReturn(Arrays.asList(child, comment));
 		expect(child.getName()).andReturn(TYPE_VALUE);
 		expect(child.attributeValue(ATTRIBUTE_ID)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_NAME)).andReturn(null);
@@ -414,18 +377,18 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(child.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
 		expect(child.attributes()).andReturn(Collections.emptyList());
 		expect(child.getName()).andReturn(TYPE_VALUE);
-		expect(factory.create(ValueSerialization.class)).andReturn(elementSer);
 		expect(comment.getName()).andReturn(TYPE_COMMENT);
 		expect(comment.getStringValue()).andReturn("Hello World");
 
-		replay(factory, element, child, comment);
+		replay(element, child, comment);
 		Serialization result = handler.handleList(element, attributes);
-		verify(factory, element, child, comment);
+		verify(element, child, comment);
 
-		assertSame(ser, result);
-		assertSame(elementSer, ser.getElement());
-		assertFalse(elementSer.isWriteEmpty());
-		assertEquals(1, CollectionUtils.sizeOf(ser.getComments()));
+		assertTrue(result instanceof IteratorSerialization);
+		IteratorSerialization ser = (IteratorSerialization) result;
+		assertTrue(ser.getElement() instanceof ValueSerialization);
+		assertFalse(ser.getElement().isWriteEmpty());
+		assertEquals(1, CollectionUtils.size(ser.getComments()));
 		assertEquals("Hello World", ser.getComments().get(0));
 	}
 
@@ -433,13 +396,10 @@ public class SerializationElementHandlerTest extends TestCase {
 	 * Tests the <code>handleType</code> method when list
 	 */
 	public void testHandleTypeWhenList() {
-		IteratorSerialization ser = new IteratorSerialization();
-		ValueSerialization elementSer = new ValueSerialization();
 		Element child = createMock(Element.class);
 
 		expect(element.getName()).andReturn(TYPE_LIST);
-		expect(factory.create(IteratorSerialization.class)).andReturn(ser);
-		expect(element.elements()).andReturn(CollectionUtils.asList(child));
+		expect(element.elements()).andReturn(Arrays.asList(child));
 		expect(child.getName()).andReturn(TYPE_VALUE);
 		expect(child.attributeValue(ATTRIBUTE_ID)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_NAME)).andReturn(null);
@@ -449,18 +409,18 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(child.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
 		expect(child.attributes()).andReturn(Collections.emptyList());
 		expect(child.getName()).andReturn(TYPE_VALUE);
-		expect(factory.create(ValueSerialization.class)).andReturn(elementSer);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn("true");
-		expect(element.attributes()).andReturn(CollectionUtils.asList("false"));
+		expect(element.attributes()).andReturn(Arrays.asList("false"));
 
-		replay(factory, element, child);
+		replay(element, child);
 		Serialization result = handler.handleType(element, attributes);
-		verify(factory, element, child);
+		verify(element, child);
 
-		assertSame(ser, result);
+        assertTrue(result instanceof IteratorSerialization);
+        IteratorSerialization ser = (IteratorSerialization) result;
 		assertTrue(ser.isWriteEmpty());
-		assertSame(elementSer, ser.getElement());
-		assertFalse(elementSer.isWriteEmpty());
+        assertTrue(ser.getElement() instanceof ValueSerialization);
+        assertFalse(ser.getElement().isWriteEmpty());
 		assertTrue(CollectionUtils.isEmpty(ser.getComments()));
 	}
 	
@@ -469,13 +429,10 @@ public class SerializationElementHandlerTest extends TestCase {
 	 * children
 	 */
 	public void testHandleMapWhenTooManyNonCommentChildren() {
-		MapSerialization ser = new MapSerialization();
-		ValueSerialization valueSer = new ValueSerialization();
 		Element child1 = createMock(Element.class);
 		Element child2 = createMock(Element.class);
 
-		expect(factory.create(MapSerialization.class)).andReturn(ser);
-		expect(element.elements()).andReturn(CollectionUtils.asList(child1, child2));
+		expect(element.elements()).andReturn(Arrays.asList(child1, child2));
 		expect(child1.getName()).andReturn(TYPE_VALUE);
 
 		expect(child1.attributeValue(ATTRIBUTE_NAME)).andReturn(null);
@@ -487,18 +444,17 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(child1.getName()).andReturn(TYPE_VALUE);
 		expect(child1.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
 		expect(child1.attributes()).andReturn(Collections.emptyList());
-		expect(factory.create(ValueSerialization.class)).andReturn(valueSer);
 		expect(child2.getName()).andReturn(TYPE_VALUE);
 		expect(element.getPath()).andReturn(PATH);
 
-		replay(factory, element, child1, child2);
+		replay(element, child1, child2);
 		try {
 			handler.handleMap(element, attributes);
 			fail("ConfigurationException expected");
 		} catch (ConfigurationException e) {
 			assertEquals(String.format(INVALID_MAP_FORMAT, PATH), e.getMessage());
 		}
-		verify(factory, element, child1, child2);
+		verify(element, child1, child2);
 	}
 	
 	/**
@@ -506,35 +462,30 @@ public class SerializationElementHandlerTest extends TestCase {
 	 * un-expected name 
 	 */
 	public void testHandleMapWhenSubElementHasName() {
-		MapSerialization ser = new MapSerialization();
 		Element child = createMock(Element.class);
 
-		expect(factory.create(MapSerialization.class)).andReturn(ser);
-		expect(element.elements()).andReturn(CollectionUtils.asList(child));
+		expect(element.elements()).andReturn(Arrays.asList(child));
 		expect(child.getName()).andReturn(TYPE_VALUE);
 		expect(child.attributeValue(ATTRIBUTE_NAME)).andReturn("aName");
 		expect(element.getPath()).andReturn(PATH);
 
-		replay(factory, element, child);
+		replay(element, child);
 		try {
 			handler.handleMap(element, attributes);
 			fail("ConfigurationException expected");
 		} catch (ConfigurationException e) {
 			assertEquals(String.format(NAME_NOT_ALLOWED_FORMAT, PATH), e.getMessage());
 		}
-		verify(factory, element, child);
+		verify(element, child);
 	}
 	
 	/**
 	 * Tests the <code>handleMap</code> method
 	 */
 	public void testHandleMap() {
-		MapSerialization ser = new MapSerialization();
-		ValueSerialization valueConfig = new ValueSerialization();
 		Element child = createMock(Element.class);
 
-		expect(factory.create(MapSerialization.class)).andReturn(ser);
-		expect(element.elements()).andReturn(CollectionUtils.asList(child));
+		expect(element.elements()).andReturn(Arrays.asList(child));
 		expect(child.getName()).andReturn(TYPE_VALUE);
 		expect(child.attributeValue(ATTRIBUTE_NAME)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_NAME)).andReturn(null);
@@ -543,46 +494,41 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(child.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
 		expect(child.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
 		expect(child.getName()).andReturn(TYPE_VALUE);
-		expect(factory.create(ValueSerialization.class)).andReturn(valueConfig);
 		expect(child.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
 		expect(child.attributes()).andReturn(Collections.emptyList());
-
 		expect(element.attributeValue(ATTRIBUTE_KEY)).andReturn("listing.id");
 
-		replay(factory, element, child);
+		replay(element, child);
 		Serialization result = handler.handleMap(element, attributes);
-		verify(factory, element, child);
+		verify(element, child);
 
-		assertSame(ser, result);
+		assertTrue(result instanceof MapSerialization);
+		MapSerialization ser = (MapSerialization) result;
 		assertSame("listing.id", ser.getKey());
 		assertFalse(ser.isWriteEmpty());
-		assertSame(valueConfig, ser.getValue());
-		assertFalse(valueConfig.isWriteEmpty());
+		assertTrue(ser.getValue() instanceof ValueSerialization);
+		assertFalse(ser.getValue().isWriteEmpty());
 	}
 
 	/**
 	 * Tests the <code>handleType</code> method with an empty map
 	 */
 	public void testHandleTypeWhenEmptyMap() {
-		MapSerialization ser = new MapSerialization();
-		ValueSerialization valueSer = new ValueSerialization();
-
 		expect(element.getName()).andReturn(TYPE_MAP);
-		expect(factory.create(MapSerialization.class)).andReturn(ser);
 		expect(element.elements()).andReturn(Collections.emptyList());
-		expect(factory.create(ValueSerialization.class)).andReturn(valueSer);
 		expect(element.attributeValue(ATTRIBUTE_KEY)).andReturn(null);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn("true");
-		expect(element.attributes()).andReturn(CollectionUtils.asList("true"));
+		expect(element.attributes()).andReturn(Arrays.asList("true"));
 
-		replay(factory, element);
+		replay(element);
 		Serialization result = handler.handleType(element, attributes);
-		verify(factory, element);
+		verify(element);
 
-		assertSame(ser, result);
-		assertTrue(ser.isWriteEmpty());
-		assertNull(ser.getKey());
-		assertSame(valueSer, ser.getValue());
+        assertTrue(result instanceof MapSerialization);
+        MapSerialization ser = (MapSerialization) result;
+        assertTrue(ser.isWriteEmpty());
+        assertNull(ser.getKey());
+        assertTrue(ser.getValue() instanceof ValueSerialization);
 		assertTrue(CollectionUtils.isEmpty(ser.getComments()));
 	}
 
@@ -590,29 +536,26 @@ public class SerializationElementHandlerTest extends TestCase {
 	 * Tests the <code>handleType</code> method with a map
 	 */
 	public void testHandleTypeWhenMap() {
-		MapSerialization ser = new MapSerialization();
-		ValueSerialization valueSer = new ValueSerialization();
 		Element comment = createMock(Element.class);
 
 		expect(element.getName()).andReturn(TYPE_MAP);
-		expect(factory.create(MapSerialization.class)).andReturn(ser);
-		expect(element.elements()).andReturn(CollectionUtils.asList(comment));
+		expect(element.elements()).andReturn(Arrays.asList(comment));
 		expect(comment.getName()).andReturn(TYPE_COMMENT);
 		expect(comment.getStringValue()).andReturn("Hello Map");
-		expect(factory.create(ValueSerialization.class)).andReturn(valueSer);
 		expect(element.attributeValue(ATTRIBUTE_KEY)).andReturn(null);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn("true");
-		expect(element.attributes()).andReturn(CollectionUtils.asList("true"));
+		expect(element.attributes()).andReturn(Arrays.asList("true"));
 
-		replay(factory, element, comment);
+		replay(element, comment);
 		Serialization result = handler.handleType(element, attributes);
-		verify(factory, element, comment);
+		verify(element, comment);
 
-		assertSame(ser, result);
+		assertTrue(result instanceof MapSerialization);
+		MapSerialization ser = (MapSerialization) result;
 		assertTrue(ser.isWriteEmpty());
 		assertNull(ser.getKey());
-		assertSame(valueSer, ser.getValue());
-		assertEquals(1, CollectionUtils.sizeOf(ser.getComments()));
+		assertTrue(ser.getValue() instanceof ValueSerialization);
+		assertEquals(1, CollectionUtils.size(ser.getComments()));
 		assertEquals("Hello Map", ser.getComments().get(0));
 	}
 
@@ -622,32 +565,30 @@ public class SerializationElementHandlerTest extends TestCase {
 	public void testHandleReferenceWhenMissingTarget() {
 		expect(element.attributeValue(ATTRIBUTE_TARGET)).andReturn(null);
 		expect(element.getPath()).andReturn(PATH);
-		replay(factory, element);
+		replay(element);
 		try {
 			handler.handleReference(element, attributes);
 			fail("ConfigurationException expected");
 		} catch (ConfigurationException e) {
 			assertEquals(String.format(MISSING_ATTRIBUTE_FORMAT, ATTRIBUTE_TARGET, PATH), e.getMessage());
 		}
-		verify(factory, element);
+		verify(element);
 	}
 
 	/**
 	 * Tests the <code>handleReference</code> method
 	 */
 	public void testHandleReference() {
-		ReferenceSerialization serialization = new ReferenceSerialization();
-
 		expect(element.attributeValue(ATTRIBUTE_TARGET)).andReturn("12345");
-		expect(factory.create(ReferenceSerialization.class)).andReturn(serialization);
 
-		replay(factory, element);
+		replay(element);
 		Serialization result = handler.handleReference(element, attributes);
-		verify(factory, element);
+		verify(element);
 
-		assertSame(serialization, result);
+		assertTrue(result instanceof ReferenceSerialization);
+		ReferenceSerialization serialization = (ReferenceSerialization) result;
 		assertNull(serialization.getReferenced());
-		assertEquals(1, CollectionUtils.sizeOf(handler.getReferences()));
+		assertEquals(1, CollectionUtils.size(handler.getReferences()));
 		assertTrue(handler.getReferences().containsKey(serialization));
 		assertEquals("12345", handler.getReferences().get(serialization));
 	}
@@ -656,34 +597,28 @@ public class SerializationElementHandlerTest extends TestCase {
 	 * Tests the <code>handleType</code> method when reference (invalid)
 	 */
 	public void testHandleTypeWhenReference() {
-		ReferenceSerialization serialization = new ReferenceSerialization();
-
 		expect(element.getName()).andReturn(TYPE_REFERENCE);
 		expect(element.attributeValue(ATTRIBUTE_TARGET)).andReturn("12345");
-		expect(factory.create(ReferenceSerialization.class)).andReturn(serialization);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn("true");
-		expect(element.attributes()).andReturn(CollectionUtils.asList("12345", "true"));
+		expect(element.attributes()).andReturn(Arrays.asList("12345", "true"));
 
-		replay(factory, element);
+		replay(element);
 		Serialization result = handler.handleType(element, attributes);
-		verify(factory, element);
+		verify(element);
 
-		assertSame(serialization, result);
-		assertTrue(serialization.isWriteEmpty());
+		assertTrue(result instanceof ReferenceSerialization);
+		assertTrue(result.isWriteEmpty());
 	}
 	
 	/**
 	 * Tests the <code>handleComplex</code> method
 	 */
 	public void testHandleComplex() {
-		ComplexSerialization ser = new ComplexSerialization();
-		AttributeSerialization attributeSer = new AttributeSerialization();
-		ValueSerialization subElementSer = new ValueSerialization();
 		Element attribute = createMock(Element.class);
 		Element subElement = createMock(Element.class);
 		Element comment = createMock(Element.class);
 		
-		expect(element.elements()).andReturn(CollectionUtils.asList(attribute, comment, subElement));
+		expect(element.elements()).andReturn(Arrays.asList(attribute, comment, subElement));
 		expect(attribute.getName()).andReturn(TYPE_ATTRIBUTE);
 		expect(attribute.attributeValue(ATTRIBUTE_ID)).andReturn(null);
 		expect(attribute.attributeValue(ATTRIBUTE_NAME)).andReturn(null);
@@ -695,7 +630,6 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(attribute.getParent()).andReturn(element);
 		expect(attribute.attributes()).andReturn(Collections.emptyList());
 		expect(element.getName()).andReturn(TYPE_COMPLEX);
-		expect(factory.create(AttributeSerialization.class)).andReturn(attributeSer);
 		expect(comment.getName()).andReturn(TYPE_COMMENT);
 		expect(comment.getStringValue()).andReturn("Hello World");
 		expect(subElement.getName()).andReturn(TYPE_VALUE);
@@ -707,20 +641,18 @@ public class SerializationElementHandlerTest extends TestCase {
 		expect(subElement.getName()).andReturn(TYPE_VALUE);
 		expect(subElement.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
 		expect(subElement.attributes()).andReturn(Collections.emptyList());
-		expect(factory.create(ValueSerialization.class)).andReturn(subElementSer);
-		
-		expect(factory.create(ComplexSerialization.class)).andReturn(ser);
 
-		replay(factory, element, attribute, comment, subElement);
+		replay(element, attribute, comment, subElement);
 		Serialization result = handler.handleComplex(element, attributes);
-		verify(factory, element, attribute, comment, subElement);
+		verify(element, attribute, comment, subElement);
 
-		assertSame(ser, result);
-		assertEquals(1, CollectionUtils.sizeOf(ser.getAttributes()));
-		assertSame(attributeSer, ser.getAttributes().get(0));
-		assertEquals(1, CollectionUtils.sizeOf(ser.getElements()));
-		assertSame(subElementSer, ser.getElements().get(0));
-		assertEquals(1, CollectionUtils.sizeOf(ser.getComments()));
+        assertTrue(result instanceof ComplexSerialization);
+        ComplexSerialization ser = (ComplexSerialization) result;
+		assertEquals(1, CollectionUtils.size(ser.getAttributes()));
+		assertTrue(ser.getAttributes().get(0) instanceof AttributeSerialization);
+		assertEquals(1, CollectionUtils.size(ser.getElements()));
+		assertTrue(ser.getElements().get(0) instanceof ValueSerialization);
+		assertEquals(1, CollectionUtils.size(ser.getComments()));
 		assertEquals("Hello World", ser.getComments().get(0));
 	}
 	
@@ -728,23 +660,22 @@ public class SerializationElementHandlerTest extends TestCase {
 	 * Tests the <code>HandleComplex</code> method when has ID and parent
 	 */
 	public void testHandleComplexWithIdAndParent() {
-		ComplexSerialization ser = new ComplexSerialization();
 		attributes.put(ATTRIBUTE_ID, "54321");
 		attributes.put(ATTRIBUTE_PARENT, "12345");
 
 		expect(element.elements()).andReturn(null);
-		expect(factory.create(ComplexSerialization.class)).andReturn(ser);
 
-		replay(factory, element);
+		replay(element);
 		Serialization result = handler.handleComplex(element, attributes);
-		verify(factory, element);
+		verify(element);
 
-		assertSame(ser, result);
+        assertTrue(result instanceof ComplexSerialization);
+        ComplexSerialization ser = (ComplexSerialization) result;
 		assertTrue(CollectionUtils.isEmpty(ser.getAttributes()));
 		assertTrue(CollectionUtils.isEmpty(ser.getElements()));
-		assertEquals(1, CollectionUtils.sizeOf(handler.getComplexWithIds()));
+		assertEquals(1, CollectionUtils.size(handler.getComplexWithIds()));
 		assertSame(ser, handler.getComplexWithIds().get("54321"));
-		assertEquals(1, CollectionUtils.sizeOf(handler.getExtensions()));
+		assertEquals(1, CollectionUtils.size(handler.getExtensions()));
 		assertEquals("12345", handler.getExtensions().get(ser));
 	}
 	
@@ -752,24 +683,22 @@ public class SerializationElementHandlerTest extends TestCase {
 	 * Tests the <code>handleType</code> method when complex and parent
 	 */
 	public void testHandleTypeWhenComplexAndParent() {
-		ComplexSerialization ser = new ComplexSerialization();
-
 		expect(element.getName()).andReturn(TYPE_COMPLEX);
 		expect(element.attributeValue(ATTRIBUTE_PARENT)).andReturn("parent");
 		expect(element.elements()).andReturn(null);
-		expect(factory.create(ComplexSerialization.class)).andReturn(ser);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn("true");
-		expect(element.attributes()).andReturn(CollectionUtils.asList("parent", "true"));
+		expect(element.attributes()).andReturn(Arrays.asList("parent", "true"));
 
-		replay(factory, element);
+		replay(element);
 		Serialization result = handler.handleType(element, attributes);
-		verify(factory, element);
+		verify(element);
 
-		assertSame(ser, result);
+        assertTrue(result instanceof ComplexSerialization);
+        ComplexSerialization ser = (ComplexSerialization) result;
 		assertTrue(ser.isWriteEmpty());
 		assertTrue(CollectionUtils.isEmpty(ser.getAttributes()));
 		assertTrue(CollectionUtils.isEmpty(ser.getElements()));
-		assertEquals(1, CollectionUtils.sizeOf(handler.getExtensions()));
+		assertEquals(1, CollectionUtils.size(handler.getExtensions()));
 		assertEquals("parent", handler.getExtensions().get(ser));
 	}
 	
@@ -777,20 +706,18 @@ public class SerializationElementHandlerTest extends TestCase {
 	 * Tests the <code>handleType</code> method when complex
 	 */
 	public void testHandleTypeWhenComplex() {
-		ComplexSerialization ser = new ComplexSerialization();
-
 		expect(element.getName()).andReturn(TYPE_COMPLEX);
 		expect(element.attributeValue(ATTRIBUTE_PARENT)).andReturn(null);
 		expect(element.elements()).andReturn(null);
-		expect(factory.create(ComplexSerialization.class)).andReturn(ser);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn("true");
-		expect(element.attributes()).andReturn(CollectionUtils.asList("true"));
+		expect(element.attributes()).andReturn(Arrays.asList("true"));
 
-		replay(factory, element);
+		replay(element);
 		Serialization result = handler.handleType(element, attributes);
-		verify(factory, element);
+		verify(element);
 
-		assertSame(ser, result);
+		assertTrue(result instanceof ComplexSerialization);
+		ComplexSerialization ser = (ComplexSerialization) result;
 		assertTrue(ser.isWriteEmpty());
 		assertTrue(CollectionUtils.isEmpty(ser.getAttributes()));
 		assertTrue(CollectionUtils.isEmpty(ser.getElements()));
@@ -802,14 +729,14 @@ public class SerializationElementHandlerTest extends TestCase {
 	public void testHandleTypeWhenInvalid() {
 		expect(element.getName()).andReturn("invalid");
 		expect(element.getPath()).andReturn(PATH);
-		replay(factory, element);
+		replay(element);
 		try {
 			handler.handleType(element, attributes);
 			fail("ConfigurationException expected");
 		} catch (ConfigurationException e) {
 			assertEquals(String.format(INVALID_TYPE_FORMAT, "invalid", PATH), e.getMessage());
 		}
-		verify(factory, element);
+		verify(element);
 	}
 
 
@@ -817,29 +744,27 @@ public class SerializationElementHandlerTest extends TestCase {
 	 * Tests the <code>handleType</code> method when extra attributes
 	 */
 	public void testHandleTypeWhenInvalidAttributes() {
-		ReferenceSerialization serialization = new ReferenceSerialization();
 		attributes.put(ATTRIBUTE_TARGET, "12345");
 		Element target = createMock(Element.class);
 		Element invalid = createMock(Element.class);
 
 		expect(element.getName()).andReturn(TYPE_REFERENCE);
 		expect(element.attributeValue(ATTRIBUTE_TARGET)).andReturn("12345");
-		expect(factory.create(ReferenceSerialization.class)).andReturn(serialization);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
-		expect(element.attributes()).andReturn(CollectionUtils.asList(target, invalid));
-		expect(element.attributes()).andReturn(CollectionUtils.asList(target, invalid));
+		expect(element.attributes()).andReturn(Arrays.asList(target, invalid));
+		expect(element.attributes()).andReturn(Arrays.asList(target, invalid));
 		expect(target.getName()).andReturn(ATTRIBUTE_TARGET);
 		expect(invalid.getName()).andReturn("invalid-attribute");
 		expect(element.getPath()).andReturn(PATH);
 
-		replay(factory, element, target, invalid);
+		replay(element, target, invalid);
 		try {
 			handler.handleType(element, attributes);
 			fail("ConfigurationException expected");
 		} catch (ConfigurationException e) {
-			assertEquals(String.format(INVALID_ATTRIBUTES_FORMAT, CollectionUtils.asList("invalid-attribute"), TYPE_REFERENCE, PATH), e.getMessage());
+			assertEquals(String.format(INVALID_ATTRIBUTES_FORMAT, Arrays.asList("invalid-attribute"), TYPE_REFERENCE, PATH), e.getMessage());
 		}
-		verify(factory, element, target, invalid);
+		verify(element, target, invalid);
 	}
 	
 	/**
@@ -851,12 +776,12 @@ public class SerializationElementHandlerTest extends TestCase {
 		references.put(new ReferenceSerialization(), "12345");
 		references.put(new ReferenceSerialization(), "6789");
 		
-		replay(factory, element);
+		replay(element);
 		Set<String> results = SerializationElementHandler.resolveReferences(references, serializations);
-		verify(factory, element);
+		verify(element);
 		
-		assertEquals(2, CollectionUtils.sizeOf(results));
-		assertTrue(results.containsAll(CollectionUtils.asSet("12345", "6789")));
+		assertEquals(2, CollectionUtils.size(results));
+		assertTrue(results.containsAll(Arrays.asList("12345", "6789")));
 	}
 	
 	/**
@@ -874,9 +799,9 @@ public class SerializationElementHandlerTest extends TestCase {
 		references.put(ref1, "12345");
 		references.put(ref2, "6789");
 		
-		replay(factory, element);
+		replay(element);
 		Set<String> results = SerializationElementHandler.resolveReferences(references, serializations);
-		verify(factory, element);
+		verify(element);
 		
 		assertTrue(CollectionUtils.isEmpty(results));
 		assertSame(ser1, ref1.getReferenced());
@@ -892,12 +817,12 @@ public class SerializationElementHandlerTest extends TestCase {
 		extensions.put(new ComplexSerialization(), "12345");
 		extensions.put(new ComplexSerialization(), "6789");
 		
-		replay(factory, element);
+		replay(element);
 		Set<String> results = SerializationElementHandler.resolveExtensions(extensions, parents);
-		verify(factory, element);
+		verify(element);
 		
-		assertEquals(2, CollectionUtils.sizeOf(results));
-		assertTrue(results.containsAll(CollectionUtils.asSet("12345", "6789")));
+		assertEquals(2, CollectionUtils.size(results));
+		assertTrue(results.containsAll(Arrays.asList("12345", "6789")));
 	}
 	
 	/**
@@ -920,14 +845,14 @@ public class SerializationElementHandlerTest extends TestCase {
 		parents.put("3", ser3);
 		parents.put("5", ser5);
 		
-		replay(factory, element);
+		replay(element);
 		try {
 			SerializationElementHandler.resolveExtensions(extensions, parents);
 			fail("ConfigurationException expected");
 		} catch (ConfigurationException e) {
 			assertEquals(INVALID_LOOP_REFERENCES, e.getMessage());
 		}
-		verify(factory, element);
+		verify(element);
 	}
 	
 	/**
@@ -938,16 +863,16 @@ public class SerializationElementHandlerTest extends TestCase {
 		ser1.setWriteEmpty(Boolean.TRUE);
 		Serialization ser1Attr = new AttributeSerialization();
 		Serialization ser1Element = new ValueSerialization();
-		ser1.setAttributes(CollectionUtils.asList(ser1Attr));
-		ser1.setElements(CollectionUtils.asList(ser1Element));
+		ser1.setAttributes(Arrays.asList(ser1Attr));
+		ser1.setElements(Arrays.asList(ser1Element));
 		ComplexSerialization ser2 = new ComplexSerialization();
 		ComplexSerialization ser3 = new ComplexSerialization();
 		Serialization ser3Attr = new AttributeSerialization();
-		ser3.setAttributes(CollectionUtils.asList(ser3Attr));
+		ser3.setAttributes(Arrays.asList(ser3Attr));
 		ComplexSerialization ser4 = new ComplexSerialization();
 		Serialization ser4Element = new ValueSerialization();
 		ser4.setWriteEmpty(Boolean.FALSE);
-		ser4.setElements(CollectionUtils.asList(ser4Element));
+		ser4.setElements(Arrays.asList(ser4Element));
 		Map<ComplexSerialization, String> extensions = new HashMap<ComplexSerialization, String>(); 
 		extensions.put(ser1, "2");
 		extensions.put(ser2, "3");
@@ -957,23 +882,23 @@ public class SerializationElementHandlerTest extends TestCase {
 		parents.put("3", ser3);
 		parents.put("4", ser4);
 
-		replay(factory, element);
+		replay(element);
 		Set<String> invalid = SerializationElementHandler.resolveExtensions(extensions, parents);
-		verify(factory, element);
+		verify(element);
 		
 		assertTrue(CollectionUtils.isEmpty(invalid));
 		assertFalse(ser4.isWriteEmpty());
 		assertTrue(CollectionUtils.isEmpty(ser4.getAttributes()));
-		assertEquals(CollectionUtils.asList(ser4Element), ser4.getElements());
+		assertEquals(Arrays.asList(ser4Element), ser4.getElements());
 		assertFalse(ser3.isWriteEmpty());
-		assertEquals(CollectionUtils.asList(ser3Attr), ser3.getAttributes());
-		assertEquals(CollectionUtils.asList(ser4Element), ser3.getElements());
+		assertEquals(Arrays.asList(ser3Attr), ser3.getAttributes());
+		assertEquals(Arrays.asList(ser4Element), ser3.getElements());
 		assertFalse(ser2.isWriteEmpty());
-		assertEquals(CollectionUtils.asList(ser3Attr), ser2.getAttributes());
-		assertEquals(CollectionUtils.asList(ser4Element), ser2.getElements());
+		assertEquals(Arrays.asList(ser3Attr), ser2.getAttributes());
+		assertEquals(Arrays.asList(ser4Element), ser2.getElements());
 		assertTrue(ser1.isWriteEmpty());
-		assertEquals(CollectionUtils.asList(ser3Attr, ser1Attr), ser1.getAttributes());
-		assertEquals(CollectionUtils.asList(ser4Element, ser1Element), ser1.getElements());
+		assertEquals(Arrays.asList(ser3Attr, ser1Attr), ser1.getAttributes());
+		assertEquals(Arrays.asList(ser4Element, ser1Element), ser1.getElements());
 	}
 
 }

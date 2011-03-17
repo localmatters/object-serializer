@@ -22,7 +22,7 @@
     <packaging>jar</packaging>
     <name>ObjectSerializer</name>
     <version>2.0.0-SNAPSHOT</version>
-    <description>Library to serialize Java Object in XML and JSON based on an agnostic XML configuration</description>
+    <description>Serialize Java Objects in XML and JSON based on an agnostic XML configuration</description>
     
     <scm>
         <connection>scm:svn:https://subversion.corp.localmatters.com/subversion/DestinationSearch/objectserializer/trunk</connection>

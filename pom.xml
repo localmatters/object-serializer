@@ -18,7 +18,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.localmatters</groupId>
-    <artifactId>object-serializer</artifactId>
+    <artifactId>objectserializer</artifactId>
     <packaging>jar</packaging>
     <name>Object Serializer</name>
     <version>2.0.0-SNAPSHOT</version>

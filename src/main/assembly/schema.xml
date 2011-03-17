@@ -27,6 +27,7 @@
         <fileSet>
             <includes>
                 <include>*.xsd</include>
+                <include>README</include>
             </includes>
             <directory>src/main/schema</directory>
             <outputDirectory>${artifact.artifactId}-${artifact.version}-schema</outputDirectory>

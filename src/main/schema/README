@@ -1,0 +1,4 @@
+serializations.xsd
+------------------
+Any approved changes to the serializations schema must be reflected into the
+localmatters.org site (http://www.localmatters.org/schema/serializations.xsd). 

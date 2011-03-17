@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <serializations xmlns="http://www.localmatters.com/schema/serializations" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.localmatters.com/schema/serializations http://www.localmatters.com/schema/serializations.xsd">
 
-    <!-- com.localmatters.serializer.test.domain.ObjectWithGenerics -->
+    <!-- org.localmatters.serializer.test.domain.ObjectWithGenerics -->
     <complex id="ObjectWithGenerics" bean="ObjectWithGenerics" name="ObjectWithGenerics">
         <list property="array"/>
 
@@ -30,7 +30,7 @@
             </map>
         </list>
 
-        <!-- Iteration of [class com.localmatters.serializer.test.domain.ParameterizedObject] -->
+        <!-- Iteration of [class org.localmatters.serializer.test.domain.ParameterizedObject] -->
         <list property="listOfParameterizedObject">
             <list name="element"/>
         </list>
@@ -54,10 +54,10 @@
         <map property="mapOfStringAndDouble"/>
     </complex>
 
-    <!-- com.localmatters.serializer.test.domain.DummyObject -->
-    <complex id="com.localmatters.serializer.test.domain.DummyObject" bean="DummyObject" name="DummyObject">
+    <!-- org.localmatters.serializer.test.domain.DummyObject -->
+    <complex id="org.localmatters.serializer.test.domain.DummyObject" bean="DummyObject" name="DummyObject">
 
-        <!-- map of [class java.lang.String] and [class com.localmatters.serializer.test.domain.DummyObject$Address] -->
+        <!-- map of [class java.lang.String] and [class org.localmatters.serializer.test.domain.DummyObject$Address] -->
         <map property="addresses">
             <ref target="Address"/>
         </map>
@@ -81,32 +81,32 @@
         <list property="ordersList"/>
     </complex>
 
-    <!-- com.localmatters.serializer.test.domain.extra.DummyObject -->
+    <!-- org.localmatters.serializer.test.domain.extra.DummyObject -->
     <complex id="DummyObject" bean="DummyObject" name="DummyObject">
-        <ref property="dummy" target="com.localmatters.serializer.test.domain.DummyObject"/>
+        <ref property="dummy" target="org.localmatters.serializer.test.domain.DummyObject"/>
     </complex>
 
-    <!-- com.localmatters.serializer.test.domain.ChildOfSelfreferencingObject -->
+    <!-- org.localmatters.serializer.test.domain.ChildOfSelfreferencingObject -->
     <complex id="ChildOfSelfreferencingObject" bean="ChildOfSelfreferencingObject" name="ChildOfSelfreferencingObject">
         <value property="name"/>
 
-        <!-- Iteration of [class com.localmatters.serializer.test.domain.SelfReferencingObject] -->
+        <!-- Iteration of [class org.localmatters.serializer.test.domain.SelfReferencingObject] -->
         <list property="others">
             <ref name="other" target="SelfReferencingObject"/>
         </list>
     </complex>
 
-    <!-- com.localmatters.serializer.test.domain.SelfReferencingObject -->
+    <!-- org.localmatters.serializer.test.domain.SelfReferencingObject -->
     <complex id="SelfReferencingObject" name="SelfReferencingObject">
         <value property="name"/>
 
-        <!-- Iteration of [class com.localmatters.serializer.test.domain.SelfReferencingObject] -->
+        <!-- Iteration of [class org.localmatters.serializer.test.domain.SelfReferencingObject] -->
         <list property="others">
             <ref name="other" target="SelfReferencingObject"/>
         </list>
     </complex>
 
-    <!-- com.localmatters.serializer.test.domain.DummyObject$Address -->
+    <!-- org.localmatters.serializer.test.domain.DummyObject$Address -->
     <complex id="Address" name="Address">
         <value property="city"/>
         <value property="state"/>

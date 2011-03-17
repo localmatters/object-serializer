@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <serializations xmlns="http://www.localmatters.com/schema/serializations" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.localmatters.com/schema/serializations http://www.localmatters.com/schema/serializations.xsd">
 
-    <!-- com.localmatters.serializer.test.domain.ObjectWithGenerics -->
+    <!-- org.localmatters.serializer.test.domain.ObjectWithGenerics -->
     <complex id="ObjectWithGenerics" bean="ObjectWithGenerics" name="ObjectWithGenerics">
         <list property="array"/>
 
@@ -30,7 +30,7 @@
             </map>
         </list>
 
-        <!-- Iteration of [class com.localmatters.serializer.test.domain.ParameterizedObject] -->
+        <!-- Iteration of [class org.localmatters.serializer.test.domain.ParameterizedObject] -->
         <list property="listOfParameterizedObject">
             <list name="element"/>
         </list>

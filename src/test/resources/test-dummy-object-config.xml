@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <serializations xmlns="http://www.localmatters.com/schema/serializations" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.localmatters.com/schema/serializations http://www.localmatters.com/schema/serializations.xsd">
 
-    <!-- com.localmatters.serializer.test.domain.DummyObject -->
+    <!-- org.localmatters.serializer.test.domain.DummyObject -->
     <complex id="DummyObject" bean="DummyObject" name="DummyObject">
 
-        <!-- map of [class java.lang.String] and [class com.localmatters.serializer.test.domain.DummyObject$Address] -->
+        <!-- map of [class java.lang.String] and [class org.localmatters.serializer.test.domain.DummyObject$Address] -->
         <map property="addresses">
             <ref target="Address"/>
         </map>
@@ -28,7 +28,7 @@
         <list property="ordersList"/>
     </complex>
 
-    <!-- com.localmatters.serializer.test.domain.DummyObject$Address -->
+    <!-- org.localmatters.serializer.test.domain.DummyObject$Address -->
     <complex id="Address" name="Address">
         <value property="city"/>
         <value property="state"/>

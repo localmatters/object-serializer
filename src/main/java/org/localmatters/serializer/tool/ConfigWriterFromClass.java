@@ -81,9 +81,9 @@ public class ConfigWriterFromClass {
 	protected Serialization analyse() {
 		ids = new HashMap<Class<?>, String>();
 		root = createComplex(
-				createConstantAttribute("xmlns", "http://www.localmatters.org/schema/serializations"),
+				createConstantAttribute("xmlns", "http://schema.localmatters.org/serializations"),
 				createConstantAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"),
-				createConstantAttribute("xsi:schemaLocation", "http://www.localmatters.org/schema/serializations http://www.localmatters.org/schema/serializations.xsd"));
+				createConstantAttribute("xsi:schemaLocation", "http://schema.localmatters.org/serializations http://schema.localmatters.org/serializations.xsd"));
 		references = new HashMap<Class<?>, NameSerialization>();
 		for (Class<?> klass : getRootClasses()) {
 			references.put(klass, null);

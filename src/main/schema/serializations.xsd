@@ -15,9 +15,9 @@
    limitations under the License.
  -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"  
-           targetNamespace="http://www.localmatters.org/schema/serializations" 
-           xmlns:ser="http://www.localmatters.org/schema/serializations"
-           xmlns="http://www.localmatters.org/schema/serializations" 
+           targetNamespace="http://schema.localmatters.org/serializations" 
+           xmlns:ser="http://schema.localmatters.org/serializations"
+           xmlns="http://schema.localmatters.org/serializations" 
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0.1">

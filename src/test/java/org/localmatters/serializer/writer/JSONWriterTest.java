@@ -40,6 +40,7 @@ import org.localmatters.serializer.resolver.PropertyResolver;
 import org.localmatters.serializer.serialization.ComplexSerialization;
 import org.localmatters.serializer.serialization.IteratorSerialization;
 import org.localmatters.serializer.serialization.MapSerialization;
+import org.localmatters.serializer.serialization.NameSerialization;
 import org.localmatters.serializer.serialization.Serialization;
 import org.localmatters.serializer.serialization.ValueSerialization;
 
@@ -321,6 +322,84 @@ public class JSONWriterTest extends TestCase {
 		assertEquals("\"listing\": {\"id\": \"ABCD1234\", \"name\": \"John Hotel\"}", os.toString());
 		assertEquals("results", ctx.getPath());
 	}
+    
+    /**
+     * Tests serializing a complex for which all element and attribute are empty
+     */
+    public void testComplexWhenAllEmpty() throws Exception {
+        ctx.nextLevel("results");
+        Serialization ser = createMock(ComplexSerialization.class);
+        Serialization attribute1 = createConstantAttribute("desc", null);
+        Serialization attribute2 = createConstantAttribute("id", null);
+        Serialization element = createConstantValue("name", null);
+        ComplexSerialization complex = new ComplexSerialization();
+        complex.setElements(Arrays.asList((Serialization) createConstantAttribute("street", null)));
+        NameSerialization name = new NameSerialization();
+        name.setName("address");
+        name.setDelegate(complex);
+        Object object = new Object();
+        
+        expect(ser.isWriteEmpty()).andReturn(false);
+        
+        replay(ser);
+        writer.writeComplex(ser, "listing", object, Arrays.asList(attribute1, attribute2), Arrays.asList(element, name), null, ctx);
+        verify(ser);
+
+        assertEquals(StringUtils.EMPTY, os.toString());
+        assertEquals("results", ctx.getPath());
+    }
+    
+    /**
+     * Tests serializing a complex for which all element and attribute are empty
+     */
+    public void testComplexWhenAllEmptyButDisplay() throws Exception {
+        ctx.nextLevel("results");
+        Serialization ser = createMock(ComplexSerialization.class);
+        Serialization attribute1 = createConstantAttribute("desc", null);
+        Serialization attribute2 = createConstantAttribute("id", null);
+        Serialization element = createConstantValue("name", null);
+        ComplexSerialization complex = new ComplexSerialization();
+        complex.setElements(Arrays.asList((Serialization) createConstantAttribute("street", null)));
+        NameSerialization name = new NameSerialization();
+        name.setName("address");
+        name.setDelegate(complex);
+        Object object = new Object();
+        
+        expect(ser.isWriteEmpty()).andReturn(true);
+        
+        replay(ser);
+        writer.writeComplex(ser, "listing", object, Arrays.asList(attribute1, attribute2), Arrays.asList(element, name), null, ctx);
+        verify(ser);
+
+        assertEquals("\"listing\": {}", os.toString());
+        assertEquals("results", ctx.getPath());
+    }
+    
+    /**
+     * Tests serializing a complex for which all element and attribute are empty
+     */
+    public void testComplexWhenAllEmptyButChildDisplay() throws Exception {
+        ctx.setFormatting(true);
+        ctx.nextLevel("results");
+        Serialization ser = createMock(ComplexSerialization.class);
+        Serialization attribute1 = createConstantAttribute("desc", null);
+        Serialization attribute2 = createConstantAttribute("id", null);
+        Serialization element = createConstantValue("name", null);
+        ComplexSerialization complex = new ComplexSerialization();
+        complex.setElements(Arrays.asList((Serialization) createConstantAttribute("street", null)));
+        complex.setWriteEmpty(true);
+        NameSerialization name = new NameSerialization();
+        name.setName("address");
+        name.setDelegate(complex);
+        Object object = new Object();
+        
+        replay(ser);
+        writer.writeComplex(ser, "listing", object, Arrays.asList(attribute1, attribute2), Arrays.asList(element, name), null, ctx);
+        verify(ser);
+
+        assertEquals("\n   \"listing\": {\n      \"address\": {}\n   }", os.toString());
+        assertEquals("results", ctx.getPath());
+    }
 	
 	/**
 	 * Tests serializing a complex
@@ -384,6 +463,42 @@ public class JSONWriterTest extends TestCase {
 		assertEquals("\n   [\n      \"baseball\", \n      \"hockey\"\n   ]", os.toString());
 		assertEquals("results", ctx.getPath());
 	}
+
+    /**
+     * Tests serializing a iterator
+     */
+    public void testIteratorWhenAllElementNull() throws Exception {
+        ctx.nextLevel("results");
+        Serialization ser = createMock(IteratorSerialization.class);
+        Iterator<String> itr = Arrays.asList((String) null, (String) null).iterator();
+        Serialization element = new ValueSerialization();
+        
+        expect(ser.isWriteEmpty()).andReturn(false);
+
+        replay(ser);
+        writer.writeIterator(ser, "sports", itr, "sport", element, null, ctx);
+        verify(ser);
+        assertEquals(StringUtils.EMPTY, os.toString());
+        assertEquals("results", ctx.getPath());
+    }
+
+    /**
+     * Tests serializing a iterator
+     */
+    public void testIteratorWhenAllElementNullAndDisplayEmpty() throws Exception {
+        ctx.nextLevel("results");
+        Serialization ser = createMock(IteratorSerialization.class);
+        Iterator<String> itr = Arrays.asList((String) null, (String) null).iterator();
+        Serialization element = new ValueSerialization();
+        
+        expect(ser.isWriteEmpty()).andReturn(true);
+
+        replay(ser);
+        writer.writeIterator(ser, "sports", itr, "sport", element, null, ctx);
+        verify(ser);
+        assertEquals("\"sports\": []", os.toString());
+        assertEquals("results", ctx.getPath());
+    }
 
 	/**
 	 * Tests serializing a iterator
@@ -475,6 +590,56 @@ public class JSONWriterTest extends TestCase {
 		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
 
+    /**
+     * Tests serializing a map
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public void testMapWhenAllEntriesNull() throws Exception {
+        PropertyResolver resolver = createMock(PropertyResolver.class);
+        ctx = new SerializationContext(writer, resolver, os);
+        
+        Serialization ser = createMock(MapSerialization.class);
+        Serialization value = new ValueSerialization();
+        Map map = new LinkedHashMap<String, String>();
+        map.put("sport", null);
+        map.put("hobby", null);
+        
+        expect(ser.isWriteEmpty()).andReturn(false);
+        expect(resolver.resolve("sport", "keyProperty")).andReturn("s");
+        expect(resolver.resolve("hobby", "keyProperty")).andReturn("h");
+        
+        replay(ser, resolver);
+        writer.writeMap(ser, "leisures", map.entrySet(), "keyProperty", value, null, ctx);
+        verify(ser, resolver);
+        assertEquals(StringUtils.EMPTY, os.toString());
+        assertEquals(StringUtils.EMPTY, ctx.getPath());
+    }
+
+    /**
+     * Tests serializing a map
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public void testMapWhenAllEntriesNullAndDisplayEmpty() throws Exception {
+        PropertyResolver resolver = createMock(PropertyResolver.class);
+        ctx = new SerializationContext(writer, resolver, os);
+        
+        Serialization ser = createMock(MapSerialization.class);
+        Serialization value = new ValueSerialization();
+        Map map = new LinkedHashMap<String, String>();
+        map.put("sport", null);
+        map.put("hobby", null);
+        
+        expect(ser.isWriteEmpty()).andReturn(true);
+        expect(resolver.resolve("sport", "keyProperty")).andReturn("s");
+        expect(resolver.resolve("hobby", "keyProperty")).andReturn("h");
+        
+        replay(ser, resolver);
+        writer.writeMap(ser, "leisures", map.entrySet(), "keyProperty", value, null, ctx);
+        verify(ser, resolver);
+        assertEquals("\"leisures\": {}", os.toString());
+        assertEquals(StringUtils.EMPTY, ctx.getPath());
+    }
+	
 	/**
 	 * Tests serializing a map
 	 */

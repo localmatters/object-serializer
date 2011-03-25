@@ -32,14 +32,23 @@ import org.localmatters.serializer.util.EscapeUtils;
  * This class defines a serialization writer that outputs XML.
  */
 public class XMLWriter extends AbstractWriter {
+    private static final String LT = "<";
+    private static final String GT = ">";
+    private static final String STAR_STAR = "**";
+    private static final String DASH_DASH = "--";
+    private static final String MIDDLE_COMMENT = "     ";
+    private static final String END_COMMENT = " -->";
+    private static final String START_COMMENT = "<!-- ";
+    private static final String NEW_LINE = "\n";
+    private static final String VALUE_LEVEL = "value";
 	private static final byte[] ROOT = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>".getBytes();
-	private static final byte[] LT = "<".getBytes();
-	private static final byte[] LT_SLASH = "</".getBytes();
-	private static final byte[] GT = ">".getBytes();
-	private static final byte[] SLASH_GT = "/>".getBytes();
-	private static final byte[] SPACE = " ".getBytes();
-	private static final byte[] EQUALS_QUOTE = "=\"".getBytes();
-	private static final byte[] QUOTE = "\"".getBytes();
+	private static final byte[] LT_BYTES = LT.getBytes();
+	private static final byte[] LT_SLASH_BYTES = "</".getBytes();
+	private static final byte[] GT_BYTES = GT.getBytes();
+	private static final byte[] SLASH_GT_BYTES = "/>".getBytes();
+	private static final byte[] SPACE_BYTES = " ".getBytes();
+	private static final byte[] EQUALS_QUOTE_BYTES = "=\"".getBytes();
+	private static final byte[] QUOTE_BYTES = "\"".getBytes();
 	private static final String INDENTATION = "    ";
 	private Map<Integer, String> prefixes = new HashMap<Integer, String>();
 
@@ -58,21 +67,21 @@ public class XMLWriter extends AbstractWriter {
 			String name,
 			Object value, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(StringUtils.defaultIfEmpty(name, "value"));
+		ctx.nextLevel(StringUtils.defaultIfEmpty(name, VALUE_LEVEL));
 
 		String prefix = getPrefix(ctx);
 		if (value != null) {
 			String str = EscapeUtils.escapeXml(String.valueOf(value));
 			if (StringUtils.isNotBlank(name)) {
 				write(ctx, prefix)
-				.write(ctx, LT).write(ctx, name).write(ctx, GT)
+				.write(ctx, LT_BYTES).write(ctx, name).write(ctx, GT_BYTES)
 				.write(ctx, str)
-				.write(ctx, LT_SLASH).write(ctx, name).write(ctx, GT);
+				.write(ctx, LT_SLASH_BYTES).write(ctx, name).write(ctx, GT_BYTES);
 			} else {
 				write(ctx, str);
 			}
 		} else if (ser.isWriteEmpty() && StringUtils.isNotBlank(name)) {
-			write(ctx, prefix).write(ctx, LT).write(ctx, name).write(ctx, SLASH_GT);
+			write(ctx, prefix).write(ctx, LT_BYTES).write(ctx, name).write(ctx, SLASH_GT_BYTES);
 		}
 
 		ctx.previousLevel();
@@ -88,16 +97,16 @@ public class XMLWriter extends AbstractWriter {
 		ctx.nextLevel(checkRequiredName(ctx, name));
 
 		if (attribute != null) {
-			write(ctx, SPACE)
+			write(ctx, SPACE_BYTES)
 			.write(ctx, name)
-			.write(ctx, EQUALS_QUOTE)
+			.write(ctx, EQUALS_QUOTE_BYTES)
 			.write(ctx, EscapeUtils.escapeXml(String.valueOf(attribute)))
-			.write(ctx, QUOTE);
+			.write(ctx, QUOTE_BYTES);
 		} else if (ser.isWriteEmpty()) {
-			write(ctx, SPACE)
+			write(ctx, SPACE_BYTES)
 			.write(ctx, name)
-			.write(ctx, EQUALS_QUOTE)
-			.write(ctx, QUOTE);
+			.write(ctx, EQUALS_QUOTE_BYTES)
+			.write(ctx, QUOTE_BYTES);
 		}
 
 		ctx.previousLevel();
@@ -114,10 +123,11 @@ public class XMLWriter extends AbstractWriter {
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
 		ctx.nextLevel(checkRequiredName(ctx, name));
+        boolean empty = true;
 
 		String prefix = getPrefix(ctx);
 		if (CollectionUtils.isNotEmpty(attributes) || CollectionUtils.isNotEmpty(elements)) {
-			writeComments(ctx, prefix, comments).write(ctx, LT).write(ctx, name);
+		    ctx.pushPrefix(processComments(ctx, prefix, comments) + LT + name);
 
 			// writes the attributes
 			if (CollectionUtils.isNotEmpty(attributes)) {
@@ -126,19 +136,30 @@ public class XMLWriter extends AbstractWriter {
 				}
 			}
 
-			// closes the tag if there are no element or writes them
 			if (CollectionUtils.isEmpty(elements)) {
-				write(ctx, SLASH_GT);
-			} else {
-				write(ctx, GT);
-				for (Serialization element : elements) {
-					element.serialize(element, null, object, ctx);
-				}
-				write(ctx, prefix).write(ctx, LT_SLASH).write(ctx, name).write(ctx, GT);
-			}
-			
-		} else if (ser.isWriteEmpty()) {
-			writeComments(ctx, prefix, comments).write(ctx, LT).write(ctx, name).write(ctx, SLASH_GT);
+			    if (ctx.consomePrefix() == null) {
+			        empty = false;
+                    write(ctx, SLASH_GT_BYTES);
+                }
+            } else {
+                if (ctx.consomePrefix() == null) {
+                    empty = false;
+                    write(ctx, GT_BYTES);
+                } else {
+                    ctx.pushPrefix(processComments(ctx, prefix, comments) + LT + name + GT);
+                }
+                for (Serialization element : elements) {
+                    element.serialize(element, null, object, ctx);
+                }
+                if (ctx.consomePrefix() == null) {
+                    empty = false;
+                    write(ctx, prefix).write(ctx, LT_SLASH_BYTES).write(ctx, name).write(ctx, GT_BYTES);
+                }
+            }
+		} 
+
+		if (empty && ser.isWriteEmpty()){
+		    write(ctx, processComments(ctx, prefix, comments)).write(ctx, LT_BYTES).write(ctx, name).write(ctx, SLASH_GT_BYTES);
 		}
 
 		ctx.previousLevel();
@@ -155,16 +176,22 @@ public class XMLWriter extends AbstractWriter {
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
 		ctx.nextLevel(checkRequiredName(ctx, name));
+        boolean empty = true;
 
 		String prefix = getPrefix(ctx);
 		if (itr.hasNext()) {
-			writeComments(ctx, prefix, comments).write(ctx, LT).write(ctx, name).write(ctx, GT);
+		    ctx.pushPrefix(processComments(ctx, prefix, comments) + LT + name + GT);
 			while (itr.hasNext()) {
 				element.serialize(element, elementName, itr.next(), ctx);
 			}
-			write(ctx, prefix).write(ctx, LT_SLASH).write(ctx, name).write(ctx, GT);
-		} else if (ser.isWriteEmpty()) {
-			writeComments(ctx, prefix, comments).write(ctx, LT).write(ctx, name).write(ctx, SLASH_GT);
+            if (ctx.consomePrefix() == null) {
+                empty = false;
+                write(ctx, prefix).write(ctx, LT_SLASH_BYTES).write(ctx, name).write(ctx, GT_BYTES);
+            }
+		} 
+
+        if (empty && ser.isWriteEmpty()){
+			write(ctx, processComments(ctx, prefix, comments)).write(ctx, LT_BYTES).write(ctx, name).write(ctx, SLASH_GT_BYTES);
 		}
 
 		ctx.previousLevel();
@@ -182,17 +209,22 @@ public class XMLWriter extends AbstractWriter {
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
 		ctx.nextLevel(checkRequiredName(ctx, name));
+        boolean empty = true;
 
 		String prefix = getPrefix(ctx);
 		if (CollectionUtils.isNotEmpty(entries)) {
-			writeComments(ctx, prefix, comments).write(ctx, LT).write(ctx, name).write(ctx, GT);
+		    ctx.pushPrefix(processComments(ctx, prefix, comments) + LT + name + GT);
 			for (Map.Entry entry : entries) {
 				value.serialize(value, resolvesMapKey(key, entry, ctx), entry.getValue(), ctx);
 			}
-			write(ctx, prefix).write(ctx, LT_SLASH).write(ctx, name).write(ctx, GT);
+            if (ctx.consomePrefix() == null) {
+                empty = false;
+                write(ctx, prefix).write(ctx, LT_SLASH_BYTES).write(ctx, name).write(ctx, GT_BYTES);
+            }
+		} 
 
-		} else if (ser.isWriteEmpty()) {
-			writeComments(ctx, prefix, comments).write(ctx, LT).write(ctx, name).write(ctx, SLASH_GT);
+        if (empty && ser.isWriteEmpty()){
+		    write(ctx, processComments(ctx, prefix, comments)).write(ctx, LT_BYTES).write(ctx, name).write(ctx, SLASH_GT_BYTES);
 		}
 
 		ctx.previousLevel();
@@ -204,12 +236,12 @@ public class XMLWriter extends AbstractWriter {
 	 * @return The prefix
 	 */
 	protected String getPrefix(SerializationContext ctx) {
-		String prefix = "";
+		String prefix = StringUtils.EMPTY;
 		int deepness = ctx.getDeepness();
 		if (ctx.isFormatting()) {
 			prefix = prefixes.get(deepness);
 			if (prefix == null) {
-				prefix = "\n";
+				prefix = NEW_LINE;
 				for (int i=1; i<deepness; i++) {
 					prefix += INDENTATION;
 				}
@@ -228,21 +260,20 @@ public class XMLWriter extends AbstractWriter {
 	 * @return The writer itself for ease of coding
 	 * @throws SerializationException When the writing failed
 	 */
-	protected XMLWriter writeComments(SerializationContext ctx, 
-			String prefix, 
-			Collection<String> comments) throws SerializationException {
+	protected String processComments(SerializationContext ctx, String prefix, Collection<String> comments) throws SerializationException {
+	    StringBuilder sb = new StringBuilder();
 		if (ctx.isFormatting()) {
 			if (CollectionUtils.isNotEmpty(comments)) {
-				String sep = "\n" + prefix + "<!-- "; 
+				String sep = NEW_LINE + prefix + START_COMMENT; 
 				for (String comment : comments) {
-					write(ctx, sep);
-					write(ctx, comment.replaceAll("--", "**"));
-					sep = prefix + "     ";
+					sb.append(sep);
+					sb.append(comment.replaceAll(DASH_DASH, STAR_STAR));
+					sep = prefix + MIDDLE_COMMENT;
 				}
-				write(ctx, " -->");
+				sb.append(END_COMMENT);
 			}
-			write(ctx, prefix);
+			sb.append(prefix);
 		}
-		return this;
+		return sb.toString();
 	}
 }

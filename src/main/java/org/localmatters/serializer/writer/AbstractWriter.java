@@ -16,6 +16,7 @@
 package org.localmatters.serializer.writer;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -53,9 +54,11 @@ public abstract class AbstractWriter implements Writer {
 	protected AbstractWriter write(SerializationContext ctx, byte[] bytes) throws SerializationException {
 		try {
 			if (bytes.length > 0) {
-				byte[] prefix = ctx.consomePrefix();
-				if (prefix != null) {
-					ctx.getOutputStream().write(prefix);
+				Iterator<byte[]> itr = ctx.getPrefixes().iterator();
+				while (itr.hasNext()) {
+				    byte[] prefix = itr.next();
+				    ctx.getOutputStream().write(prefix);
+				    itr.remove();
 				}
 				ctx.getOutputStream().write(bytes);
 			}

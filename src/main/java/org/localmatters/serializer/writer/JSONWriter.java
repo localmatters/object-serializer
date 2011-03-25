@@ -35,19 +35,26 @@ import org.localmatters.serializer.util.ReflectionUtils;
  * This class defines a serialization writer that outputs JSON.
  */
 public class JSONWriter extends AbstractWriter {
-	private static final byte[] NULL = "null".getBytes();
-	private static final byte[] LEFT_CURLY = "{".getBytes();
-	private static final byte[] RIGHT_CURLY = "}".getBytes();
-	private static final byte[] LEFT_SQUARE = "[".getBytes();
-	private static final byte[] RIGHT_SQUARE = "]".getBytes();
-	private static final byte[] QUOTE = "\"".getBytes();
-	private static final byte[] QUOTE_COLUMN = "\": ".getBytes();
-	private static final byte[] QUOTE_COLUMN_LEFT_CURLY = "\": {".getBytes();
-	private static final byte[] QUOTE_COLUMN_CLOSED_CURLY = "\": {}".getBytes();
-	private static final byte[] QUOTE_COLUMN_LEFT_SQUARE = "\": [".getBytes();
-	private static final byte[] QUOTE_COLUMN_CLOSED_SQUARE = "\": []".getBytes();
-	private static final byte[] COMMA = ", ".getBytes();
-	private static final String INDENTATION = "   ";
+    private static final String INDENTATION = "   ";
+    private static final String LEFT_CURLY = "{";
+    private static final String LEFT_SQUARE = "[";
+    private static final String QUOTE = "\"";
+    private static final String QUOTE_COLUMN_LEFT_CURLY = "\": {";
+    private static final String QUOTE_COLUMN_LEFT_SQUARE = "\": [";
+    private static final String NEW_LINE = "\n";
+    private static final String VALUE_LEVEL = "value";
+    private static final String MAP_LEVEL = "map";
+    private static final String ITERATOR_LEVEL = "iterator";
+    private static final String COMPLEX_LEVEL = "complex";
+    private static final byte[] NULL_BYTES = "null".getBytes();
+	private static final byte[] LEFT_CURLY_BYTES = LEFT_CURLY.getBytes();
+	private static final byte[] RIGHT_CURLY_BYTES = "}".getBytes();
+	private static final byte[] RIGHT_SQUARE_BYTES = "]".getBytes();
+	private static final byte[] QUOTE_BYTES = QUOTE.getBytes();
+	private static final byte[] QUOTE_COLUMN_BYTES = "\": ".getBytes();
+	private static final byte[] QUOTE_COLUMN_CLOSED_CURLY_BYTES = "\": {}".getBytes();
+	private static final byte[] QUOTE_COLUMN_CLOSED_SQUARE_BYTES = "\": []".getBytes();
+	private static final byte[] COMMA_BYTES = ", ".getBytes();
 	private Map<Integer, String> prefixes = new HashMap<Integer, String>();
 
 	/**
@@ -58,9 +65,9 @@ public class JSONWriter extends AbstractWriter {
 			SerializationContext ctx) throws SerializationException {
 		Serialization contextless = ser.getContextlessSerialization();
 		if (contextless instanceof ValueSerialization) {
-			write(ctx, LEFT_CURLY);
+			write(ctx, LEFT_CURLY_BYTES);
 			ser.serialize(ser, null, root, ctx);
-			write(ctx, getPrefix(ctx)).write(ctx, RIGHT_CURLY);
+			write(ctx, getPrefix(ctx)).write(ctx, RIGHT_CURLY_BYTES);
 		} else if (ser instanceof NameSerialization) {
 			contextless = ((NameSerialization) ser).getDelegate();
 			contextless.serialize(contextless, null, root, ctx);
@@ -77,27 +84,27 @@ public class JSONWriter extends AbstractWriter {
 			String name,
 			Object value, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(StringUtils.defaultIfEmpty(name, "value"));
+		ctx.nextLevel(StringUtils.defaultIfEmpty(name, VALUE_LEVEL));
 
 		String prefix = getPrefix(ctx);
 		if (value != null) {
 			write(ctx, prefix);
 			if (StringUtils.isNotBlank(name)) {
-				write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN);
+				write(ctx, QUOTE_BYTES).write(ctx, name).write(ctx, QUOTE_COLUMN_BYTES);
 			}
 
 			String str = String.valueOf(value);
 			if (ReflectionUtils.isNumeric(value.getClass()) || ReflectionUtils.isBoolean(value.getClass())) {
 				write(ctx, str);
 			} else {
-				write(ctx, QUOTE).write(ctx, EscapeUtils.escapeJson(str)).write(ctx, QUOTE);
+				write(ctx, QUOTE_BYTES).write(ctx, EscapeUtils.escapeJson(str)).write(ctx, QUOTE_BYTES);
 			}
 		} else if (ser.isWriteEmpty()) {
 			write(ctx, prefix);
 			if (StringUtils.isNotBlank(name)) {
-				write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN);
+				write(ctx, QUOTE_BYTES).write(ctx, name).write(ctx, QUOTE_COLUMN_BYTES);
 			}
-			write(ctx, NULL);
+			write(ctx, NULL_BYTES);
 		}
 
 		ctx.previousLevel();
@@ -123,14 +130,15 @@ public class JSONWriter extends AbstractWriter {
 			Collection<Serialization> elements, 
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(StringUtils.defaultIfEmpty(name, "complex"));
+		ctx.nextLevel(StringUtils.defaultIfEmpty(name, COMPLEX_LEVEL));
+		boolean empty = true;
 
 		String prefix = getPrefix(ctx);
 		if (CollectionUtils.isNotEmpty(attributes) || CollectionUtils.isNotEmpty(elements)) {
 			if (StringUtils.isEmpty(name)) {
-				write(ctx, prefix).write(ctx, LEFT_CURLY);
+			    ctx.pushPrefix(prefix + LEFT_CURLY);
 			} else {
-				write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_LEFT_CURLY);
+			    ctx.pushPrefix(prefix + QUOTE + name + QUOTE_COLUMN_LEFT_CURLY);
 			}
 			byte[] sep = new byte[]{};
 			
@@ -139,7 +147,7 @@ public class JSONWriter extends AbstractWriter {
 					ctx.pushPrefix(sep);
 					attribute.serialize(attribute, null, object, ctx);
 					if (ctx.consomePrefix() == null) {
-						sep = COMMA;
+						sep = COMMA_BYTES;
 					}
 				}
 			}
@@ -148,13 +156,18 @@ public class JSONWriter extends AbstractWriter {
 					ctx.pushPrefix(sep);
 					element.serialize(element, null, object, ctx);
 					if (ctx.consomePrefix() == null) {
-						sep = COMMA;
+						sep = COMMA_BYTES;
 					}
 				}
 			}
-			write(ctx, prefix).write(ctx, RIGHT_CURLY);
-		} else if (ser.isWriteEmpty()){
-			write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_CLOSED_CURLY);
+			if (ctx.consomePrefix() == null) {
+			    write(ctx, prefix).write(ctx, RIGHT_CURLY_BYTES);
+			    empty = false;
+			}
+		} 
+
+		if (empty && ser.isWriteEmpty()){
+			write(ctx, prefix).write(ctx, QUOTE_BYTES).write(ctx, name).write(ctx, QUOTE_COLUMN_CLOSED_CURLY_BYTES);
 		}
 
 		ctx.previousLevel();
@@ -170,26 +183,32 @@ public class JSONWriter extends AbstractWriter {
 			Serialization element, 
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(StringUtils.defaultIfEmpty(name, "iterator"));
+		ctx.nextLevel(StringUtils.defaultIfEmpty(name, ITERATOR_LEVEL));
+        boolean empty = true;
 
 		String prefix = getPrefix(ctx);
 		if (itr.hasNext()) {
 			if (StringUtils.isEmpty(name)) {
-				write(ctx, prefix).write(ctx, LEFT_SQUARE);
+			    ctx.pushPrefix(prefix + LEFT_SQUARE);
 			} else {
-				write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_LEFT_SQUARE);
+			    ctx.pushPrefix(prefix + QUOTE + name + QUOTE_COLUMN_LEFT_SQUARE);
 			}
 			byte[] sep = new byte[]{};
 			while (itr.hasNext()) {
 				ctx.pushPrefix(sep);
 				element.serialize(element, null, itr.next(), ctx);
 				if (ctx.consomePrefix() == null) {
-					sep = COMMA;
+					sep = COMMA_BYTES;
 				}
 			}
-			write(ctx, prefix).write(ctx, RIGHT_SQUARE);
-		} else if (ser.isWriteEmpty()) {
-			write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_CLOSED_SQUARE);
+            if (ctx.consomePrefix() == null) {
+                write(ctx, prefix).write(ctx, RIGHT_SQUARE_BYTES);
+                empty = false;
+            }
+		} 
+
+        if (empty && ser.isWriteEmpty()){
+			write(ctx, prefix).write(ctx, QUOTE_BYTES).write(ctx, name).write(ctx, QUOTE_COLUMN_CLOSED_SQUARE_BYTES);
 		}
 
 		ctx.previousLevel();
@@ -206,26 +225,32 @@ public class JSONWriter extends AbstractWriter {
 			Serialization value, 
 			Collection<String> comments, 
 			SerializationContext ctx) throws SerializationException {
-		ctx.nextLevel(StringUtils.defaultIfEmpty(name, "map"));
+		ctx.nextLevel(StringUtils.defaultIfEmpty(name, MAP_LEVEL));
+        boolean empty = true;
 
 		String prefix = getPrefix(ctx);
 		if (CollectionUtils.isNotEmpty(entries)) {
 			if (StringUtils.isEmpty(name)) {
-				write(ctx, prefix).write(ctx, LEFT_CURLY);
+			    ctx.pushPrefix(prefix + LEFT_CURLY);
 			} else {
-				write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_LEFT_CURLY);
+			    ctx.pushPrefix(prefix + QUOTE + name + QUOTE_COLUMN_LEFT_CURLY);
 			}
 			byte[] sep = new byte[]{};
 			for (Map.Entry entry : entries) {
 				ctx.pushPrefix(sep);
 				value.serialize(value, resolvesMapKey(key, entry, ctx), entry.getValue(), ctx);
 				if (ctx.consomePrefix() == null) {
-					sep = COMMA;
+					sep = COMMA_BYTES;
 				}
 			}
-			write(ctx, prefix).write(ctx, RIGHT_CURLY);
-		} else if (ser.isWriteEmpty()) {
-			write(ctx, prefix).write(ctx, QUOTE).write(ctx, name).write(ctx, QUOTE_COLUMN_CLOSED_CURLY);
+            if (ctx.consomePrefix() == null) {
+                write(ctx, prefix).write(ctx, RIGHT_CURLY_BYTES);
+                empty = false;
+            }
+		} 
+
+        if (empty && ser.isWriteEmpty()){
+			write(ctx, prefix).write(ctx, QUOTE_BYTES).write(ctx, name).write(ctx, QUOTE_COLUMN_CLOSED_CURLY_BYTES);
 		}
 
 		ctx.previousLevel();
@@ -237,12 +262,12 @@ public class JSONWriter extends AbstractWriter {
 	 * @return The prefix
 	 */
 	protected String getPrefix(SerializationContext ctx) {
-		String prefix = "";
+		String prefix = StringUtils.EMPTY;
 		int deepness = ctx.getDeepness();
 		if (ctx.isFormatting()) {
 			prefix = prefixes.get(deepness);
 			if (prefix == null) {
-				prefix = "\n";
+				prefix = NEW_LINE;
 				for (int i=1; i<deepness; i++) {
 					prefix += INDENTATION;
 				}

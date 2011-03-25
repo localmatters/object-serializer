@@ -36,7 +36,7 @@ public class SerializationContext {
 	private OutputStream outputStream;
 	private Map<String, Object> beans;
 	private boolean formatting = false;
-	private byte[] prefix = null;
+	private Stack<byte[]> prefixes = new Stack<byte[]>();
 
 	/**
 	 * Constructor with the specification of the writer, the property resolver,
@@ -180,16 +180,32 @@ public class SerializationContext {
 	 * @return The prefix that should be written the next time a write occurs
 	 */
 	public byte[] consomePrefix() {
-		byte[] res = prefix;
-		prefix = null;
-		return res;
+	    if (prefixes.isEmpty()) {
+	        return null;
+	    }
+	    return prefixes.pop();
 	}
 
 	/**
-	 * @param aPrefix The prefix that should be written the next time a write 
+	 * @param prefix The prefix that should be written the next time a write 
 	 * occurs
 	 */
-	public void pushPrefix(byte[] aPrefix) {
-		this.prefix = aPrefix;
+	public void pushPrefix(byte[] prefix) {
+		prefixes.push(prefix);
 	}
+
+    /**
+     * @param prefix The prefix that should be written the next time a write 
+     * occurs
+     */
+    public void pushPrefix(String prefix) {
+        prefixes.push(prefix.getBytes());
+    }
+	
+	/**
+	 * @return The stack of prefixes
+	 */
+	public Stack<byte[]> getPrefixes() {
+        return prefixes;
+    }
 }

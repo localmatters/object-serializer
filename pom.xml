@@ -21,12 +21,12 @@
     <artifactId>objectserializer</artifactId>
     <packaging>jar</packaging>
     <name>ObjectSerializer</name>
-    <version>2.0.2</version>
+    <version>2.0.3-SNAPSHOT</version>
     <description>Serialize Java Objects in XML and JSON based on an agnostic XML configuration</description>
     
     <scm>
-        <connection>scm:svn:https://subversion.corp.localmatters.com/subversion/DestinationSearch/objectserializer/tags/objectserializer-2.0.2</connection>
-        <developerConnection>scm:svn:https://subversion.corp.localmatters.com/subversion/DestinationSearch/objectserializer/tags/objectserializer-2.0.2</developerConnection>
+        <connection>scm:svn:https://subversion.corp.localmatters.com/subversion/DestinationSearch/objectserializer/trunk</connection>
+        <developerConnection>scm:svn:https://subversion.corp.localmatters.com/subversion/DestinationSearch/objectserializer/trunk</developerConnection>
     </scm>
 
     <properties>

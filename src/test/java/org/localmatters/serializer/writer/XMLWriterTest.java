@@ -330,7 +330,7 @@ public class XMLWriterTest extends TestCase {
         Serialization ser = createMock(ComplexSerialization.class);
         Serialization attribute1 = createConstantAttribute("desc", null);
         Serialization attribute2 = createConstantAttribute("id", null);
-        Serialization element = createConstantValue("name", null);
+        Serialization element = createConstantValue("name", "");
         ComplexSerialization complex = new ComplexSerialization();
         complex.setElements(Arrays.asList((Serialization) createConstantAttribute("street", null)));
         NameSerialization complexName = new NameSerialization();

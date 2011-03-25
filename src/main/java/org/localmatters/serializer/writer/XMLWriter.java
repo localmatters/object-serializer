@@ -70,8 +70,9 @@ public class XMLWriter extends AbstractWriter {
 		ctx.nextLevel(StringUtils.defaultIfEmpty(name, VALUE_LEVEL));
 
 		String prefix = getPrefix(ctx);
-		if (value != null) {
-			String str = EscapeUtils.escapeXml(String.valueOf(value));
+		String valueStr = String.valueOf(value);
+		if ((value != null) && (StringUtils.isNotEmpty(valueStr))) {
+            String str = EscapeUtils.escapeXml(valueStr);
 			if (StringUtils.isNotBlank(name)) {
 				write(ctx, prefix)
 				.write(ctx, LT_BYTES).write(ctx, name).write(ctx, GT_BYTES)

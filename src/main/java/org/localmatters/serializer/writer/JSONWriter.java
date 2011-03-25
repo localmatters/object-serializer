@@ -87,13 +87,13 @@ public class JSONWriter extends AbstractWriter {
 		ctx.nextLevel(StringUtils.defaultIfEmpty(name, VALUE_LEVEL));
 
 		String prefix = getPrefix(ctx);
-		if (value != null) {
+        String str = String.valueOf(value);
+		if ((value != null) && StringUtils.isNotEmpty(str)) {
 			write(ctx, prefix);
 			if (StringUtils.isNotBlank(name)) {
 				write(ctx, QUOTE_BYTES).write(ctx, name).write(ctx, QUOTE_COLUMN_BYTES);
 			}
 
-			String str = String.valueOf(value);
 			if (ReflectionUtils.isNumeric(value.getClass()) || ReflectionUtils.isBoolean(value.getClass())) {
 				write(ctx, str);
 			} else {

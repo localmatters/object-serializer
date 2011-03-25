@@ -273,7 +273,7 @@ public class JSONWriterTest extends TestCase {
 		Serialization ser = createMock(ComplexSerialization.class);
 		Serialization element1 = createConstantValue("desc", null);
 		Serialization element2 = createConstantAttribute("id", "ABCD1234");
-		Serialization element3 = createConstantAttribute("address", null);
+		Serialization element3 = createConstantAttribute("address", "");
 		Serialization element4 = createConstantValue("name", "John Hotel");
 		Object object = new Object();
 		

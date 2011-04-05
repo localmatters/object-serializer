@@ -1,6 +1,6 @@
-h1. What is ObjectSerializer?
+h1. What is the _ObjectSerializer_?
 
-ObjectSerializer is a library to serialize Java Objects into XML or JSON based on a configuration that is external and without any hard-coded knowledge of the Objects and their types. 
+_ObjectSerializer_ is a library to serialize Java Objects into XML or JSON based on a configuration that is external and without any hard-coded knowledge of the Objects and their types. 
 
 If having a tight coupling between the objects and their respective _serialization_ is sometimes desirable, having a separate agnostic configuration offers the following benefits:
 
@@ -9,7 +9,7 @@ If having a tight coupling between the objects and their respective _serializati
 * can have multiple serializations of the same objects
 * one serialization can support object of different types (as long as they are compatible enough so that one common serialization can be defined)
 
-On top of these, the ObjectSerializer also offers: 
+On top of these, the _ObjectSerializer_ also offers: 
 
 * flexible serialization structure not tight to the objects structure (e.g. street, city and zip code instance variables of a person object can be serialized as an address sub-element or vice versa)
 * separation of concerns between the configuration of the serialization and the resulting format (whether the output is XML or JSON is independent form the configuration itself)
@@ -18,11 +18,11 @@ On top of these, the ObjectSerializer also offers:
 
 h1. History
 
-The need for the ObjectSerializer came when one of our client requested to open some of the services of the product we built for them through a REST API. As the product was build on top of our platform on which other products are built, coupling the serialization to the code (through annotations) was not an option. This was re-enforce by the fact that some of the REST services are implemented by the same product service; i.e. are simply different serializations of the same model. 
+The need for the _ObjectSerializer_ came when one of our client requested to open some of the services of the product we built for them through a REST API. As the product was build on top of our platform on which other products are built, coupling the serialization to the code (through annotations) was not an option. This was re-enforce by the fact that some of the REST services are implemented by the same product service; i.e. are simply different serializations of the same model. 
 
 Looking at the existing framework, we could not find one that suit our needs, which is why we implement this one. 
 
 
 h1. Licensing
 
-See LICENSE for more information
+Apache (See "LICENSE":LICENSE for more information)

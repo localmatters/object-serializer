@@ -25,4 +25,4 @@ Looking at the existing framework, we could not find one that suit our needs, wh
 
 h1. Licensing
 
-Apache (See "LICENSE":LICENSE for more information)
+Apache (See "LICENSE":object-serializer/LICENSE for more information)

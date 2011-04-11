@@ -15,6 +15,7 @@
 */
 package org.localmatters.serializer.serialization;
 
+import org.apache.commons.lang.StringUtils;
 import org.localmatters.serializer.SerializationContext;
 import org.localmatters.serializer.SerializationException;
 
@@ -29,7 +30,8 @@ public class NameSerialization extends DelegatingSerialization {
 	 * @see org.localmatters.serializer.serialization.Serialization#serialize(org.localmatters.serializer.serialization.Serialization, java.lang.String, java.lang.Object, org.localmatters.serializer.SerializationContext)
 	 */
 	public void serialize(Serialization ser, String aName, Object object, SerializationContext ctx) throws SerializationException {
-		getDelegate().serialize(ser, getName(), object, ctx);
+//		getDelegate().serialize(ser, getName(), object, ctx);
+        getDelegate().serialize(ser, StringUtils.defaultIfEmpty(getName(), aName), object, ctx);
 	}
 
 	/**

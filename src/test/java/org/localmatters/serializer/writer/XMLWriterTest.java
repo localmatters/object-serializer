@@ -487,7 +487,7 @@ public class XMLWriterTest extends TestCase {
     }
 	
 	/**
-	 * Tests serializing a iterator
+	 * Tests serializing an iterator
 	 */
 	public void testIterator() throws Exception {
 		ctx.setFormatting(true);
@@ -502,6 +502,22 @@ public class XMLWriterTest extends TestCase {
 		assertEquals("\n    <sports>\n        <sport>baseball</sport>\n        <sport>hockey</sport>\n    </sports>", os.toString());
 		assertEquals("results", ctx.getPath());
 	}
+    
+    /**
+     * Tests serializing an iterator with name
+     */
+    public void testIteratorWithName() throws Exception {
+        ctx.setFormatting(true);
+        ctx.nextLevel("results");
+        Serialization ser = createMock(IteratorSerialization.class);
+        Iterator<String> itr = Arrays.asList("baseball", "hockey").iterator();
+        
+        replay(ser);
+        writer.writeIterator(ser, "sports", itr, "sport", createValue(null), null, ctx);
+        verify(ser);
+        assertEquals("\n    <sports>\n        <sport>baseball</sport>\n        <sport>hockey</sport>\n    </sports>", os.toString());
+        assertEquals("results", ctx.getPath());
+    }
 
 	/**
 	 * Tests serializing an empty map that should not be written

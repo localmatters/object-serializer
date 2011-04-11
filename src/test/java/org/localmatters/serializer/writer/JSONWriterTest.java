@@ -501,7 +501,7 @@ public class JSONWriterTest extends TestCase {
     }
 
 	/**
-	 * Tests serializing a iterator
+	 * Tests serializing an iterator
 	 */
 	public void testIterator() throws Exception {
 		ctx.setFormatting(true);
@@ -516,6 +516,22 @@ public class JSONWriterTest extends TestCase {
 		assertEquals("\n   \"sports\": [\n      \"baseball\", \n      \"hockey\"\n   ]", os.toString());
 		assertEquals("results", ctx.getPath());
 	}
+
+    /**
+     * Tests serializing an iterator with a name
+     */
+    public void testIteratorWithName() throws Exception {
+        ctx.setFormatting(true);
+        ctx.nextLevel("results");
+        Serialization ser = createMock(IteratorSerialization.class);
+        Iterator<String> itr = Arrays.asList("baseball", "hockey", null).iterator();
+        
+        replay(ser);
+        writer.writeIterator(ser, "sports", itr, "sport", createValue(null), null, ctx);
+        verify(ser);
+        assertEquals("\n   \"sports\": [\n      \"baseball\", \n      \"hockey\"\n   ]", os.toString());
+        assertEquals("results", ctx.getPath());
+    }
 	
 	/**
 	 * Tests serializing an empty map that should not be written

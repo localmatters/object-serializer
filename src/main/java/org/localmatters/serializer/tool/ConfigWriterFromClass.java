@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.localmatters.serializer.SerializationContext;
@@ -58,7 +57,6 @@ import org.localmatters.serializer.writer.XMLWriter;
  */
 public class ConfigWriterFromClass {
 	private static final Logger LOGGER = Logger.getLogger(ConfigWriterFromClass.class);
-	private static final String INDEXED_AND_MAP_REMOVE_PATTERN = "^([^\\[\\{]+)(?:\\[|\\{).*$";
 	private Class<?>[] rootClasses;
 	private ComplexSerialization root;
 	private Map<Class<?>, NameSerialization> references;

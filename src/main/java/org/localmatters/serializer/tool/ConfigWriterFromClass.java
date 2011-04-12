@@ -391,7 +391,6 @@ public class ConfigWriterFromClass {
 	public static String getConfiguration(Class<?>...classes) throws ClassNotFoundException, SerializationException {
 		XMLWriter writer = new XMLWriter();
 		BeanUtilsPropertyResolver beanUtils = new BeanUtilsPropertyResolver();
-		beanUtils.setIndexedMappedRemoverPattern(Pattern.compile(INDEXED_AND_MAP_REMOVE_PATTERN));
 		ComplexPropertyResolver resolver = new ComplexPropertyResolver();
 		resolver.setToken(".");
 		resolver.setDelegate(beanUtils);

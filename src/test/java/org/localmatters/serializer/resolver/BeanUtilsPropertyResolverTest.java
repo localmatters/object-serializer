@@ -15,12 +15,12 @@
 */
 package org.localmatters.serializer.resolver;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
 
@@ -36,7 +36,6 @@ public class BeanUtilsPropertyResolverTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		resolver = new BeanUtilsPropertyResolver();
-		resolver.setIndexedMappedRemoverPattern(Pattern.compile("^([^\\[\\(]+)(?:\\[|\\().*$"));
 	}
 
 	/**
@@ -170,6 +169,51 @@ public class BeanUtilsPropertyResolverTest extends TestCase {
 		} catch (InvalidPropertyException e) {
 		}
 	}
+
+    /**
+     * Tests resolving a null map
+     */
+    public void testNullMap() {
+        try {
+            resolver.resolve(new Dummy(), "mixedNull(hello)[0]");
+        } catch (InvalidPropertyException e) {
+            fail("The resolution of a valid property should not result in an exception");
+        }
+    }
+
+    /**
+     * Tests resolving an empty map
+     */
+    public void testMapEmpty() {
+        try {
+            resolver.resolve(new Dummy(), "mixedEmpty(hello)[0]");
+        } catch (InvalidPropertyException e) {
+            fail("The resolution of a valid property should not result in an exception");
+        }
+    }
+
+    /**
+     * Tests resolving a missing key in the map
+     */
+    public void testMissingMapKey() {
+        try {
+            resolver.resolve(new Dummy(), "mixedMissing(hello)");
+        } catch (InvalidPropertyException e) {
+            fail("The resolution of a valid property should not result in an exception");
+        }
+    }
+
+    /**
+     * Tests resolving a missing key in the map
+     */
+    public void testMissingMapKeyAndFirstIndex() {
+        try {
+            resolver.resolve(new Dummy(), "mixedMissing(hello)[0]");
+        } catch (InvalidPropertyException e) {
+            fail("The resolution of a valid property should not result in an exception");
+        }
+    }
+    
 	
 	/**
 	 * Class describing a dummy object for testing
@@ -184,6 +228,13 @@ public class BeanUtilsPropertyResolverTest extends TestCase {
 		public String[] getMeals() {return null;}
 		public String[] getToys() {return new String[]{"bear", "truck"};}
 		public Map<String, String> getAddresses() {return null;}
+		public Map<String, List<String>> getMixedNull() {return null;}
+        public Map<String, List<String>> getMixedEmpty() {return new HashMap<String, List<String>>();}
+        public Map<String, List<String>> getMixedMissing() {
+            Map<String, List<String>> map = new HashMap<String, List<String>>();
+            map.put("world", new ArrayList<String>());
+            return map;
+        }
 		public Map<String, String> getFriends() {return new HashMap<String, String>();}
 		public Map<String, String> getStories() {
 			HashMap<String, String> map = new HashMap<String, String>();

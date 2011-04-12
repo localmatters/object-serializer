@@ -21,25 +21,31 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Property resolver that uses the Apache BeanUtils's PropertyUtils to resolve
  * the property.
  */
 public class BeanUtilsPropertyResolver implements PropertyResolver {
-	private Pattern indexedMappedRemoverPattern;
+	private static final Pattern INDEX_MAP_PATTERN = Pattern.compile("^(([^\\[\\(]+)(?:\\[|\\()[^\\]\\)]+(?:\\]|\\)))(.*)$");
+	private static final String VALUE = "value";
 
-	/**
-	 * @see org.localmatters.serializer.resolver.PropertyResolver#resolve(java.lang.Object, java.lang.String)
-	 */
-	@SuppressWarnings("rawtypes")
-	public Object resolve(Object bean, String property) throws InvalidPropertyException {
+    /**
+     * @see org.localmatters.serializer.resolver.PropertyResolver#resolve(java.lang.Object, java.lang.String)
+     */
+    public Object resolve(Object bean, String property) throws InvalidPropertyException {
+        return resolve(bean, property, bean, property);
+    }
+    
+    @SuppressWarnings("rawtypes")
+   	private Object resolve(Object bean, String property, Object originalBean, String originalProperty) throws InvalidPropertyException {
 		try {
 			// if the property is a list or a map, we first check that it is not
 			// null as the PropertyUtils is, unfortunately not lenient 
-			Matcher matcher = getIndexedMappedRemoverPattern().matcher(property);
+			Matcher matcher = INDEX_MAP_PATTERN.matcher(property);
 			if (matcher.find()) {
-				Object indexOrMap = PropertyUtils.getProperty(bean, matcher.group(1));
+				Object indexOrMap = PropertyUtils.getProperty(bean, matcher.group(2));
 				if (indexOrMap == null) {
 					return null;
 				} 
@@ -56,30 +62,48 @@ public class BeanUtilsPropertyResolver implements PropertyResolver {
 						return null;
 					}
 				}
+
+				String composite = matcher.group(3);
+                if (StringUtils.isNotBlank(composite)) {
+				    return resolve(new ListMapWrapper(PropertyUtils.getProperty(bean, matcher.group(1))), VALUE + composite, originalBean, originalProperty);
+				}
 			}
 
 			return PropertyUtils.getProperty(bean, property);
 		} catch (Exception e) {
-			throw new InvalidPropertyException(bean.getClass().getName(), property);
+			throw new InvalidPropertyException(originalBean.getClass().getName(), originalProperty);
 		}
 	}
 
 	/**
-	 * @return The pattern to clean the property from any map or index 
-	 * information. This pattern is expected to have a capturing group of the
-	 * clean part of the property.
+	 * Wrapper of list and maps to slip the resolution of any composition (the
+	 * property util expect a class with a property that is a map or a list, not
+	 * one of them directly)
 	 */
-	public Pattern getIndexedMappedRemoverPattern() {
-		return indexedMappedRemoverPattern;
-	}
+	public class ListMapWrapper {
+	    private Object value;
 
-	/**
-	 * @param indexedMappedRemoverPattern The pattern to clean the property from
-	 * any map or index information. This pattern is expected to have a 
-	 * capturing group of the clean part of the property.
-	 */
-	public void setIndexedMappedRemoverPattern(Pattern indexedMappedRemoverPattern) {
-		this.indexedMappedRemoverPattern = indexedMappedRemoverPattern;
-	}
+	    /**
+	     * Default constructor with the specification of the value
+	     * @param value
+	     */
+	    public ListMapWrapper(Object value) {
+	        setValue(value);
+	    }
+	    
+        /**
+         * @return The value
+         */
+        public Object getValue() {
+            return value;
+        }
 
+        /**
+         * @param value The value
+         */
+        public void setValue(Object value) {
+            this.value = value;
+        }
+	}
+	
 }

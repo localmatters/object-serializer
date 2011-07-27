@@ -121,6 +121,15 @@ public class JSONWriter extends AbstractWriter {
 	}
 
 	/**
+	 * @see org.localmatters.serializer.writer.Writer#writeNamespace(org.localmatters.serializer.serialization.Serialization, java.lang.String, java.lang.Object, org.localmatters.serializer.SerializationContext)
+	 */
+	public void writeNamespace(Serialization ser, String name,
+	        Object namespace, SerializationContext ctx)
+	        throws SerializationException {
+	    // name-spaces are not a JSON concept supported
+	}
+	
+	/**
 	 * @see org.localmatters.serializer.writer.Writer#writeComplex(org.localmatters.serializer.serialization.Serialization, java.lang.String, java.lang.Object, java.util.Collection, java.util.Collection, java.util.Collection, org.localmatters.serializer.SerializationContext)
 	 */
 	public void writeComplex(Serialization ser, 

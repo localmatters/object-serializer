@@ -86,6 +86,19 @@ public interface Writer {
 			String name,
 			Object attribute, 
 			SerializationContext ctx) throws SerializationException;
+
+    /**
+     * Writes a name-space
+     * @param ser The attribute serialization
+     * @param name The name under which to serialize the name-space
+     * @param namespace The name-space to serialize
+     * @param ctx The serialization context
+     * @throws SerializationException When the serialization fails
+     */
+    public void writeNamespace(Serialization ser, 
+            String name,
+            Object namespace, 
+            SerializationContext ctx) throws SerializationException;
 	
 	/**
 	 * Writes an iterator

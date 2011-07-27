@@ -243,6 +243,44 @@ public class XMLWriterTest extends TestCase {
 		assertEquals(" name=\"John Do&#233;\"", os.toString());
 		assertEquals(StringUtils.EMPTY, ctx.getPath());
 	}
+
+    /**
+     * Tests serializing a null name-space that should not be written
+     */
+    public void testNamespaceWhenNullAndNotWrite() throws Exception {
+        Serialization ser = createMock(Serialization.class);
+        expect(ser.isWriteEmpty()).andReturn(false);
+        replay(ser);
+        writer.writeNamespace(ser, "lmi", null, ctx);
+        verify(ser);
+        assertEquals(StringUtils.EMPTY, os.toString());
+        assertEquals(StringUtils.EMPTY, ctx.getPath());
+    }
+    
+    /**
+     * Tests serializing a null name-space that should be written
+     */
+    public void testNamespaceWhenNullAndWrite() throws Exception {
+        Serialization ser = createMock(Serialization.class);
+        expect(ser.isWriteEmpty()).andReturn(true);
+        replay(ser);
+        writer.writeNamespace(ser, "lmi", null, ctx);
+        verify(ser);
+        assertEquals(" lmi=\"\"", os.toString());
+        assertEquals(StringUtils.EMPTY, ctx.getPath());
+    }
+    
+    /**
+     * Tests serializing an name-space
+     */
+    public void testNamespace() throws Exception {
+        Serialization ser = createMock(Serialization.class);
+        replay(ser);
+        writer.writeNamespace(ser, "lmi", "http://www.localmatter.com", ctx);
+        verify(ser);
+        assertEquals(" lmi=\"http://www.localmatter.com\"", os.toString());
+        assertEquals(StringUtils.EMPTY, ctx.getPath());
+    }
 	
 	/**
 	 * Tests serializing a null complex that should not be written

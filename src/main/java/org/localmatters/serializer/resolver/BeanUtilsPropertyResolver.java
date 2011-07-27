@@ -71,7 +71,7 @@ public class BeanUtilsPropertyResolver implements PropertyResolver {
 
 			return PropertyUtils.getProperty(bean, property);
 		} catch (Exception e) {
-			throw new InvalidPropertyException(originalBean.getClass().getName(), originalProperty);
+			throw new InvalidPropertyException(originalProperty, originalBean.getClass().getName());
 		}
 	}
 

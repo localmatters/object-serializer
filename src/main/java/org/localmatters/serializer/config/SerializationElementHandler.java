@@ -37,6 +37,7 @@ import org.localmatters.serializer.serialization.ConstantSerialization;
 import org.localmatters.serializer.serialization.IteratorSerialization;
 import org.localmatters.serializer.serialization.MapSerialization;
 import org.localmatters.serializer.serialization.NameSerialization;
+import org.localmatters.serializer.serialization.NamespaceSerialization;
 import org.localmatters.serializer.serialization.PropertySerialization;
 import org.localmatters.serializer.serialization.ReferenceSerialization;
 import org.localmatters.serializer.serialization.Serialization;
@@ -58,6 +59,7 @@ public class SerializationElementHandler implements ElementHandler {
 	public static final String ATTRIBUTE_TARGET = "target";
 	public static final String ATTRIBUTE_PARENT = "parent";
 	public static final String TYPE_ATTRIBUTE = "attribute";
+	public static final String TYPE_NAMESPACE = "namespace";
 	public static final String TYPE_MAP = "map";
 	public static final String TYPE_LIST = "list";
 	public static final String TYPE_VALUE = "value";
@@ -69,6 +71,7 @@ public class SerializationElementHandler implements ElementHandler {
 	public static final String INVALID_TYPE_FORMAT = "Invalid element <%s> at [%s]!";
 	public static final String MISSING_ATTRIBUTE_FORMAT = "Missing or invalid attribute %s on [%s]!";
 	public static final String INVALID_ATTRIBUTE_ELEMENT_FORMAT = "Unexpected <attribute> at [%s]. Attributes are only valid directly under <complex> elements!";
+	public static final String INVALID_NAMESPACE_ELEMENT_FORMAT = "Unexpected <namespace> at [%s]. Name-space definitions are only valid directly under <complex> elements!";
 	public static final String INVALID_LIST_FORMAT = "The list at [%s] is invalid. Zero or one one non-comment sub-element expected!";
 	public static final String INVALID_MAP_FORMAT = "The map at [%s] is invalid. Zero or one non-comment sub-element expected!";
 	public static final String NAME_NOT_ALLOWED_FORMAT = "Name attribute are not allowed for the map sub-element at [%s]!";
@@ -313,6 +316,8 @@ public class SerializationElementHandler implements ElementHandler {
 			serialization = handleComplex(element, attributes);
 		} else if (TYPE_ATTRIBUTE.equalsIgnoreCase(type)) {
 			serialization = handleAttribute(element, attributes);
+		} else if (TYPE_NAMESPACE.equalsIgnoreCase(type)) {
+		    serialization = handleNamespace(element, attributes);
 		} else if (TYPE_VALUE.equalsIgnoreCase(type)) {
 			serialization = handleValue(element, attributes);
 		} else if (TYPE_LIST.equalsIgnoreCase(type)) {
@@ -393,6 +398,20 @@ public class SerializationElementHandler implements ElementHandler {
 			return new AttributeSerialization();
 		}
 		throw new ConfigurationException(INVALID_ATTRIBUTE_ELEMENT_FORMAT, element.getPath());
+	}
+	
+	/**
+	 * Handles a complex element name-space attribute (<code>&lt;namespace&gt;</code>).
+	 * @param element The element
+	 * @param attributes The map of attributes consumed for this element
+	 * @return The serialization for this element
+	 */
+	protected NamespaceSerialization handleNamespace(Element element, Map<String, String> attributes) {
+	    Element parent = element.getParent();
+	    if ((parent != null) && TYPE_COMPLEX.equalsIgnoreCase(parent.getName())) {
+	        return new NamespaceSerialization();
+	    }
+	    throw new ConfigurationException(INVALID_NAMESPACE_ELEMENT_FORMAT, element.getPath());
 	}
 
 	/**

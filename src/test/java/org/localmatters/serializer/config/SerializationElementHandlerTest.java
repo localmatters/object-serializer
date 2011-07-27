@@ -34,6 +34,7 @@ import static org.localmatters.serializer.config.SerializationElementHandler.INV
 import static org.localmatters.serializer.config.SerializationElementHandler.INVALID_LIST_FORMAT;
 import static org.localmatters.serializer.config.SerializationElementHandler.INVALID_LOOP_REFERENCES;
 import static org.localmatters.serializer.config.SerializationElementHandler.INVALID_MAP_FORMAT;
+import static org.localmatters.serializer.config.SerializationElementHandler.INVALID_NAMESPACE_ELEMENT_FORMAT;
 import static org.localmatters.serializer.config.SerializationElementHandler.INVALID_TYPE_FORMAT;
 import static org.localmatters.serializer.config.SerializationElementHandler.MISSING_ATTRIBUTE_FORMAT;
 import static org.localmatters.serializer.config.SerializationElementHandler.MISSING_ID;
@@ -43,6 +44,7 @@ import static org.localmatters.serializer.config.SerializationElementHandler.TYP
 import static org.localmatters.serializer.config.SerializationElementHandler.TYPE_COMPLEX;
 import static org.localmatters.serializer.config.SerializationElementHandler.TYPE_LIST;
 import static org.localmatters.serializer.config.SerializationElementHandler.TYPE_MAP;
+import static org.localmatters.serializer.config.SerializationElementHandler.TYPE_NAMESPACE;
 import static org.localmatters.serializer.config.SerializationElementHandler.TYPE_REFERENCE;
 import static org.localmatters.serializer.config.SerializationElementHandler.TYPE_VALUE;
 
@@ -63,6 +65,7 @@ import org.localmatters.serializer.serialization.ConstantSerialization;
 import org.localmatters.serializer.serialization.IteratorSerialization;
 import org.localmatters.serializer.serialization.MapSerialization;
 import org.localmatters.serializer.serialization.NameSerialization;
+import org.localmatters.serializer.serialization.NamespaceSerialization;
 import org.localmatters.serializer.serialization.PropertySerialization;
 import org.localmatters.serializer.serialization.ReferenceSerialization;
 import org.localmatters.serializer.serialization.Serialization;
@@ -307,13 +310,81 @@ public class SerializationElementHandlerTest extends TestCase {
 		verify(element, parent);
 		assertTrue(result instanceof AttributeSerialization);
 	}
+    
+    /**
+     * Tests the <code>handleType</code> method when attribute
+     */
+    public void testHandleTypeWhenAttribute() {
+        Element parent = createMock(Element.class);
+        expect(element.getName()).andReturn(TYPE_ATTRIBUTE);
+        expect(element.getParent()).andReturn(parent);
+        expect(parent.getName()).andReturn(TYPE_COMPLEX);
+        expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn("no");
+        expect(element.attributes()).andReturn(Arrays.asList("no"));
 
+        replay(element, parent);
+        Serialization result = handler.handleType(element, attributes);
+        verify(element, parent);
+
+        assertTrue(result instanceof AttributeSerialization);
+        assertFalse(result.isWriteEmpty());
+    }
+
+    /**
+     * Tests the <code>handleNamespace</code> method when the element has no
+     * parent
+     */
+    public void testHandleNamespaceWhenNoParent() {
+        expect(element.getParent()).andReturn(null);
+        expect(element.getPath()).andReturn(PATH);
+        replay(element);
+        try {
+            handler.handleNamespace(element, attributes);
+            fail("ConfigurationException expected");
+        } catch (ConfigurationException e) {
+            assertEquals(String.format(INVALID_NAMESPACE_ELEMENT_FORMAT, PATH), e.getMessage());
+        }
+        verify(element);
+    }
+
+    /**
+     * Tests the <code>handleNamespace</code> method when the element's parent
+     * is not a complex element
+     */
+    public void testHandleNamespaceWhenParentNotComplex() {
+        Element parent = createMock(Element.class);
+        expect(element.getParent()).andReturn(parent);
+        expect(parent.getName()).andReturn(TYPE_LIST);
+        expect(element.getPath()).andReturn(PATH);
+        replay(element, parent);
+        try {
+            handler.handleNamespace(element, attributes);
+            fail("ConfigurationException expected");
+        } catch (ConfigurationException e) {
+            assertEquals(String.format(INVALID_NAMESPACE_ELEMENT_FORMAT, PATH), e.getMessage());
+        }
+        verify(element, parent);
+    }
+
+    /**
+     * Tests the <code>handleNamespace</code> method
+     */
+    public void handleNamespace() {
+        Element parent = createMock(Element.class);
+        expect(element.getParent()).andReturn(parent);
+        expect(parent.getName()).andReturn(TYPE_COMPLEX);
+        replay(element, parent);
+        Serialization result = handler.handleNamespace(element, attributes);
+        verify(element, parent);
+        assertTrue(result instanceof NamespaceSerialization);
+    }
+	
 	/**
-	 * Tests the <code>handleType</code> method when attribute
+	 * Tests the <code>handleType</code> method when name-space
 	 */
-	public void testHandleTypeWhenAttribute() {
+	public void testHandleTypeWhenNamespace() {
 		Element parent = createMock(Element.class);
-		expect(element.getName()).andReturn(TYPE_ATTRIBUTE);
+		expect(element.getName()).andReturn(TYPE_NAMESPACE);
 		expect(element.getParent()).andReturn(parent);
 		expect(parent.getName()).andReturn(TYPE_COMPLEX);
 		expect(element.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn("no");
@@ -323,7 +394,7 @@ public class SerializationElementHandlerTest extends TestCase {
 		Serialization result = handler.handleType(element, attributes);
 		verify(element, parent);
 
-		assertTrue(result instanceof AttributeSerialization);
+		assertTrue(result instanceof NamespaceSerialization);
 		assertFalse(result.isWriteEmpty());
 	}
 

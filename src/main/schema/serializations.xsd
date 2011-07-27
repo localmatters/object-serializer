@@ -90,12 +90,18 @@
 		<xs:sequence>
 			<xs:element name="comment" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
 			<xs:choice minOccurs="0" maxOccurs="unbounded">
-				<xs:element name="attribute">
+				<xs:element name="namespace">
 				    <xs:complexType>
 				        <xs:attributeGroup ref="baseAttributesGroup"/>
 				        <xs:attribute name="id" type="xs:string" use="optional"/>
 				    </xs:complexType>
 				</xs:element>
+                <xs:element name="attribute">
+                    <xs:complexType>
+                        <xs:attributeGroup ref="baseAttributesGroup"/>
+                        <xs:attribute name="id" type="xs:string" use="optional"/>
+                    </xs:complexType>
+                </xs:element>
 				<xs:group ref="baseElementsGroupOptionalId"/>
 			</xs:choice>
 		</xs:sequence>

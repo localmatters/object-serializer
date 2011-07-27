@@ -215,12 +215,25 @@ public class JSONWriterTest extends TestCase {
 		ctx.setFormatting(true);
 		ctx.nextLevel("listing");
 		Serialization ser = createMock(Serialization.class);
-		ValueSerialization delegate = createMock(ValueSerialization.class);
-		replay(ser, delegate);
+		replay(ser);
 		writer.writeAttribute(ser, "name", "hotel & café", ctx);
-		verify(ser, delegate);
+		verify(ser);
 		assertEquals("\n   \"name\": \"hotel & café\"", os.toString());
 		assertEquals("listing", ctx.getPath());
+	}
+	
+	/**
+	 * Tests serializing a name-space
+	 */
+	public void testNamespace() throws Exception {
+	    ctx.setFormatting(true);
+	    ctx.nextLevel("listing");
+	    Serialization ser = createMock(Serialization.class);
+	    replay(ser);
+	    writer.writeNamespace(ser, "lmi", "http://www.localmatter.com", ctx);
+	    verify(ser);
+	    assertEquals("", os.toString());
+	    assertEquals("listing", ctx.getPath());
 	}
 
 	/**

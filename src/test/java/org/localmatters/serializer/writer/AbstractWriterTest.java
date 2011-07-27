@@ -58,7 +58,8 @@ public class AbstractWriterTest extends TestCase {
 			public void writeMap(Serialization ser, String name, Collection<Map.Entry> entries, String key, Serialization value, Collection<String> comments, SerializationContext ctx) {}
 			public void writeIterator(Serialization ser, String name, Iterator<?> itr, String elementName, Serialization element, Collection<String> comments, SerializationContext ctx) {}
 			public void writeComplex(Serialization ser, String name, Object complex, Collection<Serialization> attributes, Collection<Serialization> elements, Collection<String> comments, SerializationContext ctx) {}
-			public void writeAttribute(Serialization ser, String name,Object attribute, SerializationContext ctx) {}
+			public void writeAttribute(Serialization ser, String name, Object attribute, SerializationContext ctx) {}
+			public void writeNamespace(Serialization ser, String name, Object attribute, SerializationContext ctx) {}
 		};
 	}
 

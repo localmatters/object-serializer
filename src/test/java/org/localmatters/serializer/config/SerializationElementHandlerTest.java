@@ -697,50 +697,81 @@ public class SerializationElementHandlerTest extends TestCase {
 	}
 	
 	/**
-	 * Tests the <code>handleComplex</code> method
+	 * Tests the <code>handleComplex</code> method with name-space
 	 */
-	public void testHandleComplex() {
-		Element attribute = createMock(Element.class);
-		Element subElement = createMock(Element.class);
-		Element comment = createMock(Element.class);
+	public void testHandleComplexWithNamespace() {
+		Element namespace = createMock(Element.class);
 		
-		expect(element.elements()).andReturn(Arrays.asList(attribute, comment, subElement));
-		expect(attribute.getName()).andReturn(TYPE_ATTRIBUTE);
-		expect(attribute.attributeValue(ATTRIBUTE_ID)).andReturn(null);
-		expect(attribute.attributeValue(ATTRIBUTE_NAME)).andReturn(null);
-		expect(attribute.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
-		expect(attribute.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
-		expect(attribute.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
-		expect(attribute.getName()).andReturn(TYPE_ATTRIBUTE);
-		expect(attribute.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
-		expect(attribute.getParent()).andReturn(element);
-		expect(attribute.attributes()).andReturn(Collections.emptyList());
+		expect(element.elements()).andReturn(Arrays.asList(namespace));
+		expect(namespace.getName()).andReturn(TYPE_NAMESPACE);
+		expect(namespace.attributeValue(ATTRIBUTE_ID)).andReturn(null);
+		expect(namespace.attributeValue(ATTRIBUTE_NAME)).andReturn(null);
+		expect(namespace.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
+		expect(namespace.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
+		expect(namespace.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
+		expect(namespace.getName()).andReturn(TYPE_NAMESPACE);
+		expect(namespace.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
+		expect(namespace.getParent()).andReturn(element);
+		expect(namespace.attributes()).andReturn(Collections.emptyList());
 		expect(element.getName()).andReturn(TYPE_COMPLEX);
-		expect(comment.getName()).andReturn(TYPE_COMMENT);
-		expect(comment.getStringValue()).andReturn("Hello World");
-		expect(subElement.getName()).andReturn(TYPE_VALUE);
-		expect(subElement.attributeValue(ATTRIBUTE_ID)).andReturn(null);
-		expect(subElement.attributeValue(ATTRIBUTE_NAME)).andReturn(null);
-		expect(subElement.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
-		expect(subElement.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
-		expect(subElement.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
-		expect(subElement.getName()).andReturn(TYPE_VALUE);
-		expect(subElement.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
-		expect(subElement.attributes()).andReturn(Collections.emptyList());
 
-		replay(element, attribute, comment, subElement);
+		replay(element, namespace);
 		Serialization result = handler.handleComplex(element, attributes);
-		verify(element, attribute, comment, subElement);
+		verify(element, namespace);
 
         assertTrue(result instanceof ComplexSerialization);
         ComplexSerialization ser = (ComplexSerialization) result;
 		assertEquals(1, CollectionUtils.size(ser.getAttributes()));
-		assertTrue(ser.getAttributes().get(0) instanceof AttributeSerialization);
-		assertEquals(1, CollectionUtils.size(ser.getElements()));
-		assertTrue(ser.getElements().get(0) instanceof ValueSerialization);
-		assertEquals(1, CollectionUtils.size(ser.getComments()));
-		assertEquals("Hello World", ser.getComments().get(0));
+		assertTrue(ser.getAttributes().get(0) instanceof NamespaceSerialization);
+		assertTrue(CollectionUtils.isEmpty(ser.getElements()));
+		assertTrue(CollectionUtils.isEmpty(ser.getComments()));
 	}
+    
+    /**
+     * Tests the <code>handleComplex</code> method
+     */
+    public void testHandleComplex() {
+        Element attribute = createMock(Element.class);
+        Element subElement = createMock(Element.class);
+        Element comment = createMock(Element.class);
+        
+        expect(element.elements()).andReturn(Arrays.asList(attribute, comment, subElement));
+        expect(attribute.getName()).andReturn(TYPE_ATTRIBUTE);
+        expect(attribute.attributeValue(ATTRIBUTE_ID)).andReturn(null);
+        expect(attribute.attributeValue(ATTRIBUTE_NAME)).andReturn(null);
+        expect(attribute.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
+        expect(attribute.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
+        expect(attribute.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
+        expect(attribute.getName()).andReturn(TYPE_ATTRIBUTE);
+        expect(attribute.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
+        expect(attribute.getParent()).andReturn(element);
+        expect(attribute.attributes()).andReturn(Collections.emptyList());
+        expect(element.getName()).andReturn(TYPE_COMPLEX);
+        expect(comment.getName()).andReturn(TYPE_COMMENT);
+        expect(comment.getStringValue()).andReturn("Hello World");
+        expect(subElement.getName()).andReturn(TYPE_VALUE);
+        expect(subElement.attributeValue(ATTRIBUTE_ID)).andReturn(null);
+        expect(subElement.attributeValue(ATTRIBUTE_NAME)).andReturn(null);
+        expect(subElement.attributeValue(ATTRIBUTE_CONSTANT)).andReturn(null);
+        expect(subElement.attributeValue(ATTRIBUTE_BEAN)).andReturn(null);
+        expect(subElement.attributeValue(ATTRIBUTE_PROPERTY)).andReturn(null);
+        expect(subElement.getName()).andReturn(TYPE_VALUE);
+        expect(subElement.attributeValue(ATTRIBUTE_DISPLAY_EMPTY)).andReturn(null);
+        expect(subElement.attributes()).andReturn(Collections.emptyList());
+
+        replay(element, attribute, comment, subElement);
+        Serialization result = handler.handleComplex(element, attributes);
+        verify(element, attribute, comment, subElement);
+
+        assertTrue(result instanceof ComplexSerialization);
+        ComplexSerialization ser = (ComplexSerialization) result;
+        assertEquals(1, CollectionUtils.size(ser.getAttributes()));
+        assertTrue(ser.getAttributes().get(0) instanceof AttributeSerialization);
+        assertEquals(1, CollectionUtils.size(ser.getElements()));
+        assertTrue(ser.getElements().get(0) instanceof ValueSerialization);
+        assertEquals(1, CollectionUtils.size(ser.getComments()));
+        assertEquals("Hello World", ser.getComments().get(0));
+    }
 	
 	/**
 	 * Tests the <code>HandleComplex</code> method when has ID and parent

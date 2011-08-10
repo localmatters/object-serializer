@@ -367,7 +367,7 @@ public class SerializationElementHandler implements ElementHandler {
 					ser.addComment(child.getStringValue());
 				} else {
 					Serialization childSerialization = handleId(child);
-					if (TYPE_ATTRIBUTE.equalsIgnoreCase(type)) {
+					if (TYPE_ATTRIBUTE.equalsIgnoreCase(type) || TYPE_NAMESPACE.equalsIgnoreCase(type)) {
 						ser.addAttribute(childSerialization);
 					} else {
 						ser.addElement(childSerialization);
